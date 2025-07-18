@@ -1,0 +1,1 @@
+[16-Jul-2025 11:46:53 America/Lima] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.30. in /home4/satindex/public_html/monitor.sat-industriales.pe/vendor/composer/platform_check.php on line 28

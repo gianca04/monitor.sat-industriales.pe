@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - Sistema SAT Industriales</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #007bff;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #6c757d;
+            font-size: 1.1em;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .toc h2 {
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+        
+        .toc ul {
+            list-style: none;
+        }
+        
+        .toc li {
+            margin-bottom: 8px;
+        }
+        
+        .toc a {
+            color: #495057;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .toc a:hover {
+            color: #007bff;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+        
+        .section h2 {
+            color: #007bff;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+        }
+        
+        .section h3 {
+            color: #495057;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            margin-top: 25px;
+        }
+        
+        .section h4 {
+            color: #6c757d;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            margin-top: 20px;
+        }
+        
+        .feature-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .danger-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .step-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .step-list ol {
+            padding-left: 20px;
+        }
+        
+        .step-list li {
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .contact-info {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+            color: #6c757d;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+            
+            .section {
+                page-break-inside: avoid;
+            }
+            
+            .toc {
+                page-break-after: always;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><span class="emoji">📋</span>Manual de Usuario</h1>
+            <p>Sistema de Monitoreo SAT Industriales</p>
+            <p><strong>Versión 1.0 • Diciembre 2024</strong></p>
+        </div>
+
+        <!-- Tabla de Contenidos -->
+        <div class="toc">
+            <h2><span class="emoji">📚</span>Tabla de Contenidos</h2>
+            <ul>
+                <li><a href="#introduccion"><span class="emoji">🎯</span>1. Introducción</a></li>
+                <li><a href="#acceso"><span class="emoji">🚀</span>2. Acceso al Sistema</a></li>
+                <li><a href="#clientes"><span class="emoji">👥</span>3. Gestión de Clientes</a></li>
+                <li><a href="#empleados"><span class="emoji">👤</span>4. Recursos Humanos</a></li>
+                <li><a href="#cotizaciones"><span class="emoji">📝</span>5. Cotizaciones</a></li>
+                <li><a href="#proyectos"><span class="emoji">🏗️</span>6. Proyectos</a></li>
+                <li><a href="#tareos"><span class="emoji">⏰</span>7. Tareos y Asistencias</a></li>
+                <li><a href="#roles"><span class="emoji">🔐</span>8. Usuarios y Roles</a></li>
+                <li><a href="#reportes"><span class="emoji">📊</span>9. Reportes</a></li>
+                <li><a href="#funciones"><span class="emoji">🔧</span>10. Funciones Especiales</a></li>
+                <li><a href="#problemas"><span class="emoji">🆘</span>11. Solución de Problemas</a></li>
+            </ul>
+        </div>
+
+        <!-- Sección 1: Introducción -->
+        <div class="section" id="introduccion">
+            <h2><span class="emoji">🎯</span>1. Introducción</h2>
+            <p>El Sistema de Monitoreo SAT Industriales es una plataforma integral diseñada para gestionar proyectos, colaboradores, cotizaciones, tareos y asistencias. Este sistema permite un control completo de las operaciones de la empresa, desde la gestión de clientes hasta el seguimiento detallado de la asistencia de empleados en cada proyecto.</p>
+            
+            <div class="feature-box">
+                <h4>Módulos Principales</h4>
+                <ul>
+                    <li><strong>Gestión de Clientes:</strong> Registro y administración de clientes y sedes</li>
+                    <li><strong>Recursos Humanos:</strong> Control de empleados y usuarios del sistema</li>
+                    <li><strong>Control de Operaciones:</strong> Cotizaciones, proyectos y seguimiento</li>
+                    <li><strong>Tareos y Asistencias:</strong> Control diario de asistencia laboral</li>
+                    <li><strong>Reportes:</strong> Estadísticas y análisis de datos</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sección 2: Acceso al Sistema -->
+        <div class="section" id="acceso">
+            <h2><span class="emoji">🚀</span>2. Acceso al Sistema</h2>
+            
+            <h3>Inicio de Sesión</h3>
+            <div class="step-list">
+                <ol>
+                    <li><strong>Navegue</strong> a la URL del sistema proporcionada por su administrador</li>
+                    <li><strong>Ingrese</strong> sus credenciales de usuario:
+                        <ul>
+                            <li>Email corporativo</li>
+                            <li>Contraseña asignada</li>
+                        </ul>
+                    </li>
+                    <li><strong>Haga clic</strong> en "Iniciar Sesión"</li>
+                </ol>
+            </div>
+
+            <h3>Panel Principal (Dashboard)</h3>
+            <p>Al ingresar, verá el panel principal con estadísticas importantes:</p>
+            <ul>
+                <li><span class="emoji">📊</span><strong>Estadísticas generales:</strong> Clientes, empleados, proyectos y cotizaciones</li>
+                <li><span class="emoji">📈</span><strong>Estadísticas de tareos:</strong> Resumen de asistencias del día y mes</li>
+                <li><span class="emoji">🎯</span><strong>Proyectos activos:</strong> Vista rápida de proyectos en progreso</li>
+            </ul>
+        </div>
+
+        <!-- Sección 3: Gestión de Clientes -->
+        <div class="section" id="clientes">
+            <h2><span class="emoji">👥</span>3. Módulo de Gestión de Clientes</h2>
+            
+            <div class="feature-box">
+                <h4>Características Principales</h4>
+                <ul>
+                    <li>Registro completo de información empresarial</li>
+                    <li>Gestión de sedes (sub-clientes)</li>
+                    <li>Soporte para diferentes tipos de documentos</li>
+                    <li>Historial de proyectos por cliente</li>
+                </ul>
+            </div>
+
+            <h3><span class="emoji">➕</span>Crear Nuevo Cliente</h3>
+            <div class="step-list">
+                <ol>
+                    <li><strong>Navegue</strong> a "Gestión de clientes" > "Clientes"</li>
+                    <li><strong>Haga clic</strong> en "Nuevo Cliente"</li>
+                    <li><strong>Complete</strong> la información en las pestañas:</li>
+                </ol>
+            </div>
+
+            <h4>Pestaña "Datos del Cliente"</h4>
+            <table>
+                <tr>
+                    <th>Campo</th>
+                    <th>Descripción</th>
+                    <th>Requerido</th>
+                </tr>
+                <tr>
+                    <td>Tipo de Documento</td>
+                    <td>DNI, RUC, Carné de Extranjería, Pasaporte</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Número de Documento</td>
+                    <td>Identificación única</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Tipo de Persona</td>
+                    <td>Natural o Jurídica</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Razón Social</td>
+                    <td>Nombre completo de la empresa</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Dirección</td>
+                    <td>Ubicación principal</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Teléfono/Email</td>
+                    <td>Información de contacto</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Logo</td>
+                    <td>Imagen corporativa</td>
+                    <td>No</td>
+                </tr>
+            </table>
+
+            <h3><span class="emoji">🔍</span>Búsqueda y Filtros</h3>
+            <ul>
+                <li><strong>Búsqueda rápida:</strong> Por razón social o número de documento</li>
+                <li><strong>Filtros disponibles:</strong> Tipo de documento, tipo de persona</li>
+                <li><strong>Acciones disponibles:</strong> Ver, editar, eliminar</li>
+            </ul>
+        </div>
+
+        <!-- Sección 4: Empleados -->
+        <div class="section" id="empleados">
+            <h2><span class="emoji">👤</span>4. Módulo de Recursos Humanos</h2>
+            
+            <div class="feature-box">
+                <h4>Características Principales</h4>
+                <ul>
+                    <li>Gestión completa de empleados</li>
+                    <li>Creación opcional de usuarios del sistema</li>
+                    <li>Exportación de datos a Excel</li>
+                    <li>Búsqueda global rápida</li>
+                </ul>
+            </div>
+
+            <h3><span class="emoji">➕</span>Registrar Nuevo Colaborador</h3>
+            <div class="step-list">
+                <ol>
+                    <li><strong>Navegue</strong> a "Recursos Humanos" > "Colaboradores"</li>
+                    <li><strong>Haga clic</strong> en "Nuevo Colaborador"</li>
+                    <li><strong>Complete</strong> ambas pestañas</li>
+                    <li><strong>Guarde</strong> el registro</li>
+                </ol>
+            </div>
+
+            <div class="warning-box">
+                <h4><span class="emoji">⚠️</span>Importante</h4>
+                <p>La pestaña "Información del Usuario" es opcional. Solo complete esta sección si el empleado necesita acceso al sistema.</p>
+            </div>
+        </div>
+
+        <!-- Sección 5: Cotizaciones -->
+        <div class="section" id="cotizaciones">
+            <h2><span class="emoji">📝</span>5. Gestión de Cotizaciones</h2>
+            
+            <h3>Estados de Cotización</h3>
+            <table>
+                <tr>
+                    <th>Estado</th>
+                    <th>Descripción</th>
+                    <th>Acción</th>
+                </tr>
+                <tr>
+                    <td><span class="emoji">⏳</span>Pendiente</td>
+                    <td>Estado inicial, esperando revisión</td>
+                    <td>Evaluar y cambiar estado</td>
+                </tr>
+                <tr>
+                    <td><span class="emoji">✅</span>Aprobada</td>
+                    <td>Cliente acepta la cotización</td>
+                    <td>Puede crear proyecto</td>
+                </tr>
+                <tr>
+                    <td><span class="emoji">❌</span>Rechazada</td>
+                    <td>Cliente no acepta</td>
+                    <td>Archivar o revisar</td>
+                </tr>
+                <tr>
+                    <td><span class="emoji">📋</span>En Revisión</td>
+                    <td>Bajo evaluación del cliente</td>
+                    <td>Esperar decisión</td>
+                </tr>
+            </table>
+
+            <div class="success-box">
+                <h4><span class="emoji">💡</span>Consejo</h4>
+                <p>Use los botones de acción rápida en el formulario para cambiar estados de manera eficiente sin tener que editar manualmente el campo.</p>
+            </div>
+        </div>
+
+        <!-- Sección 6: Proyectos -->
+        <div class="section" id="proyectos">
+            <h2><span class="emoji">🏗️</span>6. Gestión de Proyectos</h2>
+            
+            <h3>Estados Automáticos</h3>
+            <p>Los estados del proyecto se calculan automáticamente basándose en las fechas:</p>
+            <ul>
+                <li><span class="emoji">🟢</span><strong>Activo:</strong> Fecha actual entre inicio y fin</li>
+                <li><span class="emoji">🔵</span><strong>Programado:</strong> Fecha de inicio futura</li>
+                <li><span class="emoji">🔴</span><strong>Finalizado:</strong> Fecha de fin pasada</li>
+            </ul>
+
+            <div class="feature-box">
+                <h4>Componente de Ubicación</h4>
+                <p>El sistema incluye un mapa interactivo que permite:</p>
+                <ul>
+                    <li>Seleccionar ubicación exacta del proyecto</li>
+                    <li>Guardar coordenadas automáticamente</li>
+                    <li>Visualizar la ubicación en futuros reportes</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sección 7: Tareos -->
+        <div class="section" id="tareos">
+            <h2><span class="emoji">⏰</span>7. Tareos y Asistencias</h2>
+            
+            <h3>Reglas Importantes</h3>
+            <div class="danger-box">
+                <h4><span class="emoji">🚨</span>Validaciones Críticas</h4>
+                <ul>
+                    <li><strong>Un tareo por día:</strong> No se permiten tareos duplicados por proyecto/fecha</li>
+                    <li><strong>Horarios lógicos:</strong> La secuencia de horas debe ser coherente</li>
+                    <li><strong>Empleados únicos:</strong> Un empleado no puede tener múltiples asistencias en el mismo tareo</li>
+                </ul>
+            </div>
+
+            <h3>Estados de Asistencia</h3>
+            <table>
+                <tr>
+                    <th>Estado</th>
+                    <th>Icono</th>
+                    <th>Descripción</th>
+                    <th>Horarios</th>
+                </tr>
+                <tr>
+                    <td>Asistió</td>
+                    <td><span class="emoji">✅</span></td>
+                    <td>Empleado presente todo el día</td>
+                    <td>Requeridos</td>
+                </tr>
+                <tr>
+                    <td>Presente</td>
+                    <td><span class="emoji">✅</span></td>
+                    <td>Variante de asistencia completa</td>
+                    <td>Requeridos</td>
+                </tr>
+                <tr>
+                    <td>Llegó Tarde</td>
+                    <td><span class="emoji">⚠️</span></td>
+                    <td>Asistió pero fuera de horario</td>
+                    <td>Requeridos</td>
+                </tr>
+                <tr>
+                    <td>Faltó</td>
+                    <td><span class="emoji">❌</span></td>
+                    <td>No se presentó al trabajo</td>
+                    <td>No aplicable</td>
+                </tr>
+                <tr>
+                    <td>Justificado</td>
+                    <td><span class="emoji">📝</span></td>
+                    <td>Ausencia con justificación</td>
+                    <td>No aplicable</td>
+                </tr>
+            </table>
+
+            <h3>Generación Masiva de Asistencias</h3>
+            <p>Para facilitar el registro, el sistema permite generar múltiples asistencias:</p>
+            <div class="step-list">
+                <ol>
+                    <li>Desde un tareo, hacer clic en "Generar Asistencias"</li>
+                    <li>Seleccionar múltiples empleados</li>
+                    <li>Configurar parámetros comunes (turno, estado base)</li>
+                    <li>Generar todas las asistencias de una vez</li>
+                    <li>Editar individualmente si es necesario</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Sección 8: Roles -->
+        <div class="section" id="roles">
+            <h2><span class="emoji">🔐</span>8. Usuarios y Roles</h2>
+            
+            <h3>Sistema de Permisos</h3>
+            <p>El sistema utiliza un modelo granular de permisos por módulo:</p>
+            
+            <table>
+                <tr>
+                    <th>Permiso</th>
+                    <th>Descripción</th>
+                    <th>Impacto</th>
+                </tr>
+                <tr>
+                    <td>Ver</td>
+                    <td>Acceso de solo lectura</td>
+                    <td>Puede consultar información</td>
+                </tr>
+                <tr>
+                    <td>Ver Cualquiera</td>
+                    <td>Ver todos los registros</td>
+                    <td>Sin restricciones de visualización</td>
+                </tr>
+                <tr>
+                    <td>Crear</td>
+                    <td>Añadir nuevos registros</td>
+                    <td>Puede agregar información nueva</td>
+                </tr>
+                <tr>
+                    <td>Editar</td>
+                    <td>Modificar registros</td>
+                    <td>Puede actualizar información</td>
+                </tr>
+                <tr>
+                    <td>Eliminar</td>
+                    <td>Borrar registros propios</td>
+                    <td>Eliminar solo sus registros</td>
+                </tr>
+                <tr>
+                    <td>Eliminar Cualquiera</td>
+                    <td>Borrar cualquier registro</td>
+                    <td>Eliminar sin restricciones</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Sección 9: Reportes -->
+        <div class="section" id="reportes">
+            <h2><span class="emoji">📊</span>9. Reportes y Estadísticas</h2>
+            
+            <h3>Dashboard Automático</h3>
+            <p>El panel principal se actualiza automáticamente y muestra:</p>
+            <ul>
+                <li><strong>Estadísticas en tiempo real</strong> de todos los módulos</li>
+                <li><strong>Tendencias mensuales</strong> de registros y actividad</li>
+                <li><strong>Alertas visuales</strong> de proyectos próximos a vencer</li>
+                <li><strong>Resumen de asistencias</strong> del día actual</li>
+            </ul>
+
+            <div class="feature-box">
+                <h4>Exportación Disponible</h4>
+                <p>La mayoría de reportes se pueden exportar en los siguientes formatos:</p>
+                <ul>
+                    <li><strong>Excel (.xlsx):</strong> Para análisis detallado</li>
+                    <li><strong>PDF:</strong> Para reportes formales</li>
+                    <li><strong>CSV:</strong> Para integración con otros sistemas</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sección 10: Funciones Especiales -->
+        <div class="section" id="funciones">
+            <h2><span class="emoji">🔧</span>10. Funciones Especiales</h2>
+            
+            <h3><span class="emoji">🔍</span>Búsqueda Global</h3>
+            <p>Desde cualquier parte del sistema, la barra de búsqueda superior permite encontrar:</p>
+            <ul>
+                <li>Empleados por nombre o documento</li>
+                <li>Clientes por razón social</li>
+                <li>Proyectos por nombre</li>
+                <li>Cotizaciones por correlativo</li>
+            </ul>
+
+            <h3><span class="emoji">🌍</span>Integración con Mapas</h3>
+            <p>El componente de ubicación ofrece:</p>
+            <ul>
+                <li>Selección visual de coordenadas</li>
+                <li>Integración con servicios de mapas</li>
+                <li>Guardado automático de latitud/longitud</li>
+                <li>Visualización en reportes posteriores</li>
+            </ul>
+
+            <h3><span class="emoji">📱</span>Diseño Responsive</h3>
+            <p>El sistema se adapta perfectamente a:</p>
+            <ul>
+                <li><strong>Computadoras:</strong> Experiencia completa con todas las funciones</li>
+                <li><strong>Tablets:</strong> Navegación optimizada para pantallas medianas</li>
+                <li><strong>Móviles:</strong> Funciones esenciales accesibles en movimiento</li>
+            </ul>
+        </div>
+
+        <!-- Sección 11: Problemas -->
+        <div class="section" id="problemas">
+            <h2><span class="emoji">🆘</span>11. Solución de Problemas Comunes</h2>
+            
+            <h3>Problemas Frecuentes y Soluciones</h3>
+            
+            <div class="danger-box">
+                <h4>"No puedo crear un tareo"</h4>
+                <p><strong>Posibles causas:</strong></p>
+                <ul>
+                    <li>Ya existe un tareo para ese proyecto en esa fecha</li>
+                    <li>El proyecto no está activo</li>
+                    <li>Faltan permisos de creación</li>
+                </ul>
+                <p><strong>Solución:</strong> Verifique la fecha y proyecto, revise tareos existentes, contacte al administrador si persiste.</p>
+            </div>
+
+            <div class="warning-box">
+                <h4>"No aparece un empleado en la lista"</h4>
+                <p><strong>Posibles causas:</strong></p>
+                <ul>
+                    <li>El empleado fue dado de baja</li>
+                    <li>No tiene permisos para ver empleados</li>
+                    <li>Error en los filtros aplicados</li>
+                </ul>
+                <p><strong>Solución:</strong> Revise los filtros activos, verifique el estado del empleado, consulte con Recursos Humanos.</p>
+            </div>
+
+            <h3>Buenas Prácticas de Seguridad</h3>
+            <ul>
+                <li><span class="emoji">🔒</span><strong>Cambiar contraseñas regularmente</strong></li>
+                <li><span class="emoji">👤</span><strong>Asignar solo permisos necesarios</strong></li>
+                <li><span class="emoji">🚪</span><strong>Cerrar sesión al terminar</strong></li>
+                <li><span class="emoji">🤐</span><strong>No compartir información sensible</strong></li>
+            </ul>
+        </div>
+
+        <!-- Información de Contacto -->
+        <div class="contact-info">
+            <h3><span class="emoji">📞</span>Contacto de Soporte</h3>
+            <p>Para asistencia técnica:</p>
+            <ul>
+                <li><strong>Email:</strong> soporte@sat-industriales.pe</li>
+                <li><strong>Teléfono:</strong> (01) 234-5678</li>
+                <li><strong>Horario:</strong> Lunes a Viernes, 8:00 AM - 6:00 PM</li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Sistema SAT Industriales - Manual de Usuario v1.0</strong></p>
+            <p>Desarrollado para optimizar la gestión de proyectos y recursos humanos</p>
+            <p><em>Diciembre 2024 • Este manual se actualiza regularmente</em></p>
+        </div>
+    </div>
+</body>
+</html>
