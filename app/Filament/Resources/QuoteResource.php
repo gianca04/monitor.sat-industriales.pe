@@ -153,6 +153,39 @@ class QuoteResource extends Resource
                             ->placeholder('Seleccionar un empleado') // Placeholder
                             ->helperText('Selecciona el empleado responsable de esta cotización.') // Ayuda para el campo de empleado
                             ->reactive()
+                            
+                            // Botón para ver información del empleado
+                            ->suffixAction(
+                                Forms\Components\Actions\Action::make('view_employee')
+                                    ->icon('heroicon-o-eye')
+                                    ->tooltip('Ver información del cotizador')
+                                    ->color('info')
+                                    ->action(function (callable $get) {
+                                        $employeeId = $get('employee_id');
+                                        if (!$employeeId) {
+                                            Notification::make()
+                                                ->title('Selecciona un cotizador primero')
+                                                ->warning()
+                                                ->send();
+                                            return;
+                                        }
+                                    })
+                                    ->modalContent(function (callable $get) {
+                                        $employeeId = $get('employee_id');
+                                        if (!$employeeId) return null;
+                                        
+                                        $employee = Employee::with('user')->find($employeeId);
+                                        if (!$employee) return null;
+                                        
+                                        return view('filament.components.employee-info-modal', compact('employee'));
+                                    })
+                                    ->modalHeading('Información del Cotizador')
+                                    ->modalSubmitAction(false)
+                                    ->modalCancelActionLabel('Cerrar')
+                                    ->modalWidth('2xl')
+                                    ->visible(fn(callable $get) => !empty($get('employee_id')))
+                            )
+                            
                             ->afterStateUpdated(function (callable $get, callable $set) {
                                 $employeeId = $get('employee_id');
                                 if ($employeeId) {
@@ -228,6 +261,38 @@ class QuoteResource extends Resource
                             ->reactive() // Hace el campo reactivo
                             ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
                             ->helperText('Selecciona el cliente para esta cotización.') // Ayuda para el campo de cliente
+                            
+                            // Botón para ver información del cliente
+                            ->suffixAction(
+                                Forms\Components\Actions\Action::make('view_client')
+                                    ->icon('heroicon-o-eye')
+                                    ->tooltip('Ver información del cliente')
+                                    ->color('info')
+                                    ->action(function (callable $get) {
+                                        $clientId = $get('client_id');
+                                        if (!$clientId) {
+                                            Notification::make()
+                                                ->title('Selecciona un cliente primero')
+                                                ->warning()
+                                                ->send();
+                                            return;
+                                        }
+                                    })
+                                    ->modalContent(function (callable $get) {
+                                        $clientId = $get('client_id');
+                                        if (!$clientId) return null;
+                                        
+                                        $client = Client::with('subClients')->find($clientId);
+                                        if (!$client) return null;
+                                        
+                                        return view('filament.components.client-info-modal', compact('client'));
+                                    })
+                                    ->modalHeading('Información del Cliente')
+                                    ->modalSubmitAction(false)
+                                    ->modalCancelActionLabel('Cerrar')
+                                    ->modalWidth('2xl')
+                                    ->visible(fn(callable $get) => !empty($get('client_id')))
+                            )
                             
                             ->createOptionForm([
                                 Forms\Components\Section::make('Información principal')
@@ -415,6 +480,39 @@ class QuoteResource extends Resource
                             ->searchable()
                             ->disabled(fn($get) => !$get('client_id')) // Deshabilita si no hay cliente seleccionado
                             ->helperText('Selecciona el Sede para esta cotización.') // Ayuda para el campo 'Sede'
+                            
+                            // Botón para ver información de la sede
+                            ->suffixAction(
+                                Forms\Components\Actions\Action::make('view_sub_client')
+                                    ->icon('heroicon-o-eye')
+                                    ->tooltip('Ver información de la sede')
+                                    ->color('info')
+                                    ->action(function (callable $get) {
+                                        $subClientId = $get('sub_client_id');
+                                        if (!$subClientId) {
+                                            Notification::make()
+                                                ->title('Selecciona una sede primero')
+                                                ->warning()
+                                                ->send();
+                                            return;
+                                        }
+                                    })
+                                    ->modalContent(function (callable $get) {
+                                        $subClientId = $get('sub_client_id');
+                                        if (!$subClientId) return null;
+                                        
+                                        $subClient = SubClient::with('client')->find($subClientId);
+                                        if (!$subClient) return null;
+                                        
+                                        return view('filament.components.sub-client-info-modal', compact('subClient'));
+                                    })
+                                    ->modalHeading('Información de la Sede')
+                                    ->modalSubmitAction(false)
+                                    ->modalCancelActionLabel('Cerrar')
+                                    ->modalWidth('2xl')
+                                    ->visible(fn(callable $get) => !empty($get('sub_client_id')))
+                            )
+                            
                             ->createOptionForm([
                                 Forms\Components\Hidden::make('client_id')
                                     ->default(fn(callable $get) => $get('client_id')),
