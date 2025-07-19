@@ -13,10 +13,13 @@ class Evidence extends Model
     protected $fillable = [
         'name',
         'description',
-        
     ];
 
     public function photos() {
         return $this->hasMany(Photo::class);
+    }
+
+    public function quotes() {
+        return $this->belongsToMany(Quote::class, 'visits');
     }
 }

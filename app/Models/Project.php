@@ -87,6 +87,12 @@ class Project extends Model
         return $this->location['longitude'] ?? null;
     }
 
+    public function evidences()
+    {
+        return $this->belongsToMany(Evidence::class, 'work_reports')
+            ->withTimestamps();
+    }
+
     /**
      * Get the address from the location JSON field
      */

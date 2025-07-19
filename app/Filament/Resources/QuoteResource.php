@@ -48,85 +48,162 @@ class QuoteResource extends Resource
     {
         return $form
             ->schema([
+                Split::make([
+                    Forms\Components\Section::make('Acciones Rápidas de Estado')
+                        ->description('Cambia el estado de la cotización con un solo clic')
+                        ->schema([
+                            Forms\Components\Actions::make([
+                                Forms\Components\Actions\Action::make('set_in_progress')
+                                    ->label('En Proceso')
+                                    ->icon('heroicon-o-clock')
+                                    ->color('warning')
+                                    ->action(function (callable $set, callable $get) {
+                                        $set('status', 'in_progress');
+                                        $currentComment = $get('comment') ?? '';
+                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] Estado cambiado a: En Proceso";
+                                        $set('comment', trim($newComment));
+                                    })
+                                    ->visible(fn(callable $get) => $get('status') !== 'in_progress'),
 
-                Forms\Components\Section::make('Acciones Rápidas de Estado')
-                    ->description('Cambia el estado de la cotización con un solo clic')
-                    ->schema([
-                        Forms\Components\Actions::make([
-                            Forms\Components\Actions\Action::make('set_in_progress')
-                                ->label('En Proceso')
-                                ->icon('heroicon-o-clock')
-                                ->color('warning')
-                                ->action(function (callable $set, callable $get) {
-                                    $set('status', 'in_progress');
-                                    $currentComment = $get('comment') ?? '';
-                                    $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] Estado cambiado a: En Proceso";
-                                    $set('comment', trim($newComment));
-                                })
-                                ->visible(fn(callable $get) => $get('status') !== 'in_progress'),
+                                Forms\Components\Actions\Action::make('set_under_review')
+                                    ->label('En Revisión')
+                                    ->icon('heroicon-o-eye')
+                                    ->color('info')
+                                    ->action(function (callable $set, callable $get) {
+                                        $set('status', 'under_review');
+                                        $currentComment = $get('comment') ?? '';
+                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] Estado cambiado a: En Revisión";
+                                        $set('comment', trim($newComment));
+                                    })
+                                    ->visible(fn(callable $get) => $get('status') !== 'under_review'),
 
-                            Forms\Components\Actions\Action::make('set_under_review')
-                                ->label('En Revisión')
-                                ->icon('heroicon-o-eye')
-                                ->color('info')
-                                ->action(function (callable $set, callable $get) {
-                                    $set('status', 'under_review');
-                                    $currentComment = $get('comment') ?? '';
-                                    $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] Estado cambiado a: En Revisión";
-                                    $set('comment', trim($newComment));
-                                })
-                                ->visible(fn(callable $get) => $get('status') !== 'under_review'),
+                                Forms\Components\Actions\Action::make('set_sent')
+                                    ->label('Enviada')
+                                    ->icon('heroicon-o-paper-airplane')
+                                    ->color('primary')
+                                    ->action(function (callable $set, callable $get) {
+                                        $set('status', 'sent');
+                                        $currentComment = $get('comment') ?? '';
+                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] Estado cambiado a: Enviada";
+                                        $set('comment', trim($newComment));
+                                    })
+                                    ->visible(fn(callable $get) => $get('status') !== 'sent'),
 
-                            Forms\Components\Actions\Action::make('set_sent')
-                                ->label('Enviada')
-                                ->icon('heroicon-o-paper-airplane')
-                                ->color('primary')
-                                ->action(function (callable $set, callable $get) {
-                                    $set('status', 'sent');
-                                    $currentComment = $get('comment') ?? '';
-                                    $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] Estado cambiado a: Enviada";
-                                    $set('comment', trim($newComment));
-                                })
-                                ->visible(fn(callable $get) => $get('status') !== 'sent'),
+                                Forms\Components\Actions\Action::make('set_accepted')
+                                    ->label('Aceptada')
+                                    ->icon('heroicon-o-check-circle')
+                                    ->color('success')
+                                    ->requiresConfirmation()
+                                    ->modalHeading('Confirmar aceptación')
+                                    ->modalDescription('¿Estás seguro de que quieres marcar esta cotización como aceptada?')
+                                    ->modalSubmitActionLabel('Sí, aceptar')
+                                    ->action(function (callable $set, callable $get) {
+                                        $set('status', 'accepted');
+                                        $currentComment = $get('comment') ?? '';
+                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] ✅ Cotización ACEPTADA";
+                                        $set('comment', trim($newComment));
+                                    })
+                                    ->visible(fn(callable $get) => $get('status') !== 'accepted'),
 
-                            Forms\Components\Actions\Action::make('set_accepted')
-                                ->label('Aceptada')
-                                ->icon('heroicon-o-check-circle')
-                                ->color('success')
-                                ->requiresConfirmation()
-                                ->modalHeading('Confirmar aceptación')
-                                ->modalDescription('¿Estás seguro de que quieres marcar esta cotización como aceptada?')
-                                ->modalSubmitActionLabel('Sí, aceptar')
-                                ->action(function (callable $set, callable $get) {
-                                    $set('status', 'accepted');
-                                    $currentComment = $get('comment') ?? '';
-                                    $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] ✅ Cotización ACEPTADA";
-                                    $set('comment', trim($newComment));
-                                })
-                                ->visible(fn(callable $get) => $get('status') !== 'accepted'),
-
-                            Forms\Components\Actions\Action::make('set_rejected')
-                                ->label('Rechazada')
-                                ->icon('heroicon-o-x-circle')
-                                ->color('danger')
-                                ->requiresConfirmation()
-                                ->modalHeading('Confirmar rechazo')
-                                ->modalDescription('¿Estás seguro de que quieres marcar esta cotización como rechazada?')
-                                ->modalSubmitActionLabel('Sí, rechazar')
-                                ->action(function (callable $set, callable $get) {
-                                    $set('status', 'rejected');
-                                    $currentComment = $get('comment') ?? '';
-                                    $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] ❌ Cotización RECHAZADA";
-                                    $set('comment', trim($newComment));
-                                })
-                                ->visible(fn(callable $get) => $get('status') !== 'rejected'),
+                                Forms\Components\Actions\Action::make('set_rejected')
+                                    ->label('Rechazada')
+                                    ->icon('heroicon-o-x-circle')
+                                    ->color('danger')
+                                    ->requiresConfirmation()
+                                    ->modalHeading('Confirmar rechazo')
+                                    ->modalDescription('¿Estás seguro de que quieres marcar esta cotización como rechazada?')
+                                    ->modalSubmitActionLabel('Sí, rechazar')
+                                    ->action(function (callable $set, callable $get) {
+                                        $set('status', 'rejected');
+                                        $currentComment = $get('comment') ?? '';
+                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] ❌ Cotización RECHAZADA";
+                                        $set('comment', trim($newComment));
+                                    })
+                                    ->visible(fn(callable $get) => $get('status') !== 'rejected'),
+                            ])
+                                ->alignCenter()
+                                ->columns(3),
                         ])
-                            ->alignCenter()
-                            ->columns(3),
-                    ])
-                    ->collapsible()
-                    ->collapsed(false),
-                    
+                        ->collapsible()
+                        ->visibleOn(['edit', 'view']) // <-- Solo en editar y ver
+                        ->collapsed(false),
+                    Section::make([ // Sección de empleado
+                        Forms\Components\Select::make('employee_id')
+                            ->required()
+                            ->columns(2)
+                            ->prefixIcon('heroicon-m-user')
+                            ->label('Cotizador') // Título para el campo 'Empleado'
+                            ->options(
+                                function (callable $get) {
+                                    return Employee::query()
+                                        ->select('id', 'first_name', 'last_name', 'document_number')
+                                        ->when($get('search'), function ($query, $search) {
+                                            $query->where('first_name', 'like', "%{$search}%")
+                                                ->orWhere('last_name', 'like', "%{$search}%")
+                                                ->orWhere('document_number', 'like', "%{$search}%");
+                                        })
+                                        ->get()
+                                        ->mapWithKeys(function ($employee) {
+                                            return [$employee->id => $employee->full_name];
+                                        })
+                                        ->toArray();
+                                }
+                            )
+                            ->searchable() // Activa la búsqueda asincrónica
+                            ->placeholder('Seleccionar un empleado') // Placeholder
+                            ->helperText('Selecciona el empleado responsable de esta cotización.') // Ayuda para el campo de empleado
+                            ->reactive()
+                            ->afterStateUpdated(function (callable $get, callable $set) {
+                                $employeeId = $get('employee_id');
+                                if ($employeeId) {
+                                    // Cargar empleado con usuario relacionado
+                                    $employee = Employee::with('user')->find($employeeId);
+                                    if ($employee) {
+                                        $set('document_type', $employee->document_type);
+                                        $set('document_number', $employee->document_number);
+                                        $set('address', $employee->address);
+                                        $set('date_contract', $employee->date_contract);
+                                        // Setear datos del usuario si existe
+                                        $set('user_email', $employee->user?->email);
+                                        $set('user_is_active', $employee->user?->is_active ? 'Activo' : 'Inactivo');
+                                    } else {
+                                        $set('user_email', null);
+                                        $set('user_is_active', null);
+                                    }
+                                }
+                            }),
+
+                        Section::make('Información del Empleado') // Título de la sección
+                            ->collapsed() // Inicia la sección colapsada
+                            ->columns(2)
+                            ->schema([
+
+                                Forms\Components\TextInput::make('document_number')
+                                    ->label('Número de Documento') // Título para el campo 'Número de Documento'
+                                    ->disabled()
+                                    ->default(function (callable $get) {
+                                        return $get('document_number');
+                                    })
+                                    ->helperText('El número de documento del empleado.'), // Ayuda para el número de documento
+
+
+                                // Información del usuario relacionado
+                                Forms\Components\TextInput::make('user_email')
+                                    ->label('Correo Electrónico del Usuario')
+                                    ->disabled()
+                                    ->default(fn(callable $get) => $get('user_email'))
+                                    ->helperText('Correo electrónico asociado al usuario.'),
+
+                            ]),
+                    ]),
+
+
+                ])
+                    ->from('md')
+                    ->columnSpanFull(),
+
+
+
                 Split::make([
                     Section::make([
                         Forms\Components\Select::make('client_id')
@@ -151,6 +228,7 @@ class QuoteResource extends Resource
                             ->reactive() // Hace el campo reactivo
                             ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
                             ->helperText('Selecciona el cliente para esta cotización.') // Ayuda para el campo de cliente
+                            
                             ->createOptionForm([
                                 Forms\Components\Section::make('Información principal')
                                     ->description('Datos generales del cliente')
@@ -541,75 +619,6 @@ class QuoteResource extends Resource
                     ]),
 
 
-                Section::make([ // Sección de empleado
-                    Forms\Components\Select::make('employee_id')
-                        ->required()
-                        ->columns(2)
-                        ->prefixIcon('heroicon-m-user')
-                        ->label('Cotizador') // Título para el campo 'Empleado'
-                        ->options(
-                            function (callable $get) {
-                                return Employee::query()
-                                    ->select('id', 'first_name', 'last_name', 'document_number')
-                                    ->when($get('search'), function ($query, $search) {
-                                        $query->where('first_name', 'like', "%{$search}%")
-                                            ->orWhere('last_name', 'like', "%{$search}%")
-                                            ->orWhere('document_number', 'like', "%{$search}%");
-                                    })
-                                    ->get()
-                                    ->mapWithKeys(function ($employee) {
-                                        return [$employee->id => $employee->full_name];
-                                    })
-                                    ->toArray();
-                            }
-                        )
-                        ->searchable() // Activa la búsqueda asincrónica
-                        ->placeholder('Seleccionar un empleado') // Placeholder
-                        ->helperText('Selecciona el empleado responsable de esta cotización.') // Ayuda para el campo de empleado
-                        ->reactive()
-                        ->afterStateUpdated(function (callable $get, callable $set) {
-                            $employeeId = $get('employee_id');
-                            if ($employeeId) {
-                                // Cargar empleado con usuario relacionado
-                                $employee = Employee::with('user')->find($employeeId);
-                                if ($employee) {
-                                    $set('document_type', $employee->document_type);
-                                    $set('document_number', $employee->document_number);
-                                    $set('address', $employee->address);
-                                    $set('date_contract', $employee->date_contract);
-                                    // Setear datos del usuario si existe
-                                    $set('user_email', $employee->user?->email);
-                                    $set('user_is_active', $employee->user?->is_active ? 'Activo' : 'Inactivo');
-                                } else {
-                                    $set('user_email', null);
-                                    $set('user_is_active', null);
-                                }
-                            }
-                        }),
-
-                    Section::make('Información del Empleado') // Título de la sección
-                        ->collapsed() // Inicia la sección colapsada
-                        ->columns(2)
-                        ->schema([
-
-                            Forms\Components\TextInput::make('document_number')
-                                ->label('Número de Documento') // Título para el campo 'Número de Documento'
-                                ->disabled()
-                                ->default(function (callable $get) {
-                                    return $get('document_number');
-                                })
-                                ->helperText('El número de documento del empleado.'), // Ayuda para el número de documento
-
-
-                            // Información del usuario relacionado
-                            Forms\Components\TextInput::make('user_email')
-                                ->label('Correo Electrónico del Usuario')
-                                ->disabled()
-                                ->default(fn(callable $get) => $get('user_email'))
-                                ->helperText('Correo electrónico asociado al usuario.'),
-
-                        ]),
-                ]),
 
                 Tabs::make('MainTabs')
 
