@@ -1,5 +1,27 @@
 # 📚 Documentación del Usuario - Sistema SAT Industriales
 
+
+## 🚀 Instalación para Desarrollo Local
+
+Para instalar y ejecutar el sistema en tu entorno local, sigue estos pasos:
+
+1. **Requisitos**:
+   - Tener instalado **XAMPP** (incluye Apache y MySQL).
+   - Descargar o clonar este repositorio.
+2. **Base de Datos**:
+   - Abre **phpMyAdmin** desde el panel de XAMPP.
+   - Crea una nueva base de datos (`monitor_sat`).
+   - Importa el archivo de la base de datos proporcionado (`mosatindex_monitor.sql`) usando la herramienta de MySQL incluida en XAMPP.
+3. **Ubicación de Archivos**:
+   - Coloca toda la carpeta del proyecto dentro de la carpeta `htdocs` de XAMPP (por ejemplo: `C:/xampp/htdocs/monitor.sat-industriales.pe`).
+4. **Acceso al Sistema**:
+   - Inicia Apache y MySQL desde el panel de XAMPP.
+   - Ingresa en tu navegador a la siguiente URL:
+     
+     `http://localhost/monitor.sat-industriales.pe/public/dashboard`
+
+¡Listo! Ahora puedes comenzar a usar el sistema en tu entorno local.
+
 Este directorio contiene la documentación completa para el usuario final del Sistema de Monitoreo SAT Industriales.
 
 ## 📄 Documentos Disponibles
@@ -62,30 +84,8 @@ Este directorio contiene la documentación completa para el usuario final del Si
 1. **Tener a mano**: `GUIA_RAPIDA.md`
 2. **Consultar**: Manual completo para procedimientos complejos
 3. **Reportar**: Problemas no documentados al equipo de soporte
-
-
-## 🚀 Instalación para Desarrollo Local
-
-Para instalar y ejecutar el sistema en tu entorno local, sigue estos pasos:
-
-1. **Requisitos**:
-   - Tener instalado **XAMPP** (incluye Apache y MySQL).
-   - Descargar o clonar este repositorio.
-2. **Base de Datos**:
-   - Abre **phpMyAdmin** desde el panel de XAMPP.
-   - Crea una nueva base de datos (por ejemplo: `monitor_sat`).
-   - Importa el archivo de la base de datos proporcionado (`database/database.sqlite` o el dump SQL si está disponible) usando la herramienta de MySQL incluida en XAMPP.
-3. **Ubicación de Archivos**:
-   - Coloca toda la carpeta del proyecto dentro de la carpeta `htdocs` de XAMPP (por ejemplo: `C:/xampp/htdocs/monitor.sat-industriales.pe`).
-4. **Acceso al Sistema**:
-   - Inicia Apache y MySQL desde el panel de XAMPP.
-   - Ingresa en tu navegador a la siguiente URL:
-     
-     `http://localhost/monitor.sat-industriales.pe/public/dashboard`
-
-¡Listo! Ahora puedes comenzar a usar el sistema en tu entorno local.
-
 ---
+
 ## 📋 Módulos Documentados
 
 ### ✅ Gestión de Clientes
