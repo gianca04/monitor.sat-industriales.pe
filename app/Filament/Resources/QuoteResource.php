@@ -153,7 +153,7 @@ class QuoteResource extends Resource
                             ->placeholder('Seleccionar un empleado') // Placeholder
                             ->helperText('Selecciona el empleado responsable de esta cotización.') // Ayuda para el campo de empleado
                             ->reactive()
-                            
+
                             // Botón para ver información del empleado
                             ->suffixAction(
                                 Forms\Components\Actions\Action::make('view_employee')
@@ -173,10 +173,10 @@ class QuoteResource extends Resource
                                     ->modalContent(function (callable $get) {
                                         $employeeId = $get('employee_id');
                                         if (!$employeeId) return null;
-                                        
+
                                         $employee = Employee::with('user')->find($employeeId);
                                         if (!$employee) return null;
-                                        
+
                                         return view('filament.components.employee-info-modal', compact('employee'));
                                     })
                                     ->modalHeading('Información del Cotizador')
@@ -185,7 +185,7 @@ class QuoteResource extends Resource
                                     ->modalWidth('2xl')
                                     ->visible(fn(callable $get) => !empty($get('employee_id')))
                             )
-                            
+
                             ->afterStateUpdated(function (callable $get, callable $set) {
                                 $employeeId = $get('employee_id');
                                 if ($employeeId) {
@@ -206,7 +206,7 @@ class QuoteResource extends Resource
                                 }
                             }),
 
-                        Section::make('Información del Empleado') // Título de la sección
+                        /*Section::make('Información del Empleado') // Título de la sección
                             ->collapsed() // Inicia la sección colapsada
                             ->columns(2)
                             ->schema([
@@ -228,8 +228,9 @@ class QuoteResource extends Resource
                                     ->helperText('Correo electrónico asociado al usuario.'),
 
                             ]),
-                    ]),
-
+                */
+                            ]),
+                
 
                 ])
                     ->from('md')
@@ -261,7 +262,7 @@ class QuoteResource extends Resource
                             ->reactive() // Hace el campo reactivo
                             ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
                             ->helperText('Selecciona el cliente para esta cotización.') // Ayuda para el campo de cliente
-                            
+
                             // Botón para ver información del cliente
                             ->suffixAction(
                                 Forms\Components\Actions\Action::make('view_client')
@@ -281,10 +282,10 @@ class QuoteResource extends Resource
                                     ->modalContent(function (callable $get) {
                                         $clientId = $get('client_id');
                                         if (!$clientId) return null;
-                                        
+
                                         $client = Client::with('subClients')->find($clientId);
                                         if (!$client) return null;
-                                        
+
                                         return view('filament.components.client-info-modal', compact('client'));
                                     })
                                     ->modalHeading('Información del Cliente')
@@ -293,7 +294,7 @@ class QuoteResource extends Resource
                                     ->modalWidth('2xl')
                                     ->visible(fn(callable $get) => !empty($get('client_id')))
                             )
-                            
+
                             ->createOptionForm([
                                 Forms\Components\Section::make('Información principal')
                                     ->description('Datos generales del cliente')
@@ -405,7 +406,7 @@ class QuoteResource extends Resource
                                 }
                             }),
 
-                        Section::make('Información del Cliente') // Título de la sección
+                        /*Section::make('Información del Cliente') // Título de la sección
                             ->label('Información del Cliente') // Título de la sección
                             ->collapsed() // Inicia la sección colapsada
                             ->schema([
@@ -457,8 +458,9 @@ class QuoteResource extends Resource
                                     ->columnSpan(1)
                                     ->prefixIcon('heroicon-o-envelope'),
                             ]),
-
+*/
                     ]),
+
                     Section::make([
                         Forms\Components\Select::make('sub_client_id')
 
@@ -480,7 +482,7 @@ class QuoteResource extends Resource
                             ->searchable()
                             ->disabled(fn($get) => !$get('client_id')) // Deshabilita si no hay cliente seleccionado
                             ->helperText('Selecciona el Sede para esta cotización.') // Ayuda para el campo 'Sede'
-                            
+
                             // Botón para ver información de la sede
                             ->suffixAction(
                                 Forms\Components\Actions\Action::make('view_sub_client')
@@ -500,10 +502,10 @@ class QuoteResource extends Resource
                                     ->modalContent(function (callable $get) {
                                         $subClientId = $get('sub_client_id');
                                         if (!$subClientId) return null;
-                                        
+
                                         $subClient = SubClient::with('client')->find($subClientId);
                                         if (!$subClient) return null;
-                                        
+
                                         return view('filament.components.sub-client-info-modal', compact('subClient'));
                                     })
                                     ->modalHeading('Información de la Sede')
@@ -512,7 +514,7 @@ class QuoteResource extends Resource
                                     ->modalWidth('2xl')
                                     ->visible(fn(callable $get) => !empty($get('sub_client_id')))
                             )
-                            
+
                             ->createOptionForm([
                                 Forms\Components\Hidden::make('client_id')
                                     ->default(fn(callable $get) => $get('client_id')),
@@ -587,7 +589,7 @@ class QuoteResource extends Resource
                                 }
                             }),
 
-                        Section::make('Información de sede') // Título de la sección
+                        /*Section::make('Información de sede') // Título de la sección
                             ->collapsed() // Inicia la sección colapsada
                             ->schema([
                                 Forms\Components\TextInput::make('name')
@@ -608,7 +610,7 @@ class QuoteResource extends Resource
                                     })
                                     ->helperText('La ubicación del Sede.') // Ayuda para el campo 'Location'
                             ]),
-
+*/
                     ]),
 
                 ])
