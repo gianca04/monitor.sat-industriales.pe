@@ -32,4 +32,8 @@ class WorkReport extends Model
     {
         return $this->belongsTo(Project::class);
     }
+    public function photos()
+    {
+        return $this->hasMany(Photo::class, 'work_report_id');
+    }
 }

@@ -115,7 +115,7 @@ class WorkReportResource extends Resource
                     Section::make([
                         Forms\Components\Select::make('project_id')
                             ->prefixIcon('heroicon-m-briefcase')
-                            ->label('Cliente') // Título para el campo 'Cliente'
+                            ->label('Proyecto') // Título para el campo 'Proyecto'
                             ->options(
                                 function (callable $get) {
                                     return Project::query()
@@ -134,19 +134,19 @@ class WorkReportResource extends Resource
                             ->searchable() // Activa la búsqueda asincrónica
                             ->reactive() // Hace el campo reactivo
                             ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
-                            ->helperText('Selecciona el cliente para esta cotización.') // Ayuda para el campo de cliente
+                            ->helperText('Selecciona un proyecto.') // Ayuda para el campo de cliente
 
-                            // Botón para ver información del cliente
+                            // Botón para ver información del proyecto
                             ->suffixAction(
                                 Forms\Components\Actions\Action::make('view_client')
                                     ->icon('heroicon-o-eye')
-                                    ->tooltip('Ver información del cliente')
+                                    ->tooltip('Ver información del proyecto')
                                     ->color('info')
                                     ->action(function (callable $get) {
                                         $projectId = $get('project_id');
                                         if (!$projectId) {
                                             Notification::make()
-                                                ->title('Selecciona un cliente primero')
+                                                ->title('Selecciona un proyecto primero')
                                                 ->warning()
                                                 ->send();
                                             return;
@@ -263,13 +263,10 @@ class WorkReportResource extends Resource
                                 }
                             }),
                     ]),
+                ])->from('md')
+                    ->grow(false)
+                    ->columnSpanFull(),
 
-
-
-
-
-                ])
-                ->grow(false),
                 Section::make('Información del reporte')
                     ->columns(2)
                     ->schema([
@@ -323,6 +320,7 @@ class WorkReportResource extends Resource
     {
         return [
             //
+            RelationManagers\PhotosRelationManager::class,
         ];
     }
 

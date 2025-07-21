@@ -5,24 +5,24 @@
             <div class="flex items-center space-x-2">
                 <x-heroicon-o-building-office-2 class="w-5 h-5 text-gray-500" />
                 <div>
-                    <p class="text-sm font-medium text-gray-700">Razón Social</p>
-                    <p class="text-sm text-gray-900">{{ $project->business_name }}</p>
+                    <p class="text-sm font-medium text-gray-700">Nombre del proyecot</p>
+                    <p class="text-sm text-gray-900">{{ $project->name }}</p>
                 </div>
             </div>
             
             <div class="flex items-center space-x-2">
                 <x-heroicon-o-identification class="w-5 h-5 text-gray-500" />
                 <div>
-                    <p class="text-sm font-medium text-gray-700">Documento</p>
-                    <p class="text-sm text-gray-900">{{ $project->document_type }} - {{ $project->document_number }}</p>
+                    <p class="text-sm font-medium text-gray-700">Fecha de inicio del proyecto</p>
+                    <p class="text-sm text-gray-900">{{ $project->start_date }}</p>
                 </div>
             </div>
             
             <div class="flex items-center space-x-2">
                 <x-heroicon-o-user-group class="w-5 h-5 text-gray-500" />
                 <div>
-                    <p class="text-sm font-medium text-gray-700">Tipo de Persona</p>
-                    <p class="text-sm text-gray-900">{{ $project->person_type }}</p>
+                    <p class="text-sm font-medium text-gray-700">Fecha de finalización del proyecto</p>
+                    <p class="text-sm text-gray-900">{{ $project->end_date }}</p>
                 </div>
             </div>
         </div>
