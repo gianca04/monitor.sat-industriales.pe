@@ -23,6 +23,4 @@ class Visit extends Model
     {
         return $this->belongsTo(Employee::class);
     }
-
-    
 }

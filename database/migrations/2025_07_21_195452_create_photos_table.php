@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('photos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('evidence_id'); 
-            $table->foreign('evidence_id')
+            $table->unsignedBigInteger('work_report_id'); 
+            $table->foreign('work_report_id')
             ->references('id') 
-            ->on('evidences')  
+            ->on('work_reports')  
             ->onDelete('cascade');
                   $table->string('photo_path');
             $table->string('descripcion')->nullable();
