@@ -26,7 +26,7 @@ class ProjectResource extends Resource
 
     protected static ?string $model = Project::class;
 
-            protected static ?string $navigationGroup = 'Control de operaciones';
+    protected static ?string $navigationGroup = 'Control de operaciones';
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
 
     public static function form(Form $form): Form
@@ -114,53 +114,53 @@ class ProjectResource extends Resource
                     ->label('Nombre del Proyecto')
                     ->searchable()
                     ->sortable(),
-                    
+
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Estado')
                     ->formatStateUsing(function ($record) {
                         return $record->is_active ? 'Activo' : 'Inactivo';
                     })
                     ->colors([
-                        'success' => fn ($state) => $state === 'Activo',
-                        'danger' => fn ($state) => $state === 'Inactivo',
+                        'success' => fn($state) => $state === 'Activo',
+                        'danger' => fn($state) => $state === 'Inactivo',
                     ]),
-                    
+
                 Tables\Columns\TextColumn::make('quote.correlative')
                     ->label('Cotización')
                     ->searchable()
                     ->sortable()
-                    ->formatStateUsing(fn ($record) => $record->quote ? "{$record->quote->correlative} - {$record->quote->project_description}" : 'Sin cotización'),
-                    
+                    ->formatStateUsing(fn($record) => $record->quote ? "{$record->quote->correlative} - {$record->quote->project_description}" : 'Sin cotización'),
+
                 Tables\Columns\TextColumn::make('start_date')
                     ->label('Fecha Inicio')
                     ->date('d/m/Y')
                     ->sortable(),
-                    
+
                 Tables\Columns\TextColumn::make('end_date')
                     ->label('Fecha Fin')
                     ->date('d/m/Y')
                     ->sortable(),
-                    
+
                 Tables\Columns\TextColumn::make('location_address')
                     ->label('Ubicación')
                     ->searchable()
                     ->formatStateUsing(function ($record) {
                         return $record->location_address ?? 'Sin ubicación';
                     }),
-                    
+
                 Tables\Columns\TextColumn::make('coordinates')
                     ->label('Coordenadas')
                     ->formatStateUsing(function ($record) {
                         return $record->coordinates ?? 'Sin coordenadas';
                     })
                     ->toggleable(),
-                    
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                    
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Actualizado')
                     ->dateTime('d/m/Y H:i')
@@ -178,18 +178,18 @@ class ProjectResource extends Resource
                         if (!isset($data['value'])) {
                             return $query;
                         }
-                        
+
                         $now = now()->toDateString();
-                        
-                        return match($data['value']) {
+
+                        return match ($data['value']) {
                             'active' => $query->where('start_date', '<=', $now)
-                                             ->where('end_date', '>=', $now),
+                                ->where('end_date', '>=', $now),
                             'inactive' => $query->where('end_date', '<', $now)
-                                               ->orWhere('start_date', '>', $now),
+                                ->orWhere('start_date', '>', $now),
                             default => $query,
                         };
                     }),
-                    
+
                 Tables\Filters\Filter::make('date_range')
                     ->form([
                         Forms\Components\DatePicker::make('start_date')
@@ -201,11 +201,11 @@ class ProjectResource extends Resource
                         return $query
                             ->when(
                                 $data['start_date'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('start_date', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('start_date', '>=', $date),
                             )
                             ->when(
                                 $data['end_date'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('end_date', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('end_date', '<=', $date),
                             );
                     }),
             ])

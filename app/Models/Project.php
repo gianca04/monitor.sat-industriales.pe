@@ -89,7 +89,7 @@ class Project extends Model
 
     public function Work_reports()
     {
-        return $this->belongsToMany(Work_report::class, 'work_report_project')
+        return $this->belongsToMany(WorkReport::class, 'work_report_project')
             ->withTimestamps();
     }
 
