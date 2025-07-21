@@ -8,19 +8,69 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\Action;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Photo;
+use Filament\Support\Enums\MaxWidth;
+use Illuminate\Support\HtmlString;
 
 class PhotosRelationManager extends RelationManager
 {
-    protected static string $relationship = 'Photos';
+    protected static string $relationship = 'photos';
+    protected static ?string $title = 'Evidencias Fotográficas';
+    protected static ?string $modelLabel = 'Evidencia';
+    protected static ?string $pluralModelLabel = 'Evidencias';
+    protected static ?string $recordTitleAttribute = 'descripcion';
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('descripcion')
-                    ->required()
-                    ->maxLength(255),
+                Forms\Components\Section::make('Información de la Evidencia')
+                    ->description('Sube las fotografías que evidencian el trabajo realizado')
+                    ->icon('heroicon-o-camera')
+                    ->schema([
+                        Forms\Components\FileUpload::make('photo_path')
+                            ->label('Fotografía')
+                            ->image()
+                            ->required()
+                            ->directory('work-reports/photos')
+                            ->visibility('public')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(5120) // 5MB
+                            ->imageResizeMode('cover')
+                            ->imageCropAspectRatio(null)
+                            ->imageResizeTargetWidth('1920')
+                            ->imageResizeTargetHeight('1080')
+                            
+                            ->imagePreviewHeight('200')
+                            ->loadingIndicatorPosition('right')
+                            ->panelAspectRatio('16:9')
+                            ->panelLayout('integrated')
+                            ->removeUploadedFileButtonPosition('right')
+                            ->uploadButtonPosition('left')
+                            ->uploadProgressIndicatorPosition('right')
+                            ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 5MB'),
+
+                        Forms\Components\Textarea::make('descripcion')
+                            ->label('Descripción de la evidencia')
+                            ->required()
+                            ->maxLength(500)
+                            ->rows(3)
+                            ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
+                            ->helperText('Máximo 500 caracteres'),
+
+                        Forms\Components\DateTimePicker::make('taken_at')
+                            ->label('Fecha y hora de captura')
+                            ->default(now())
+                            ->required()
+                            ->native(false)
+                            ->displayFormat('d/m/Y H:i')
+                            ->helperText('Fecha y hora en que se tomó la fotografía'),
+                    ])
+                    ->columns(1)
+                    ->collapsible(),
             ]);
     }
 
@@ -29,22 +79,162 @@ class PhotosRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('descripcion')
             ->columns([
-                Tables\Columns\TextColumn::make('descripcion'),
+                Tables\Columns\ImageColumn::make('photo_path')
+                    ->label('Evidencia')
+                    ->height(80)
+                    ->width(120)
+                    ->visibility('private')
+                    ->checkFileExistence(false)
+                    ->defaultImageUrl(url('/images/no-image.png'))
+                    ->extraAttributes(['class' => 'rounded-lg shadow-sm']),
+
+                Tables\Columns\TextColumn::make('descripcion')
+                    ->label('Descripción')
+                    ->limit(50)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= 50) {
+                            return null;
+                        }
+                        return $state;
+                    })
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('taken_at')
+                    ->label('Fecha de captura')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Subida')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('recent')
+                    ->label('Últimas 24 horas')
+                    ->query(fn (Builder $query): Builder => $query->where('taken_at', '>=', now()->subDay())),
+
+                Tables\Filters\Filter::make('today')
+                    ->label('Hoy')
+                    ->query(fn (Builder $query): Builder => $query->whereDate('taken_at', today())),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->label('Subir Evidencia')
+                    ->icon('heroicon-o-camera')
+                    ->modalWidth(MaxWidth::Large)
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['work_report_id'] = $this->ownerRecord->id;
+                        return $data;
+                    })
+                    ->successNotification(
+                        Notification::make()
+                            ->success()
+                            ->title('Evidencia subida')
+                            ->body('La fotografía se ha registrado correctamente.')
+                    ),
+
+                Action::make('generate_report')
+                    ->label('Generar Reporte')
+                    ->icon('heroicon-o-document-text')
+                    ->color('success')
+                    ->action(function () {
+                        return redirect()->route('work-report.pdf', $this->ownerRecord->id);
+                    })
+                    ->visible(fn () => $this->ownerRecord->photos()->count() > 0)
+                    ->tooltip('Generar reporte PDF del trabajo realizado'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('Ver')
+                    ->icon('heroicon-o-eye')
+                    ->modalContent(function (Photo $record): HtmlString {
+                        $imageUrl = Storage::url($record->photo_path);
+                        return new HtmlString("
+                            <div class='text-center space-y-4'>
+                                <img src='{$imageUrl}' alt='Evidencia' class='max-w-full h-auto rounded-lg shadow-lg mx-auto' style='max-height: 70vh;'>
+                                <div class='text-sm text-gray-600'>
+                                    <p><strong>Descripción:</strong> {$record->descripcion}</p>
+                                    <p><strong>Fecha de captura:</strong> {$record->taken_at->format('d/m/Y H:i')}</p>
+                                </div>
+                            </div>
+                        ");
+                    })
+                    ->modalWidth(MaxWidth::FourExtraLarge)
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Cerrar'),
+
+                Tables\Actions\EditAction::make()
+                    ->label('Editar')
+                    ->icon('heroicon-o-pencil')
+                    ->modalWidth(MaxWidth::Large),
+
+                Tables\Actions\DeleteAction::make()
+                    ->label('Eliminar')
+                    ->icon('heroicon-o-trash')
+                    ->requiresConfirmation()
+                    ->modalHeading('Eliminar evidencia')
+                    ->modalDescription('¿Estás seguro de que deseas eliminar esta evidencia? Esta acción no se puede deshacer.')
+                    ->successNotification(
+                        Notification::make()
+                            ->success()
+                            ->title('Evidencia eliminada')
+                            ->body('La fotografía se ha eliminado correctamente.')
+                    ),
+
+                Action::make('download')
+                    ->label('Descargar')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('gray')
+                    ->action(function (Photo $record) {
+                        if (!Storage::exists($record->photo_path)) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Error')
+                                ->body('El archivo no existe.')
+                                ->send();
+                            return;
+                        }
+
+                        return Storage::download($record->photo_path, 'evidencia_' . $record->id . '.jpg');
+                    })
+                    ->tooltip('Descargar imagen original'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->requiresConfirmation()
+                        ->modalHeading('Eliminar evidencias seleccionadas')
+                        ->modalDescription('¿Estás seguro de que deseas eliminar las evidencias seleccionadas? Esta acción no se puede deshacer.'),
+
+                    Action::make('bulk_download')
+                        ->label('Descargar seleccionadas')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('gray')
+                        ->action(function ($records) {
+                            // Aquí podrías implementar la descarga en ZIP
+                            Notification::make()
+                                ->info()
+                                ->title('Funcionalidad en desarrollo')
+                                ->body('La descarga masiva estará disponible próximamente.')
+                                ->send();
+                        }),
                 ]),
+            ])
+            ->defaultSort('taken_at', 'desc')
+            ->poll('30s') // Actualizar cada 30 segundos
+            ->emptyStateHeading('Sin evidencias')
+            ->emptyStateDescription('No hay fotografías registradas para este reporte de trabajo.')
+            ->emptyStateIcon('heroicon-o-camera')
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()
+                    ->label('Subir primera evidencia')
+                    ->icon('heroicon-o-camera')
+                    ->modalWidth(MaxWidth::Large),
             ]);
     }
 }

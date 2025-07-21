@@ -286,34 +286,74 @@ class WorkReportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('employee_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('employee.first_name')
+                    ->label('Supervisor')
+                    ->formatStateUsing(fn ($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
+                    ->searchable(['first_name', 'last_name'])
                     ->sortable(),
-                Tables\Columns\TextColumn::make('project_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+
+                Tables\Columns\TextColumn::make('project.name')
+                    ->label('Proyecto')
+                    ->searchable()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->limit(30),
+
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nombre del Reporte')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('photos_count')
+                    ->label('Evidencias')
+                    ->counts('photos')
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        $state == 0 => 'danger',
+                        $state < 5 => 'warning',
+                        default => 'success',
+                    }),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Actualizado')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('employee')
+                    ->relationship('employee', 'first_name')
+                    ->searchable()
+                    ->preload(),
+
+                Tables\Filters\SelectFilter::make('project')
+                    ->relationship('project', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                
+                Tables\Actions\Action::make('generate_report')
+                    ->label('Reporte PDF')
+                    ->icon('heroicon-o-document-text')
+                    ->color('success')
+                    ->url(fn (WorkReport $record): string => route('work-report.pdf', $record))
+                    ->openUrlInNewTab()
+                    ->visible(fn (WorkReport $record): bool => $record->photos()->count() > 0)
+                    ->tooltip('Generar reporte PDF con evidencias'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

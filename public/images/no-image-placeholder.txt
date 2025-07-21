@@ -1,0 +1,3 @@
+<!-- Placeholder for no-image.png -->
+<!-- This file serves as a reference for the missing image placeholder -->
+<!-- You should place an actual no-image.png file in the public/images/ directory -->
