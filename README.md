@@ -1,6 +1,5 @@
 # 📚 Documentación del Usuario - Sistema SAT Industriales
 
-
 ## 🚀 Instalación para Desarrollo Local
 
 Para instalar y ejecutar el sistema en tu entorno local, sigue estos pasos:
@@ -20,8 +19,12 @@ Para instalar y ejecutar el sistema en tu entorno local, sigue estos pasos:
      
      `http://localhost/monitor.sat-industriales.pe/public/dashboard`
 
-¡Listo! Ahora puedes comenzar a usar el sistema en tu entorno local.
+5. **Credenciales de Acceso**:
+   - Para iniciar sesión puedes usar la siguiente cuenta de administrador:
+     - **Usuario:** `admin@gmail.com`
+     - **Contraseña:** `admin`
 
+¡Listo! Ahora puedes comenzar a usar el sistema en tu entorno local.
 Este directorio contiene la documentación completa para el usuario final del Sistema de Monitoreo SAT Industriales.
 
 ## 📄 Documentos Disponibles

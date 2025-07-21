@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\QuoteResource\Pages;
 use App\Filament\Resources\QuoteResource\RelationManagers;
+use App\Filament\Resources\QuoteResource\RelationManagers\VisitsRelationManager;
 use App\Forms\Components\ubicacion;
 use App\Models\Client;
 use Filament\Support\View\Components\Modal;
@@ -971,7 +972,7 @@ class QuoteResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            VisitsRelationManager::class,
         ];
     }
 
