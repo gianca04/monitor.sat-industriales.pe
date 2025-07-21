@@ -87,9 +87,9 @@ class Project extends Model
         return $this->location['longitude'] ?? null;
     }
 
-    public function evidences()
+    public function Work_reports()
     {
-        return $this->belongsToMany(Evidence::class, 'work_reports')
+        return $this->belongsToMany(Work_report::class, 'work_report_project')
             ->withTimestamps();
     }
 

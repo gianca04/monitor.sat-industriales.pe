@@ -37,9 +37,6 @@ class Quote extends Model
         'pe_pt' => 'string',  // 'pe_pt' es un enum, lo tratamos como string
     ];
 
-    public function evidences(){
-        return $this->belongsToMany(Evidence::class, 'visits');
-    }
 
     /**
      * Relación con el modelo Employee
