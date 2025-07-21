@@ -11,15 +11,25 @@ class Work_report extends Model
     protected $table = 'work_reports';
 
     protected $fillable = [
+        'employee_id',
+        'project_id',
         'name',
         'description',
     ];
 
-    public function photos() {
-        return $this->hasMany(Photo::class);
+    /**
+     * Relación: Un reporte de trabajo pertenece a un empleado.
+     */
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
     }
 
-    public function quotes() {
-        return $this->belongsToMany(Quote::class, 'visits');
+    /**
+     * Relación: Un reporte de trabajo pertenece a un proyecto.
+     */
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 }
