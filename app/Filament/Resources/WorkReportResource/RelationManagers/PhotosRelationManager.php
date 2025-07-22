@@ -13,6 +13,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Photo;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Tables\Columns\Layout\Stack;
 use Illuminate\Support\HtmlString;
 
 class PhotosRelationManager extends RelationManager
@@ -27,30 +28,18 @@ class PhotosRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Información de la Evidencia')
-                    ->description('Sube las fotografías que evidencian el trabajo realizado')
-                    ->icon('heroicon-o-camera')
+                Forms\Components\Repeater::make('photos')
+                    ->label('Evidencias fotográficas')
                     ->schema([
                         Forms\Components\FileUpload::make('photo_path')
                             ->label('Fotografía')
                             ->image()
                             ->required()
                             ->directory('work-reports/photos')
-                            ->visibility('public')
+                            ->visibility('private')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->maxSize(5120) // 5MB
-                            ->imageResizeMode('cover')
-                            ->imageCropAspectRatio(null)
-                            ->imageResizeTargetWidth('1920')
-                            ->imageResizeTargetHeight('1080')
-                            
-                            ->imagePreviewHeight('200')
-                            ->loadingIndicatorPosition('right')
                             ->panelAspectRatio('16:9')
-                            ->panelLayout('integrated')
-                            ->removeUploadedFileButtonPosition('right')
-                            ->uploadButtonPosition('left')
-                            ->uploadProgressIndicatorPosition('right')
                             ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 5MB'),
 
                         Forms\Components\Textarea::make('descripcion')
@@ -69,7 +58,6 @@ class PhotosRelationManager extends RelationManager
                             ->displayFormat('d/m/Y H:i')
                             ->helperText('Fecha y hora en que se tomó la fotografía'),
                     ])
-                    ->columns(1)
                     ->collapsible(),
             ]);
     }
@@ -79,48 +67,56 @@ class PhotosRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('descripcion')
             ->columns([
-                Tables\Columns\ImageColumn::make('photo_path')
-                    ->label('Evidencia')
-                    ->height(80)
-                    ->width(120)
-                    ->visibility('private')
-                    ->checkFileExistence(false)
-                    ->defaultImageUrl(url('/images/no-image.png'))
-                    ->extraAttributes(['class' => 'rounded-lg shadow-sm']),
+                Stack::make([
+                    // Columns
+                    Tables\Columns\ImageColumn::make('photo_path')
+                        ->label('Evidencia')
+                        ->height(80)
+                        ->width(120)
+                        ->visibility('private')
+                        ->checkFileExistence(false)
+                        ->defaultImageUrl(url('/images/no-image.png'))
+                        ->extraAttributes(['class' => 'rounded-lg shadow-sm']),
 
-                Tables\Columns\TextColumn::make('descripcion')
-                    ->label('Descripción')
-                    ->limit(50)
-                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
-                        $state = $column->getState();
-                        if (strlen($state) <= 50) {
-                            return null;
-                        }
-                        return $state;
-                    })
-                    ->searchable()
-                    ->sortable(),
+                    Tables\Columns\TextColumn::make('descripcion')
+                        ->label('Descripción')
+                        ->limit(50)
+                        ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                            $state = $column->getState();
+                            if (strlen($state) <= 50) {
+                                return null;
+                            }
+                            return $state;
+                        })
+                        ->searchable()
+                        ->sortable(),
 
-                Tables\Columns\TextColumn::make('taken_at')
-                    ->label('Fecha de captura')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(),
+                    Tables\Columns\TextColumn::make('taken_at')
+                        ->label('Fecha de captura')
+                        ->dateTime('d/m/Y H:i')
+                        ->sortable()
+                        ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Subida')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    Tables\Columns\TextColumn::make('created_at')
+                        ->label('Subida')
+                        ->dateTime('d/m/Y H:i')
+                        ->sortable()
+                        ->toggleable(isToggledHiddenByDefault: true),
+
+                ]),
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->filters([
                 Tables\Filters\Filter::make('recent')
                     ->label('Últimas 24 horas')
-                    ->query(fn (Builder $query): Builder => $query->where('taken_at', '>=', now()->subDay())),
+                    ->query(fn(Builder $query): Builder => $query->where('taken_at', '>=', now()->subDay())),
 
                 Tables\Filters\Filter::make('today')
                     ->label('Hoy')
-                    ->query(fn (Builder $query): Builder => $query->whereDate('taken_at', today())),
+                    ->query(fn(Builder $query): Builder => $query->whereDate('taken_at', today())),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
@@ -137,15 +133,13 @@ class PhotosRelationManager extends RelationManager
                             ->title('Evidencia subida')
                             ->body('La fotografía se ha registrado correctamente.')
                     ),
-
                 Action::make('generate_report')
                     ->label('Generar Reporte')
                     ->icon('heroicon-o-document-text')
                     ->color('success')
-                    ->action(function () {
-                        return redirect()->route('work-report.pdf', $this->ownerRecord->id);
-                    })
-                    ->visible(fn () => $this->ownerRecord->photos()->count() > 0)
+                    ->url(fn () => route('work-report.pdf', $this->ownerRecord->id))
+                    ->openUrlInNewTab()
+                    ->visible(fn() => $this->ownerRecord->photos()->count() > 0)
                     ->tooltip('Generar reporte PDF del trabajo realizado'),
             ])
             ->actions([

@@ -1,9 +1,12 @@
 <?php
+
+use App\Http\Controllers\Api\PhotoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EvidenceController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +15,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/status', function () {
     return response()->json(['status' => 'OK', 'message' => 'El sistema está funcionando correctamente']);
 });
+
+Route::apiResource('photos', PhotoController::class);
+Route::apiResource('evidences', EvidenceController::class);
 
 // Rutas protegidas con autenticación
 Route::middleware(['auth:sanctum', 'CheckTokenExpiration'])->group(function () {

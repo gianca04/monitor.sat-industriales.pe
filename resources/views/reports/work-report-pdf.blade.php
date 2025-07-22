@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,59 +13,59 @@
             color: #333;
             line-height: 1.4;
         }
-        
+
         .header {
             text-align: center;
             border-bottom: 3px solid #2563eb;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
-        
+
         .logo {
             font-size: 24px;
             font-weight: bold;
             color: #2563eb;
             margin-bottom: 5px;
         }
-        
+
         .subtitle {
             color: #666;
             font-size: 14px;
         }
-        
+
         .report-title {
             font-size: 20px;
             color: #1e40af;
             margin: 20px 0;
             text-align: center;
         }
-        
+
         .info-section {
             background-color: #f8fafc;
             padding: 15px;
             margin: 20px 0;
             border-left: 4px solid #2563eb;
         }
-        
+
         .info-row {
             display: flex;
             margin-bottom: 8px;
         }
-        
+
         .info-label {
             font-weight: bold;
             width: 150px;
             color: #374151;
         }
-        
+
         .info-value {
             color: #6b7280;
         }
-        
+
         .photos-section {
             margin-top: 30px;
         }
-        
+
         .section-title {
             font-size: 18px;
             color: #1e40af;
@@ -72,7 +73,7 @@
             padding-bottom: 5px;
             margin-bottom: 20px;
         }
-        
+
         .photo-container {
             margin-bottom: 30px;
             page-break-inside: avoid;
@@ -80,38 +81,38 @@
             border-radius: 8px;
             overflow: hidden;
         }
-        
+
         .photo-header {
             background-color: #f3f4f6;
             padding: 10px;
             border-bottom: 1px solid #e5e7eb;
         }
-        
+
         .photo-title {
             font-weight: bold;
             color: #374151;
             margin-bottom: 5px;
         }
-        
+
         .photo-date {
             font-size: 12px;
             color: #6b7280;
         }
-        
+
         .photo-image {
             width: 100%;
             max-height: 400px;
             object-fit: contain;
             display: block;
         }
-        
+
         .photo-description {
             padding: 15px;
             background-color: #fff;
             color: #4b5563;
             font-style: italic;
         }
-        
+
         .footer {
             margin-top: 40px;
             text-align: center;
@@ -120,11 +121,11 @@
             border-top: 1px solid #e5e7eb;
             padding-top: 20px;
         }
-        
+
         .page-break {
             page-break-before: always;
         }
-        
+
         .summary-stats {
             display: flex;
             justify-content: space-around;
@@ -133,23 +134,24 @@
             margin: 20px 0;
             border-radius: 8px;
         }
-        
+
         .stat-item {
             text-align: center;
         }
-        
+
         .stat-number {
             font-size: 24px;
             font-weight: bold;
             color: #2563eb;
         }
-        
+
         .stat-label {
             font-size: 12px;
             color: #6b7280;
         }
     </style>
 </head>
+
 <body>
     <!-- Header -->
     <div class="header">
@@ -240,35 +242,38 @@
     <!-- Evidencias Fotográficas -->
     <div class="photos-section">
         <h2 class="section-title">Evidencias Fotográficas</h2>
-        
+
         @foreach($photos as $index => $photo)
-            @if($index > 0 && $index % 2 == 0)
-                <div class="page-break"></div>
-            @endif
-            
-            <div class="photo-container">
-                <div class="photo-header">
-                    <div class="photo-title">Evidencia #{{ $loop->iteration }}</div>
-                    <div class="photo-date">
-                        Capturada el: {{ $photo->taken_at->format('d/m/Y H:i') }}
-                    </div>
-                </div>
-                
-                @if(Storage::exists($photo->photo_path))
-                    <img src="{{ storage_path('app/' . $photo->photo_path) }}" 
-                         alt="Evidencia {{ $loop->iteration }}" 
-                         class="photo-image">
-                @else
-                    <div style="padding: 40px; text-align: center; color: #6b7280; background-color: #f9fafb;">
-                        <p>Imagen no disponible</p>
-                        <small>{{ $photo->photo_path }}</small>
-                    </div>
-                @endif
-                
-                <div class="photo-description">
-                    <strong>Descripción:</strong> {{ $photo->descripcion }}
+        @if($index > 0 && $index % 2 == 0)
+        <div class="page-break"></div>
+        @endif
+
+        <div class="photo-container">
+            <div class="photo-header">
+                <div class="photo-title">Evidencia #{{ $loop->iteration }}</div>
+                <div class="photo-date">
+                    Capturada el: {{ $photo->taken_at->format('d/m/Y H:i') }}
                 </div>
             </div>
+
+            @php
+            $imgPath = public_path($photo->photo_path);
+            @endphp
+            @if(file_exists($imgPath))
+            <img src="{{ public_path('storage/' . basename($photo->photo_path)) }}"
+                alt="Evidencia {{ $loop->iteration }}"
+                class="photo-image">
+            @else
+            <div style="padding: 40px; text-align: center; color: #6b7280; background-color: #f9fafb;">
+                <p>Imagen no disponible</p>
+                <small>{{ $photo->photo_path }}</small>
+            </div>
+            @endif
+
+            <div class="photo-description">
+                <strong>Descripción:</strong> {{ $photo->descripcion }}
+            </div>
+        </div>
         @endforeach
     </div>
 
@@ -278,4 +283,5 @@
         <p>SAT INDUSTRIALES - Sistema de Monitoreo de Proyectos</p>
     </div>
 </body>
+
 </html>

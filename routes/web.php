@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkReportPdfController;
+use Livewire\Livewire;
 
 // Redirigir la raíz al dashboard de Filament
 Route::redirect('/', '/dashboard');
@@ -14,15 +15,14 @@ Route::get('/work-report/{workReport}/pdf', [WorkReportPdfController::class, 'ge
 // Las rutas de Livewire y Filament se configuran automáticamente
 // a través del DashboardPanelProvider
 
-use Livewire\Livewire;
 
-//Livewire::setScriptRoute(function ($handle) {
-//return Route::get('/monitor.sat-industriales.pe/public/livewire/livewire.js', $handle);
-//});
+Livewire::setScriptRoute(function ($handle) {
+    return Route::get('/monitor.sat-industriales.pe/public/livewire/livewire.js', $handle);
+});
 
-//Livewire::setUpdateRoute(function ($handle) {
-//return Route::post('/monitor.sat-industriales.pe/public/livewire/update', $handle);
-//});
+Livewire::setUpdateRoute(function ($handle) {
+    return Route::post('/monitor.sat-industriales.pe/public/livewire/update', $handle);
+});
 
 //Route::get('/crear-symlink', function () {
 //    $target = storage_path('app/public');

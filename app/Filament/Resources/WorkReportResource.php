@@ -33,6 +33,18 @@ class WorkReportResource extends Resource
     {
         return $form
             ->schema([
+                Section::make('Información del reporte')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255)
+                            ->label('Nombre del reporte'),
+                        Forms\Components\Textarea::make('description')
+                            ->columnSpanFull()
+                            ->label('Descripción del reporte'),
+                    ]),
+
                 Split::make([
                     Section::make([
                         Forms\Components\Select::make('employee_id')
@@ -267,18 +279,7 @@ class WorkReportResource extends Resource
                     ->grow(false)
                     ->columnSpanFull(),
 
-                Section::make('Información del reporte')
-                    ->columns(2)
-                    ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->maxLength(255)
-                            ->label('Nombre del reporte'),
-                        Forms\Components\Textarea::make('description')
-                            ->columnSpanFull()
-                            ->label('Descripción del reporte'),
-                    ]),
-
+                
             ]);
     }
 
