@@ -377,6 +377,7 @@ class WorkReportResource extends Resource
     {
         return [
             'index' => Pages\ListWorkReports::route('/'),
+            'view' => Pages\ViewWorkReport::route('/{record}'),
             'create' => Pages\CreateWorkReport::route('/create'),
             'edit' => Pages\EditWorkReport::route('/{record}/edit'),
         ];

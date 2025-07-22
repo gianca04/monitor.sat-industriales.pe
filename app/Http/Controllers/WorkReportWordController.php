@@ -6,6 +6,7 @@ use App\Models\WorkReport;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\SimpleType\Jc; // Agrega esta línea al inicio con los use
 
 class WorkReportWordController extends Controller
 {
@@ -77,7 +78,17 @@ class WorkReportWordController extends Controller
             // Si la imagen existe, agregarla
             $imgPath = public_path('storage/' . $photo->photo_path);
             if (file_exists($imgPath)) {
-                $section->addImage($imgPath, ['width' => 400, 'height' => 250]);
+                list($origWidth, $origHeight) = getimagesize($imgPath);
+                $maxWidth = 400;
+                $maxHeight = 250;
+                $ratio = min($maxWidth / $origWidth, $maxHeight / $origHeight, 1);
+                $newWidth = intval($origWidth * $ratio);
+                $newHeight = intval($origHeight * $ratio);
+                $section->addImage($imgPath, [
+                    'width' => $newWidth,
+                    'height' => $newHeight,
+                    'alignment' => Jc::CENTER // Centrar imagen
+                ]);
             } else {
                 $section->addText('Imagen no disponible');
             }

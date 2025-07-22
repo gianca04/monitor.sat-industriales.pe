@@ -34,12 +34,13 @@ class PhotosRelationManager extends RelationManager
                     ->label('Fotografía')
                     ->image()
                     ->required()
+                    ->downloadable()
                     ->directory('work-reports/photos')
                     ->visibility('public')
                     ->acceptedFileTypes(types: ['image/jpeg', 'image/png', 'image/webp'])
                     ->maxSize(5120) // 5MB
                     ->extraInputAttributes(['capture' => 'user'])
-
+                    ->columnSpanFull()
                     ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 5MB'),
 
                 Forms\Components\Textarea::make('descripcion')
@@ -66,15 +67,16 @@ class PhotosRelationManager extends RelationManager
             ->recordTitleAttribute('descripcion')
             ->columns([
                 Stack::make([
-                    // Columns
+                    // Columnas
                     Tables\Columns\ImageColumn::make('photo_path')
                         ->label('Evidencia')
-                        ->height(80)
-                        ->width(120)
+                        ->height(200)
+
                         ->visibility('private')
                         ->checkFileExistence(false)
                         ->defaultImageUrl(url(path: '/images/no-image.png'))
-                        ->extraAttributes(['class' => 'rounded-lg shadow-sm']),
+                        ->extraAttributes(['class' => 'rounded-lg shadow-sm'])
+                        ->alignCenter(), // Centra la imagen horizontalmente
 
                     Tables\Columns\TextColumn::make('descripcion')
                         ->label('Descripción')
@@ -87,20 +89,18 @@ class PhotosRelationManager extends RelationManager
                             return $state;
                         })
                         ->searchable()
-                        ->sortable(),
+                        ->sortable()
+                        ->size('m') // Texto un poco más pequeño para la descripción
+                    , // Color secundario para diferenciación
 
                     Tables\Columns\TextColumn::make('taken_at')
                         ->label('Fecha de captura')
                         ->dateTime('d/m/Y H:i')
                         ->sortable()
-                        ->toggleable(),
-
-                    Tables\Columns\TextColumn::make('created_at')
-                        ->label('Subida')
-                        ->dateTime('d/m/Y H:i')
-                        ->sortable()
-                        ->toggleable(isToggledHiddenByDefault: true),
-
+                        ->icon('heroicon-o-calendar')
+                        ->toggleable()
+                        ->size('xs') // Tamaño consistente
+                        ->color('gray'), // Resalta la fecha principal
                 ]),
             ])
             ->contentGrid([
@@ -139,6 +139,7 @@ class PhotosRelationManager extends RelationManager
                                 ->label('Descripción de la evidencia')
                                 ->required()
                                 ->maxLength(500)
+                                ->alignCenter()
                                 ->rows(3)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
 
@@ -146,6 +147,7 @@ class PhotosRelationManager extends RelationManager
                                 ->label('Fecha y hora de captura')
                                 ->default(now())
                                 ->required()
+                                ->alignCenter()
                                 ->native(false)
                                 ->displayFormat('d/m/Y H:i'),
                         ]);
@@ -261,23 +263,7 @@ class PhotosRelationManager extends RelationManager
                             ->body('La fotografía se ha eliminado correctamente.')
                     ),
 
-                Action::make('download')
-                    ->label('Descargar')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('gray')
-                    ->action(function (Photo $record) {
-                        if (!Storage::exists($record->photo_path)) {
-                            Notification::make()
-                                ->danger()
-                                ->title('Error')
-                                ->body('El archivo no existe.')
-                                ->send();
-                            return;
-                        }
 
-                        return Storage::download($record->photo_path, 'evidencia_' . $record->id . '.jpg');
-                    })
-                    ->tooltip('Descargar imagen original'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
