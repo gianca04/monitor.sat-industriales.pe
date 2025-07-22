@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkReportPdfController;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Livewire;
+use App\Http\Controllers\WorkReportWordController;
+
 
 // Redirigir la raíz al dashboard de Filament
 Route::redirect('/', '/dashboard');
@@ -16,6 +18,9 @@ Route::get('/work-report/{workReport}/pdf', [WorkReportPdfController::class, 'ge
 // Las rutas de Livewire y Filament se configuran automáticamente
 // a través del DashboardPanelProvider
 
+Route::get('/work-report/{workReport}/word', [WorkReportWordController::class, 'generateReport'])
+    ->name('work-report.word')
+    ->middleware('auth');
 
 Livewire::setScriptRoute(function ($handle) {
     return Route::get('/monitor.sat-industriales.pe/public/livewire/livewire.js', $handle);
