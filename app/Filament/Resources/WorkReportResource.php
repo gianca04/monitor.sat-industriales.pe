@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Project;
 use App\Models\Quote;
+use Illuminate\Support\Facades\Auth;
 use App\Models\WorkReport;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
@@ -40,16 +41,26 @@ class WorkReportResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->label('Nombre del reporte'),
+                        Forms\Components\DatePicker::make('time')
+                            ->label('Fecha')
+                            ->native(false) // Desactiva el selector nativo para usar el de Filament
+                            ->default(now())
+                            ->displayFormat('d/m/Y')
+                            ->required()
+                            ->helperText('Selecciona la fecha y hora del trabajo'),
                         Forms\Components\Textarea::make('description')
-                            ->columnSpanFull()
-                            ->label('Descripción del reporte'),
+                            ->label('Descripción del reporte')
+                            ->required()
+                            ->helperText('Proporciona una descripción detallada del trabajo realizado.')
+                            ->columnSpanFull(),
                     ]),
 
                 Split::make([
                     Section::make([
                         Forms\Components\Select::make('employee_id')
-                            ->required()
+                            ->default(fn() => Auth::user()?->employee_id)->required()
                             ->columns(2)
+                            ->reactive()
                             ->prefixIcon('heroicon-m-user')
                             ->label('Supervisor') // Título para el campo 'Empleado'
                             ->options(
@@ -71,7 +82,6 @@ class WorkReportResource extends Resource
                             ->searchable() // Activa la búsqueda asincrónica
                             ->placeholder('Seleccionar un empleado') // Placeholder
                             ->helperText('Selecciona el empleado responsable de esta cotización.') // Ayuda para el campo de empleado
-                            ->reactive()
 
                             // Botón para ver información del empleado
                             ->suffixAction(
@@ -104,17 +114,15 @@ class WorkReportResource extends Resource
                                     ->modalWidth('2xl')
                                     ->visible(fn(callable $get) => !empty($get('employee_id')))
                             )
-                            ->afterStateUpdated(function (callable $get, callable $set) {
+                            ->afterStateHydrated(function (callable $get, callable $set) {
                                 $employeeId = $get('employee_id');
                                 if ($employeeId) {
-                                    // Cargar empleado con usuario relacionado
                                     $employee = Employee::with('user')->find($employeeId);
                                     if ($employee) {
                                         $set('document_type', $employee->document_type);
                                         $set('document_number', $employee->document_number);
                                         $set('address', $employee->address);
                                         $set('date_contract', $employee->date_contract);
-                                        // Setear datos del usuario si existe
                                         $set('user_email', $employee->user?->email);
                                         $set('user_is_active', $employee->user?->is_active ? 'Activo' : 'Inactivo');
                                     } else {
@@ -279,7 +287,7 @@ class WorkReportResource extends Resource
                     ->grow(false)
                     ->columnSpanFull(),
 
-                
+
             ]);
     }
 
@@ -289,7 +297,7 @@ class WorkReportResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->label('Supervisor')
-                    ->formatStateUsing(fn ($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
+                    ->formatStateUsing(fn($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(),
 
@@ -308,7 +316,7 @@ class WorkReportResource extends Resource
                     ->label('Evidencias')
                     ->counts('photos')
                     ->badge()
-                    ->color(fn (string $state): string => match (true) {
+                    ->color(fn(string $state): string => match (true) {
                         $state == 0 => 'danger',
                         $state < 5 => 'warning',
                         default => 'success',
@@ -339,14 +347,14 @@ class WorkReportResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                
+
                 Tables\Actions\Action::make('generate_report')
                     ->label('Reporte PDF')
                     ->icon('heroicon-o-document-text')
                     ->color('success')
-                    ->url(fn (WorkReport $record): string => route('work-report.pdf', $record))
+                    ->url(fn(WorkReport $record): string => route('work-report.pdf', $record))
                     ->openUrlInNewTab()
-                    ->visible(fn (WorkReport $record): bool => $record->photos()->count() > 0)
+                    ->visible(fn(WorkReport $record): bool => $record->photos()->count() > 0)
                     ->tooltip('Generar reporte PDF con evidencias'),
             ])
             ->bulkActions([

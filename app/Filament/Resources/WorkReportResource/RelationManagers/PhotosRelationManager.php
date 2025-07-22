@@ -28,37 +28,37 @@ class PhotosRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Repeater::make('photos')
-                    ->label('Evidencias fotográficas')
-                    ->schema([
-                        Forms\Components\FileUpload::make('photo_path')
-                            ->label('Fotografía')
-                            ->image()
-                            ->required()
-                            ->directory('work-reports/photos')
-                            ->visibility('private')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->maxSize(5120) // 5MB
-                            ->panelAspectRatio('16:9')
-                            ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 5MB'),
 
-                        Forms\Components\Textarea::make('descripcion')
-                            ->label('Descripción de la evidencia')
-                            ->required()
-                            ->maxLength(500)
-                            ->rows(3)
-                            ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
-                            ->helperText('Máximo 500 caracteres'),
+                Forms\Components\FileUpload::make('photo_path')
+                    ->label('Fotografía')
+                    ->columnSpanFull()
+                    ->image()
+                    ->required()
+                    ->directory('work-reports/photos')
+                    ->visibility('public')
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(5120) // 5MB
+                    ->panelAspectRatio('16:9')
+                    ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 5MB'),
 
-                        Forms\Components\DateTimePicker::make('taken_at')
-                            ->label('Fecha y hora de captura')
-                            ->default(now())
-                            ->required()
-                            ->native(false)
-                            ->displayFormat('d/m/Y H:i')
-                            ->helperText('Fecha y hora en que se tomó la fotografía'),
-                    ])
-                    ->collapsible(),
+
+                Forms\Components\Textarea::make('descripcion')
+                    ->label('Descripción de la evidencia')
+                    ->required()
+                    ->maxLength(500)
+                    ->rows(3)
+                    ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
+                    ->helperText('Máximo 500 caracteres'),
+
+                Forms\Components\DateTimePicker::make('taken_at')
+                    ->label('Fecha y hora de captura')
+                    ->default(now())
+                    ->required()
+                    ->native(false)
+                    ->displayFormat('d/m/Y H:i')
+                    ->helperText('Fecha y hora en que se tomó la fotografía'),
+
+
             ]);
     }
 
@@ -137,7 +137,7 @@ class PhotosRelationManager extends RelationManager
                     ->label('Generar Reporte')
                     ->icon('heroicon-o-document-text')
                     ->color('success')
-                    ->url(fn () => route('work-report.pdf', $this->ownerRecord->id))
+                    ->url(fn() => route('work-report.pdf', $this->ownerRecord->id))
                     ->openUrlInNewTab()
                     ->visible(fn() => $this->ownerRecord->photos()->count() > 0)
                     ->tooltip('Generar reporte PDF del trabajo realizado'),
@@ -146,18 +146,18 @@ class PhotosRelationManager extends RelationManager
                 Tables\Actions\ViewAction::make()
                     ->label('Ver')
                     ->icon('heroicon-o-eye')
-                    ->modalContent(function (Photo $record): HtmlString {
-                        $imageUrl = Storage::url($record->photo_path);
-                        return new HtmlString("
-                            <div class='text-center space-y-4'>
-                                <img src='{$imageUrl}' alt='Evidencia' class='max-w-full h-auto rounded-lg shadow-lg mx-auto' style='max-height: 70vh;'>
-                                <div class='text-sm text-gray-600'>
-                                    <p><strong>Descripción:</strong> {$record->descripcion}</p>
-                                    <p><strong>Fecha de captura:</strong> {$record->taken_at->format('d/m/Y H:i')}</p>
-                                </div>
-                            </div>
-                        ");
-                    })
+                    //->modalContent(function (Photo $record): HtmlString {
+                    //    $imageUrl = Storage::url($record->photo_path);
+                    //    return new HtmlString("
+                    //        <div class='space-y-4 text-center'>
+                    //            <img src='{$imageUrl}' alt='Evidencia' class='h-auto max-w-full mx-auto rounded-lg shadow-lg' style='max-height: 70vh;'>
+                    //            <div class='text-sm text-gray-600'>
+                    //                <p><strong>Descripción:</strong> {$record->descripcion}</p>
+                    //                <p><strong>Fecha de captura:</strong> {$record->taken_at->format('d/m/Y H:i')}</p>
+                    //            </div>
+                    //        </div>
+                    //    ");
+                    //})
                     ->modalWidth(MaxWidth::FourExtraLarge)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar'),

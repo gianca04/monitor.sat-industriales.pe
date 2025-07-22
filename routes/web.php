@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkReportPdfController;
+use Illuminate\Support\Facades\Artisan;
 use Livewire\Livewire;
 
 // Redirigir la raíz al dashboard de Filament
@@ -24,17 +25,22 @@ Livewire::setUpdateRoute(function ($handle) {
     return Route::post('/monitor.sat-industriales.pe/public/livewire/update', $handle);
 });
 
-//Route::get('/crear-symlink', function () {
-//    $target = storage_path('app/public');
- //   $link = public_path('storage');
+Route::get('/storage-link', function () {
+    Artisan::call('storage:link');
+});
 
- //   if (file_exists($link)) {
-  //      return '⚠️ Ya existe un enlace o carpeta llamado "storage" en public.';
-   // }
 
-   // if (symlink($target, $link)) {
-   //     return '✅ Enlace simbólico creado correctamente.';
-    //} else {
-     //   return '❌ No se pudo crear el enlace simbólico.';
-    //}
-//});
+Route::get('/crear-symlink', function () {
+    $target = storage_path('app/public');
+    $link = public_path('storage');
+
+    if (file_exists($link)) {
+        return '⚠️ Ya existe un enlace o carpeta llamado "storage" en public.';
+    }
+
+    if (symlink($target, $link)) {
+        return '✅ Enlace simbólico creado correctamente.';
+    } else {
+        return '❌ No se pudo crear el enlace simbólico.';
+    }
+});

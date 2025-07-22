@@ -75,51 +75,60 @@
         }
 
         .photo-container {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             page-break-inside: avoid;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+            background: #f9fafb;
             overflow: hidden;
         }
 
         .photo-header {
-            background-color: #f3f4f6;
-            padding: 10px;
+            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            padding: 16px 18px;
             border-bottom: 1px solid #e5e7eb;
+            color: #fff;
         }
 
         .photo-title {
             font-weight: bold;
-            color: #374151;
-            margin-bottom: 5px;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 2px;
         }
 
         .photo-date {
             font-size: 12px;
-            color: #6b7280;
+            color: #e0e7ff;
         }
 
         .photo-image {
-            width: 100%;
-            max-height: 400px;
-            object-fit: contain;
             display: block;
+            margin: 0 auto;
+            max-width: 90%;
+            height: auto;
+            max-height: 350px;
+            border-radius: 8px;
+            box-shadow: 0 1px 6px rgba(37, 99, 235, 0.08);
+            object-fit: contain;
         }
 
         .photo-description {
-            padding: 15px;
+            padding: 18px;
             background-color: #fff;
-            color: #4b5563;
+            color: #374151;
             font-style: italic;
+            border-top: 1px solid #e5e7eb;
         }
 
         .footer {
-            margin-top: 40px;
+            margin-top: 50px;
             text-align: center;
-            font-size: 12px;
-            color: #9ca3af;
+            font-size: 13px;
+            color: #6b7280;
             border-top: 1px solid #e5e7eb;
-            padding-top: 20px;
+            padding-top: 24px;
         }
 
         .page-break {
@@ -234,12 +243,14 @@
             <div class="stat-label">Evidencias Hoy</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ $photos->groupBy(function($item) { return $item->taken_at->format('Y-m-d'); })->count() }}</div>
+            <div class="stat-number">
+                {{ $photos->groupBy(function ($item) {
+                return $item->taken_at->format('Y-m-d'); })->count() }}</div>
             <div class="stat-label">Días de Trabajo</div>
         </div>
     </div>
 
-    <!-- Evidencias Fotográficas -->
+    <!-- Fotos del Reporte -->
     <div class="photos-section">
         <h2 class="section-title">Evidencias Fotográficas</h2>
 
@@ -257,17 +268,14 @@
             </div>
 
             @php
-            $imgPath = public_path($photo->photo_path);
+            $imgPath = public_path('storage/' . $photo->photo_path);
             @endphp
             @if(file_exists($imgPath))
-            <img src="{{ public_path('storage/' . basename($photo->photo_path)) }}"
-                alt="Evidencia {{ $loop->iteration }}"
-                class="photo-image">
-            @else
-            <div style="padding: 40px; text-align: center; color: #6b7280; background-color: #f9fafb;">
-                <p>Imagen no disponible</p>
-                <small>{{ $photo->photo_path }}</small>
+            <div style="width:100%;text-align:center;padding:18px 0;background:#fff;">
+                <img src="{{ $imgPath }}" alt="Evidencia {{ $loop->iteration }}" class="photo-image">
             </div>
+            @else
+            <div style="padding:18px 0;text-align:center;background:#fff;">Imagen no disponible<br>{{ $imgPath }}</div>
             @endif
 
             <div class="photo-description">
