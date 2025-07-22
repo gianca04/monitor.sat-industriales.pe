@@ -41,7 +41,7 @@ class WorkReportPdfController extends Controller
                 'isPhpEnabled' => true,
                 'dpi' => 150,
                 'defaultPaperSize' => 'a4',
-                'chroot' => [public_path('storage'), public_path('images')],
+                'chroot' => [public_path('storage'), public_path('images')], // Important for image paths
             ]);
 
         $filename = 'reporte_trabajo_' . $workReport->id . '_' . now()->format('Y-m-d_H-i') . '.pdf';

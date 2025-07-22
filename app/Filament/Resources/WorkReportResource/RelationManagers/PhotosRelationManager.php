@@ -12,6 +12,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Photo;
+use Filament\Forms\Components\FileUpload;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Columns\Layout\Stack;
 use Illuminate\Support\HtmlString;
@@ -31,16 +32,15 @@ class PhotosRelationManager extends RelationManager
 
                 Forms\Components\FileUpload::make('photo_path')
                     ->label('Fotografía')
-                    ->columnSpanFull()
                     ->image()
                     ->required()
                     ->directory('work-reports/photos')
                     ->visibility('public')
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->acceptedFileTypes(types: ['image/jpeg', 'image/png', 'image/webp'])
                     ->maxSize(5120) // 5MB
-                    ->panelAspectRatio('16:9')
-                    ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 5MB'),
+                    ->extraInputAttributes(['capture' => 'user'])
 
+                    ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 5MB'),
 
                 Forms\Components\Textarea::make('descripcion')
                     ->label('Descripción de la evidencia')
@@ -57,8 +57,6 @@ class PhotosRelationManager extends RelationManager
                     ->native(false)
                     ->displayFormat('d/m/Y H:i')
                     ->helperText('Fecha y hora en que se tomó la fotografía'),
-
-
             ]);
     }
 
@@ -75,7 +73,7 @@ class PhotosRelationManager extends RelationManager
                         ->width(120)
                         ->visibility('private')
                         ->checkFileExistence(false)
-                        ->defaultImageUrl(url('/images/no-image.png'))
+                        ->defaultImageUrl(url(path: '/images/no-image.png'))
                         ->extraAttributes(['class' => 'rounded-lg shadow-sm']),
 
                     Tables\Columns\TextColumn::make('descripcion')
@@ -119,10 +117,39 @@ class PhotosRelationManager extends RelationManager
                     ->query(fn(Builder $query): Builder => $query->whereDate('taken_at', today())),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->label('Subir Evidencia')
+
+                Tables\Actions\CreateAction::make('take_photo')
+                    ->label('Tomar Foto')
                     ->icon('heroicon-o-camera')
                     ->modalWidth(MaxWidth::Large)
+                    ->form(function (Form $form) {
+                        return $form->schema([
+                            Forms\Components\FileUpload::make('photo_path')
+                                ->label('Fotografía')
+                                ->image()
+                                ->required()
+                                ->directory('work-reports/photos')
+                                ->visibility('public')
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                ->maxSize(5120) // 5MB
+                                ->extraInputAttributes(['capture' => 'environment'])
+                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 5MB.'),
+
+                            Forms\Components\Textarea::make('descripcion')
+                                ->label('Descripción de la evidencia')
+                                ->required()
+                                ->maxLength(500)
+                                ->rows(3)
+                                ->placeholder('Describe brevemente lo que se muestra...'),
+
+                            Forms\Components\DateTimePicker::make('taken_at')
+                                ->label('Fecha y hora de captura')
+                                ->default(now())
+                                ->required()
+                                ->native(false)
+                                ->displayFormat('d/m/Y H:i'),
+                        ]);
+                    })
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['work_report_id'] = $this->ownerRecord->id;
                         return $data;
@@ -133,14 +160,68 @@ class PhotosRelationManager extends RelationManager
                             ->title('Evidencia subida')
                             ->body('La fotografía se ha registrado correctamente.')
                     ),
+
+                // Botón para SUBIR DE GALERÍA (abre el selector de archivos)
+                Tables\Actions\CreateAction::make('upload_from_gallery')
+                    ->label('Subir de Galería')
+                    ->icon('heroicon-o-arrow-up-tray') // Icono diferente para distinguirlo
+                    ->modalWidth(MaxWidth::Large)
+                    ->form(function (Form $form) {
+                        return $form->schema([
+                            Forms\Components\FileUpload::make('photo_path')
+                                ->label('Fotografía')
+                                ->image()
+                                ->required()
+                                ->directory('work-reports/photos')
+                                ->visibility('public')
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                ->maxSize(5120) // 5MB
+                                // Sin 'extraInputAttributes' para que abra la galería
+                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 5MB.'),
+
+                            Forms\Components\Textarea::make('descripcion')
+                                ->label('Descripción de la evidencia')
+                                ->required()
+                                ->maxLength(500)
+                                ->rows(3)
+                                ->placeholder('Describe brevemente lo que se muestra...'),
+
+                            Forms\Components\DateTimePicker::make('taken_at')
+                                ->label('Fecha y hora de captura')
+                                ->default(now())
+                                ->required()
+                                ->native(false)
+                                ->displayFormat('d/m/Y H:i'),
+                        ]);
+                    })
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['work_report_id'] = $this->ownerRecord->id;
+                        return $data;
+                    })
+                    ->successNotification(
+                        Notification::make()
+                            ->success()
+                            ->title('Evidencia subida')
+                            ->body('La fotografía se ha registrado correctamente.')
+                    ),
+
                 Action::make('generate_report')
-                    ->label('Generar Reporte')
+                    ->label('Generar PDF')
                     ->icon('heroicon-o-document-text')
-                    ->color('success')
+                    ->color('danger')
+                    ->icon('heroicon-o-document')
                     ->url(fn() => route('work-report.pdf', $this->ownerRecord->id))
                     ->openUrlInNewTab()
                     ->visible(fn() => $this->ownerRecord->photos()->count() > 0)
                     ->tooltip('Generar reporte PDF del trabajo realizado'),
+                Action::make('generate_word_report')
+                    ->label('Generar Word')
+                    ->icon('heroicon-o-document-text')
+                    ->color('info')
+                    ->url(fn() => route('work-report.word', $this->ownerRecord->id))
+                    ->openUrlInNewTab()
+                    ->visible(fn() => $this->ownerRecord->photos()->count() > 0)
+                    ->tooltip('Generar reporte Word del trabajo realizado'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
