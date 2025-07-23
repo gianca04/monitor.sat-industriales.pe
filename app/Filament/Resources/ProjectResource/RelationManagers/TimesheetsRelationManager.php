@@ -154,8 +154,8 @@ class TimesheetsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->label('Responsable del Tareo')
                     ->formatStateUsing(function ($record) {
-                        return $record->employee ? 
-                            $record->employee->first_name . ' ' . $record->employee->last_name : 
+                        return $record->employee ?
+                            $record->employee->first_name . ' ' . $record->employee->last_name :
                             'Sin empleado';
                     })
                     ->searchable(['first_name', 'last_name'])
@@ -205,11 +205,11 @@ class TimesheetsRelationManager extends RelationManager
                         if (!$record->break_date || !$record->end_break_date) {
                             return 'Sin descanso';
                         }
-                        
+
                         $start = \Carbon\Carbon::parse($record->break_date);
                         $end = \Carbon\Carbon::parse($record->end_break_date);
                         $minutes = $end->diffInMinutes($start);
-                        
+
                         return "{$minutes} min";
                     })
                     ->icon('heroicon-o-pause')
@@ -286,7 +286,7 @@ class TimesheetsRelationManager extends RelationManager
                     }),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()
+                /*Tables\Actions\CreateAction::make()
                     ->label('Nuevo Tareo (Modal)')
                     ->icon('heroicon-o-plus')
                     ->modalHeading('Crear nuevo tareo')
@@ -298,20 +298,20 @@ class TimesheetsRelationManager extends RelationManager
                             ->body('El tareo ha sido registrado exitosamente.')
                     )
                     ->color('gray'),
-                    
+                  */
                 Tables\Actions\Action::make('create_advanced')
-                    ->label('Crear Tareo Completo')
+                    ->label('Crear Tareo')
                     ->icon('heroicon-o-document-plus')
                     ->color('primary')
                     ->tooltip('Ir al formulario completo de tareos con todas las funcionalidades')
                     ->action(function () {
                         // Guardar el project_id en la sesión
                         session(['project_id' => $this->ownerRecord->id]);
-                        
+
                         // Redirigir al TimesheetResource create
                         return redirect(route('filament.dashboard.resources.timesheets.create'));
                     }),
-                    
+
                 Tables\Actions\Action::make('manage_all')
                     ->label('Gestionar Todos los Tareos')
                     ->icon('heroicon-o-table-cells')
@@ -320,7 +320,7 @@ class TimesheetsRelationManager extends RelationManager
                     ->action(function () {
                         // Guardar el project_id en la sesión para filtros
                         session(['filter_project_id' => $this->ownerRecord->id]);
-                        
+
                         // Redirigir al TimesheetResource index
                         return redirect(route('filament.dashboard.resources.timesheets.index'));
                     }),
@@ -332,7 +332,7 @@ class TimesheetsRelationManager extends RelationManager
                     ->modalHeading('Editar tareo')
                     ->modalWidth('4xl')
                     ->color('gray'),
-                    
+
                 Tables\Actions\Action::make('edit_advanced')
                     ->label('Editar Completo')
                     ->icon('heroicon-o-document-text')
@@ -341,17 +341,17 @@ class TimesheetsRelationManager extends RelationManager
                     ->action(function ($record) {
                         // Guardar el project_id en la sesión
                         session(['project_id' => $this->ownerRecord->id]);
-                        
+
                         // Redirigir al TimesheetResource edit
                         return redirect(route('filament.dashboard.resources.timesheets.edit', $record));
                     }),
-                    
+
                 Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')
                     ->modalHeading('Ver detalles del tareo')
                     ->modalWidth('3xl')
                     ->color('info'),
-                    
+
                 Tables\Actions\Action::make('view_advanced')
                     ->label('Ver Completo')
                     ->icon('heroicon-o-eye')
@@ -361,7 +361,7 @@ class TimesheetsRelationManager extends RelationManager
                         // Redirigir al TimesheetResource view
                         return redirect(route('filament.dashboard.resources.timesheets.view', $record));
                     }),
-                    
+
                 Tables\Actions\DeleteAction::make()
                     ->icon('heroicon-o-trash')
                     ->requiresConfirmation(),

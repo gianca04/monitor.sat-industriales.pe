@@ -38,7 +38,7 @@ class QuoteResource extends Resource
     protected static ?string $model = Quote::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-calculator';
-    protected static ?string $navigationGroup = 'Control de operaciones';
+    protected static ?string $navigationGroup = 'Gestión de clientes';
 
     public static function form(Form $form): Form
     {
@@ -226,7 +226,7 @@ class QuoteResource extends Resource
                             ]),
                 */
                             ]),
-                
+
 
                 ])
                     ->from('md')

@@ -28,6 +28,8 @@ class WorkReportResource extends Resource
 
     protected static ?string $model = WorkReport::class;
 
+    protected static ?string $navigationGroup = 'Control de operaciones';
+
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
     public static function form(Form $form): Form

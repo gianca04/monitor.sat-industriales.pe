@@ -16,7 +16,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class VisitResource extends Resource
 {
     protected static ?string $modelLabel = 'Visita';
-    protected static ?string $navigationGroup = 'Visitas';
+
+    protected static ?string $navigationGroup = 'Gestión de clientes';
     protected static ?string $model = Visit::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';

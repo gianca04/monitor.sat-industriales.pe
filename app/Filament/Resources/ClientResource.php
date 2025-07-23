@@ -11,6 +11,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\TextInputFilter;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Split;
 use Illuminate\Database\Eloquent\Builder;
 
 class ClientResource extends Resource
@@ -31,142 +33,141 @@ class ClientResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Cliente')
-                    ->tabs([
-                        Forms\Components\Tabs\Tab::make('Datos del Cliente')
-                            ->icon('heroicon-o-user-circle')
+
+
+                Split::make([
+
+
+
+                    Forms\Components\Section::make('Información principal')
+                        ->description('Datos generales del cliente')
+                        ->icon('heroicon-o-identification')
+                        ->schema([
+
+                            Forms\Components\TextInput::make('business_name')
+                                ->label('Razón social')
+                                ->placeholder('Nombre de la empresa o persona')
+                                ->required()
+                                ->maxLength(255)
+                                ->columnSpan(2)
+                                ->prefixIcon('heroicon-o-building-office-2'),
+                            Forms\Components\Select::make('document_type')
+                                ->label('Tipo de documento')
+                                ->options([
+                                    'RUC' => 'RUC',
+                                    'DNI' => 'DNI',
+                                    'FOREIGN_CARD' => 'Carné de Extranjería',
+                                    'PASSPORT' => 'Pasaporte',
+                                ])
+                                ->required()
+                                ->searchable()
+                                ->placeholder('Selecciona tipo de documento')
+                                ->columnSpan(1)
+                                ->alphaNum()
+                                ->prefixIcon('heroicon-o-identification'),
+                            Forms\Components\TextInput::make('document_number')
+                                ->label('Número de documento')
+                                ->placeholder('Ej: 12345678901')
+                                ->required()
+                                ->maxLength(11)
+                                ->minLength(8)
+                                ->alphaNum()
+                                ->columnSpan(1)
+                                ->prefixIcon('heroicon-o-hashtag'),
+                            Forms\Components\Select::make('person_type')
+                                ->label('Tipo de persona')
+                                ->options([
+                                    'Natural Person' => 'Persona Natural',
+                                    'Legal Entity' => 'Persona Jurídica',
+                                ])
+                                ->required()
+                                ->searchable()
+                                ->placeholder('Selecciona tipo de persona')
+                                ->columnSpan(1)
+                                ->prefixIcon('heroicon-o-user-group'),
+                            Forms\Components\Textarea::make('description')
+                                ->label('Descripción')
+                                ->placeholder('Descripción del cliente')
+                                ->columnSpanFull()
+                                ->rows(2)
+                                ->autosize(),
+
+                        ])
+                        ->columns(2),
+
+                    Forms\Components\Section::make('Contacto')
+                        ->icon('heroicon-o-phone')
+                        ->description('Información de contacto y dirección')
+                        ->schema([
+                            Forms\Components\TextInput::make('address')
+                                ->label('Dirección')
+                                ->placeholder('Dirección fiscal o comercial')
+                                ->maxLength(255)
+                                ->columnSpan(2)
+                                ->prefixIcon('heroicon-o-map-pin'),
+                            Forms\Components\TextInput::make('contact_phone')
+                                ->label('Teléfono de contacto')
+                                ->placeholder('Ej: +51 999 999 999')
+                                ->tel()
+                                ->maxLength(9)
+                                ->minLength(7)
+                                ->columnSpan(1)
+                                ->prefixIcon('heroicon-o-phone'),
+                            Forms\Components\TextInput::make('contact_email')
+                                ->label('Correo electrónico')
+                                ->placeholder('correo@ejemplo.com')
+                                ->email()
+                                ->maxLength(255)
+                                ->columnSpan(1)
+                                ->prefixIcon('heroicon-o-envelope'),
+                            Forms\Components\FileUpload::make('logo')
+                                ->label('Logo')
+                                ->image()
+                                ->imageEditor()
+                                ->directory('logos')
+                                ->columnSpan(2)
+                                ->hint('Sube el logo de la empresa')
+                                ->panelAspectRatio('1:1')
+                                ->panelLayout('integrated')
+                                ->avatar()
+                                ->directory('uploads/users')
+                                ->previewable(true),
+                        ])
+                        ->columns(2),
+                ])
+                    ->columnSpanFull(),
+                Forms\Components\Repeater::make('subClients')
+                    ->label('Subclientes')
+                    ->relationship('subClients')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nombre del subcliente')
+                            ->required()
+                            ->maxLength(255)
+                            ->prefixIcon('heroicon-o-user'),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Descripción')
+                            ->maxLength(500)
+                            ->rows(2)
+                            ->autosize(),
+
+
+                        Forms\Components\Section::make('Coordenadas geográficas')
+                            ->columns(1)
                             ->schema([
-                                Forms\Components\Section::make('Información principal')
-                                    ->description('Datos generales del cliente')
-                                    ->icon('heroicon-o-identification')
-                                    ->schema([
-                                        Forms\Components\Select::make('document_type')
-                                            ->label('Tipo de documento')
-                                            ->options([
-                                                'RUC' => 'RUC',
-                                                'DNI' => 'DNI',
-                                                'FOREIGN_CARD' => 'Carné de Extranjería',
-                                                'PASSPORT' => 'Pasaporte',
-                                            ])
-                                            ->required()
-                                            ->searchable()
-                                            ->placeholder('Selecciona tipo de documento')
-                                            ->columnSpan(1)
-                                            ->alphaNum()
-                                            ->prefixIcon('heroicon-o-identification'),
-                                        Forms\Components\TextInput::make('document_number')
-                                            ->label('Número de documento')
-                                            ->placeholder('Ej: 12345678901')
-                                            ->required()
-                                            ->maxLength(11)
-                                            ->minLength(8)
-                                            ->alphaNum()
-                                            ->columnSpan(1)
-                                            ->prefixIcon('heroicon-o-hashtag'),
-                                        Forms\Components\Select::make('person_type')
-                                            ->label('Tipo de persona')
-                                            ->options([
-                                                'Natural Person' => 'Persona Natural',
-                                                'Legal Entity' => 'Persona Jurídica',
-                                            ])
-                                            ->required()
-                                            ->searchable()
-                                            ->placeholder('Selecciona tipo de persona')
-                                            ->columnSpan(1)
-                                            ->prefixIcon('heroicon-o-user-group'),
-                                        Forms\Components\TextInput::make('business_name')
-                                            ->label('Razón social')
-                                            ->placeholder('Nombre de la empresa o persona')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->columnSpan(2)
-                                            ->prefixIcon('heroicon-o-building-office-2'),
-                                    ])
-                                    ->columns(2),
-                                Forms\Components\Section::make('Contacto')
-                                    ->icon('heroicon-o-phone')
-                                    ->description('Información de contacto y dirección')
-                                    ->schema([
-                                        Forms\Components\Textarea::make('description')
-                                            ->label('Descripción')
-                                            ->placeholder('Descripción del cliente')
-                                            ->columnSpanFull()
-                                            ->rows(2)
-                                            ->autosize(),
-                                        Forms\Components\TextInput::make('address')
-                                            ->label('Dirección')
-                                            ->placeholder('Dirección fiscal o comercial')
-                                            ->maxLength(255)
-                                            ->columnSpan(2)
-                                            ->prefixIcon('heroicon-o-map-pin'),
-                                        Forms\Components\TextInput::make('contact_phone')
-                                            ->label('Teléfono de contacto')
-                                            ->placeholder('Ej: +51 999 999 999')
-                                            ->tel()
-                                            ->maxLength(9)
-                                            ->minLength(7)
-                                            ->columnSpan(1)
-                                            ->prefixIcon('heroicon-o-phone'),
-                                        Forms\Components\TextInput::make('contact_email')
-                                            ->label('Correo electrónico')
-                                            ->placeholder('correo@ejemplo.com')
-                                            ->email()
-                                            ->maxLength(255)
-                                            ->columnSpan(1)
-                                            ->prefixIcon('heroicon-o-envelope'),
-                                        Forms\Components\FileUpload::make('logo')
-                                            ->label('Logo')
-                                            ->image()
-                                            ->imageEditor()
-                                            ->directory('logos')
-                                            ->columnSpan(2)
-                                            ->hint('Sube el logo de la empresa')
-                                            ->panelAspectRatio('1:1')
-                                            ->panelLayout('integrated')
-                                            ->avatar()
-                                            ->directory('uploads/users')
-                                            ->previewable(true),
-                                    ])
-                                    ->columns(2),
+                                \App\Forms\Components\ubicacion::make('location')
+                                    ->label('Ubicación en el mapa'),
+
                             ]),
-                        Forms\Components\Tabs\Tab::make('Subclientes')
-                            ->icon('heroicon-o-users')
-                            ->schema([
-                                Forms\Components\Repeater::make('subClients')
-                                    ->label('Subclientes')
-                                    ->relationship('subClients')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('name')
-                                            ->label('Nombre del subcliente')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->prefixIcon('heroicon-o-user'),
-                                        Forms\Components\Textarea::make('description')
-                                            ->label('Descripción')
-                                            ->maxLength(500)
-                                            ->rows(2)
-                                            ->autosize(),
-                                        Forms\Components\TextInput::make('location')
-                                            ->label('Ubicación')
-                                            ->maxLength(255)
-                                            ->prefixIcon('heroicon-o-map-pin'),
-                                        Forms\Components\TextInput::make('latitude')
-                                            ->label('Latitud')
-                                            ->numeric()
-                                            ->prefixIcon('heroicon-o-arrow-long-up'),
-                                        Forms\Components\TextInput::make('longitude')
-                                            ->label('Longitud')
-                                            ->numeric()
-                                            ->prefixIcon('heroicon-o-arrow-long-right'),
-                                    ])
-                                    ->createItemButtonLabel('Agregar subcliente')
-                                    ->columns(2)
-                                    ->collapsible()
-                                    ->grid(1)
-                                    ->addActionLabel('Nuevo'),
-                            ]),
+
                     ])
-                    ->columnSpan('full'),
+                    ->createItemButtonLabel('Agregar subcliente')
+                    ->columns(2)
+                    ->collapsible()
+                    ->grid(2)
+                    ->columnSpanFull()
+                    ->addActionLabel('Nuevo'),
+
             ]);
     }
 
@@ -211,6 +212,7 @@ class ClientResource extends Resource
                         'heroicon-o-user-group' => 'Legal Entity',
                     ])
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('address')
                     ->label('Dirección')
                     ->limit(30)

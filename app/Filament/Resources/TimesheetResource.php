@@ -266,7 +266,7 @@ class TimesheetResource extends Resource
                             ->where('id', '!=', $record->id)
                             ->count();
 
-                        return $sameDay > 0 ? '⚠️ Conflicto detectado' : '✅ Único del día';
+                        return $sameDay > 0 ? 'Conflicto detectado' : 'Único del día';
                     })
                     ->color(function ($record) {
                         if (!$record || !$record->project_id || !$record->check_in_date) {
@@ -303,8 +303,9 @@ class TimesheetResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('attendances_summary')
+                /*Tables\Columns\TextColumn::make('attendances_summary')
                     ->label('Resumen Asistencias')
+                    ->badge()
                     ->getStateUsing(function ($record) {
                         if (!$record) {
                             return 'Sin datos';
@@ -321,9 +322,44 @@ class TimesheetResource extends Resource
                     })
                     ->html()
                     ->searchable(false),
+                */
+                Tables\Columns\TextColumn::make('attended_count')
+                    ->label('Asistió')
+                    ->badge()
+                    ->icon('heroicon-o-check-circle')
+
+                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'attended')->count())
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('absent_count')
+                    ->label('Faltó')
+                    ->badge()
+                    ->color('danger')
+                    ->icon('heroicon-o-x-circle')
+
+                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'absent')->count())
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('justified_count')
+                    ->label('Justificado')
+                    ->badge()
+                    ->color('warning')
+                    ->icon('heroicon-o-exclamation-circle')
+
+                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'justified')->count())
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('attendances_total')
+                    ->label('Total')
+                    ->badge()
+                    ->color('primary')
+                    ->getStateUsing(fn($record) => $record->attendances()->count())
+                    ->sortable(),
+                // ...existing code...
 
                 Tables\Columns\TextColumn::make('schedule_info')
                     ->label('Horario')
+                    ->icon('heroicon-o-clock')
                     ->getStateUsing(function ($record) {
                         if (!$record) {
                             return '--:-- - --:--';
@@ -480,7 +516,7 @@ class TimesheetResource extends Resource
                     ->modalHeading('Generar asistencias masivamente')
                     ->modalDescription('Selecciona los empleados para crear asistencias en este tareo.')
                     ->modalSubmitActionLabel('Generar asistencias'),
-                Tables\Actions\Action::make('buscarYGenerarAsistencias')
+                /*Tables\Actions\Action::make('buscarYGenerarAsistencias')
                     ->label('Búsqueda Individual de Empleados')
                     ->icon('heroicon-o-magnifying-glass')
                     ->color('info')
@@ -654,6 +690,7 @@ class TimesheetResource extends Resource
                     })
                     ->modalHeading('Búsqueda avanzada de empleados')
                     ->modalWidth('7xl'),
+                */
             ])
             ->headerActions([
                 Tables\Actions\Action::make('back_to_project')
