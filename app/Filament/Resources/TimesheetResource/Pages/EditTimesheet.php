@@ -18,7 +18,7 @@ class EditTimesheet extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('generateAttendances')
+            /*Actions\Action::make('generateAttendances')
                 ->label('Generar Asistencias Automáticas')
                 ->icon('heroicon-o-user-plus')
                 ->color('success')
@@ -37,6 +37,7 @@ class EditTimesheet extends EditRecord
                 })
                 ->visible(fn() => $this->record->attendances()->count() === 0),
 
+                */
             Actions\DeleteAction::make(),
         ];
     }

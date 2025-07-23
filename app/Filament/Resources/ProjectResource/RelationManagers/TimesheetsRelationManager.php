@@ -164,7 +164,7 @@ class TimesheetsRelationManager extends RelationManager
 
                 Tables\Columns\BadgeColumn::make('shift')
                     ->label('Turno')
-                    ->formatStateUsing(fn ($state) => match($state) {
+                    ->formatStateUsing(fn($state) => match ($state) {
                         'morning' => 'Mañana',
                         'afternoon' => 'Tarde',
                         'night' => 'Noche',
@@ -199,7 +199,7 @@ class TimesheetsRelationManager extends RelationManager
                     ->icon('heroicon-o-arrow-left-on-rectangle')
                     ->color('danger'),
 
-                Tables\Columns\TextColumn::make('break_duration')
+                /*Tables\Columns\TextColumn::make('break_duration')
                     ->label('Descanso')
                     ->formatStateUsing(function ($record) {
                         if (!$record->break_date || !$record->end_break_date) {
@@ -214,6 +214,7 @@ class TimesheetsRelationManager extends RelationManager
                     })
                     ->icon('heroicon-o-pause')
                     ->color('warning'),
+
 
                 Tables\Columns\TextColumn::make('total_hours')
                     ->label('Horas Totales')
@@ -242,12 +243,14 @@ class TimesheetsRelationManager extends RelationManager
                     ->icon('heroicon-o-clock')
                     ->color('primary')
                     ->weight('bold'),
+                    */
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Registrado')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('shift')
@@ -277,11 +280,11 @@ class TimesheetsRelationManager extends RelationManager
                         return $query
                             ->when(
                                 $data['from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('check_in_date', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('check_in_date', '>=', $date),
                             )
                             ->when(
                                 $data['until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('check_in_date', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('check_in_date', '<=', $date),
                             );
                     }),
             ])
@@ -326,16 +329,16 @@ class TimesheetsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
+                /*Tables\Actions\EditAction::make()
                     ->label('Editar (Modal)')
                     ->icon('heroicon-o-pencil-square')
                     ->modalHeading('Editar tareo')
                     ->modalWidth('4xl')
                     ->color('gray'),
-
-                Tables\Actions\Action::make('edit_advanced')
-                    ->label('Editar Completo')
-                    ->icon('heroicon-o-document-text')
+                */
+                    Tables\Actions\Action::make('edit_advanced')
+                    ->label('Editar')
+                    ->icon('heroicon-o-pencil-square')
                     ->color('primary')
                     ->tooltip('Editar en el formulario completo con todas las funcionalidades')
                     ->action(function ($record) {
@@ -346,13 +349,13 @@ class TimesheetsRelationManager extends RelationManager
                         return redirect(route('filament.dashboard.resources.timesheets.edit', $record));
                     }),
 
-                Tables\Actions\ViewAction::make()
+                /*Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')
                     ->modalHeading('Ver detalles del tareo')
                     ->modalWidth('3xl')
                     ->color('info'),
-
-                Tables\Actions\Action::make('view_advanced')
+                */
+                Tables\Actions\Action::make('Ver')
                     ->label('Ver Completo')
                     ->icon('heroicon-o-eye')
                     ->color('info')

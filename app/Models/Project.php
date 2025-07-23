@@ -26,7 +26,8 @@ class Project extends Model
         'location',
         'latitude',
         'longitude',
-        'quote_id'
+        'quote_id',
+
     ];
 
 
@@ -72,6 +73,46 @@ class Project extends Model
     /**
      * Get the latitude from the location JSON field
      */
+        /**
+     * Relación: Un proyecto pertenece a un subcliente.
+     */
+    public function subClient()
+    {
+        return $this->belongsTo(SubClient::class, 'sub_client_id');
+    }
+
+    /**
+     * Relación: Un proyecto pertenece a un cliente (a través de la cotización).
+     */
+    public function client()
+    {
+        return $this->hasOneThrough(Client::class, Quote::class, 'id', 'id', 'quote_id', 'client_id');
+    }
+
+    /**
+     * Relación: Un proyecto tiene muchos reportes de trabajo.
+     */
+    public function workReports()
+    {
+        return $this->hasMany(WorkReport::class, 'project_id');
+    }
+
+    /**
+     * Relación: Un proyecto tiene muchas fotos a través de los reportes de trabajo.
+     */
+    public function photos()
+    {
+        return $this->hasManyThrough(Photo::class, WorkReport::class, 'project_id', 'work_report_id');
+    }
+
+    /**
+     * Relación: Un proyecto tiene muchos empleados a través de timesheets.
+     */
+    public function employees()
+    {
+        return $this->belongsToMany(Employee::class, 'timesheets');
+    }
+
     public function getLocationLatitudeAttribute()
     {
         if (!$this->location || !is_array($this->location)) return null;
@@ -125,4 +166,22 @@ class Project extends Model
         $now = now()->toDateString();
         return $this->start_date <= $now && $this->end_date >= $now;
     }
+
+    public function getStatusTextAttribute()
+    {
+        $now = now()->toDateString();
+
+
+        if ($this->start_date && $now < $this->start_date->toDateString()) {
+            return 'No iniciado';
+        }
+        if ($this->end_date && $now > $this->end_date->toDateString()) {
+            return 'Culminado';
+        }
+        if ($this->start_date && $this->end_date && $now >= $this->start_date->toDateString() && $now <= $this->end_date->toDateString()) {
+            return 'En proceso';
+        }
+        return 'Sin definir';
+    }
+
 }
