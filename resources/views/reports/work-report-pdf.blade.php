@@ -166,19 +166,16 @@
 
 <body>
     <!-- Header -->
-    <div class="header" style="display: flex; align-items: center; justify-content: flex-start;">
-        <div style="flex:0 0 auto;">
-            <img src="{{ public_path('images/Logo2.png') }}" alt="Logo SAT"
-                style="height: 48px; width: auto; margin-right: 18px;">
-        </div>
-        <div style="flex:1 1 auto;">
-            <div class="report-title" style="font-size:22px;font-weight:bold;">{{ $project->name }}</div>
+    <div class="header" style="position: relative; min-height: 60px; margin-bottom: 30px;">
+        <img src="{{ public_path('images/Logo2.png') }}" alt="Logo SAT"
+            style="position: absolute; left: 0; top: 0; height: 100px; width: auto;">
+        <div style="text-align: center;">
+            <div class="report-title" style="font-size:30px;font-weight:bold;">{{ $project->name }}</div>
             <div class="report-title" style="font-size:16px;font-weight:bold;">Reporte #{{ $workReport->id }}</div>
         </div>
     </div>
 
-
-    <!-- Estadísticas del Reporte -->
+    <!--
     <div class="summary-stats">
         <div class="stat-item">
             <div class="stat-number">{{ $photos->count() }}</div>
@@ -196,6 +193,7 @@
             <div class="stat-label">Días de Trabajo</div>
         </div>
     </div>
+    Estadísticas del Reporte -->
 
     <!-- Información General -->
     <div class="info-section">

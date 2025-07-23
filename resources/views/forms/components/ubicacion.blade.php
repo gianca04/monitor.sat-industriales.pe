@@ -2,8 +2,6 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-
-
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
     <div x-data="{
         value: $wire.{{ $applyStateBindingModifiers("\$entangle('{$getStatePath()}')") }},
@@ -94,12 +92,9 @@
     }" x-init="init()">
 
         {{-- Input búsqueda --}}
-        <div class>
-            <input type="text" x-model="search" placeholder="Buscar lugar..."
-                class="w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring focus:ring-blue-200 dark:bg-gray-800 dark:text-white dark:border-gray-600">
-            <a href="#" class="" @click.prevent="buscarLugar()">
-                Buscar
-            </a>
+        <div class="search-bar">
+            <input type="text" x-model="search" placeholder="Buscar lugar..." class="search-input">
+            <a href="#" class="search-btn" @click.prevent="buscarLugar()">Buscar</a>
         </div>
 
         {{-- Dirección actual --}}
@@ -111,8 +106,10 @@
         </div>
 
         {{-- Mapa --}}
-        <div id="map" class="w-full my-4 border border-gray-300 rounded-lg shadow-sm h-96 dark:border-gray-600"></div>
-
+        <div class="map-container" style="position: relative;">
+            <div id="map" class="w-full my-4 border border-gray-300 rounded-lg shadow-sm h-96 dark:border-gray-600">
+            </div>
+        </div>
         {{-- Coordenadas --}}
         <div class="flex gap-3 my-4">
             <input type="text" x-model="lat" placeholder="Latitud"
@@ -124,4 +121,71 @@
         </div>
 
     </div>
+    <style>
+        .map-container {
+            width: 100%;
+            min-height: 350px;
+            position: relative;
+            z-index: 0;
+        }
+
+        #map {
+            min-height: 350px;
+            height: 24rem;
+            /* h-96 */
+            z-index: 1;
+            border-radius: 0.5rem;
+        }
+
+        /* Asegura que los popups y controles estén por encima */
+        .leaflet-top,
+        .leaflet-bottom {
+            z-index: 2 !important;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: stretch;
+            margin-bottom: 1rem;
+            gap: 0;
+        }
+
+        .search-input {
+            flex: 1 1 0%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem 0 0 0.5rem;
+            font-size: 1rem;
+            background: #f9fafb;
+            color: #222;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: #2563eb;
+            background: #fff;
+        }
+
+        .search-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 1.25rem;
+            background: #2563eb;
+            color: #fff;
+            font-weight: 600;
+            border: 1px solid #2563eb;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .search-btn:hover,
+        .search-btn:focus {
+            background: #1d4ed8;
+            color: #fff;
+        }
+    </style>
 </x-dynamic-component>
