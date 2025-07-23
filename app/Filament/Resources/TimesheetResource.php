@@ -157,14 +157,7 @@ class TimesheetResource extends Resource
                             ->placeholder('Seleccionar un supervisor') // Placeholder
                             ->reactive(),
 
-                        Select::make('shift')
-                            ->label('Turno')
-                            ->options([
-                                'day' => 'Día',
-                                'night' => 'Noche',
-                            ])
-                            ->native(false)
-                            ->prefixIcon('heroicon-o-clock'),
+                        // ...existing code...
 
                         DateTimePicker::make('check_in_date')
                             ->label('Fecha de entrada')
@@ -188,6 +181,17 @@ class TimesheetResource extends Resource
                                             ->warning()
                                             ->persistent()
                                             ->send();
+                                    }
+                                }
+
+                                $checkIn = $get('check_in_date');
+                                if ($checkIn) {
+                                    $in = Carbon::parse($checkIn)->format('H:i');
+                                    // Turno noche si entra a las 18:00 o después
+                                    if ($in >= '18:00') {
+                                        $set('shift', 'night');
+                                    } else {
+                                        $set('shift', 'day');
                                     }
                                 }
                             })
@@ -216,7 +220,7 @@ class TimesheetResource extends Resource
                         DateTimePicker::make('break_date')
                             ->label('Inicio del descanso')
                             ->seconds(false)
-                            ->default(fn(callable $get) => Carbon::parse($get('check_in_date'))->addHours(3)) // Parse check_in_date as Carbon and add 3 hours
+                            ->default(fn(callable $get) => Carbon::parse($get('check_in_date'))->addHours(4)) // Parse check_in_date as Carbon and add 3 hours
                             ->prefixIcon('heroicon-o-pause')
                             ->minDate(fn(callable $get) => Carbon::parse($get('check_in_date'))), // Parse check_in_date as Carbon
 
@@ -231,11 +235,13 @@ class TimesheetResource extends Resource
                         DateTimePicker::make('check_out_date')
                             ->label('Fecha de salida')
                             ->seconds(false)
-                            ->default(now()->addHours(8))
+                            ->default(fn(callable $get) => Carbon::parse($get('check_out_date'))->addHours(9))
                             ->weekStartsOnMonday()
                             ->minDate(fn(callable $get) => $get('check_in_date'))
                             ->required()
-                            ->prefixIcon('heroicon-o-arrow-right-start-on-rectangle'),
+                            ->prefixIcon('heroicon-o-arrow-right-start-on-rectangle')
+                            ->reactive(),
+
                     ])
                     ->columns(2),
             ]);
@@ -321,7 +327,7 @@ class TimesheetResource extends Resource
                         return "✅ {$attended} | ❌ {$absent} | ⚠️ {$justified} | Total: {$total}";
                     })
                     ->html()
-                    ->searchable(false),
+                    ->searchable(false,
                 */
                 Tables\Columns\TextColumn::make('attended_count')
                     ->label('Asistió')
@@ -355,7 +361,6 @@ class TimesheetResource extends Resource
                     ->color('primary')
                     ->getStateUsing(fn($record) => $record->attendances()->count())
                     ->sortable(),
-                // ...existing code...
 
                 Tables\Columns\TextColumn::make('schedule_info')
                     ->label('Horario')

@@ -5,8 +5,10 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Filament\Resources\ProjectResource\RelationManagers\TimesheetsRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\WorkReportsRelationManager;
 use App\Models\Project;
 use App\Models\Quote;
+use App\Models\WorkReport;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
@@ -92,11 +94,16 @@ class ProjectResource extends Resource
                             ->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
                         // ...existing code...
 
+                        Forms\Components\Placeholder::make('status_text')
+                            ->label('Estado del proyecto')
+                            ->content(fn($record) => $record?->status_text ?? 'Sin definir'),
+
                     ]),
 
                 // Sección: Coordenadas geográficas
                 Forms\Components\Section::make('Coordenadas geográficas')
                     ->columns(1)
+                    ->collapsed()
                     ->schema([
                         \App\Forms\Components\ubicacion::make('location')
                             ->label('Ubicación en el mapa'),
@@ -115,18 +122,32 @@ class ProjectResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->label('Estado')
-                    ->formatStateUsing(function ($record) {
-                        return $record->is_active ? 'Activo' : 'Inactivo';
-                    })
+                Tables\Columns\TextColumn::make('quote.client.business_name')
+                    ->label('Cliente')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('quote.sub_client.name')
+                    ->label('Subcliente')
+                    ->searchable()
+                    ->sortable(),
+
+
+
+
+                Tables\Columns\BadgeColumn::make('status_text')
+                    ->label('Estado del proyecto')
+                    ->formatStateUsing(fn($state, $record) => $record?->status_text ?? 'Sin definir')
                     ->colors([
-                        'success' => fn($state) => $state === 'Activo',
-                        'danger' => fn($state) => $state === 'Inactivo',
+                        'gray' => fn($state) => $state === 'Sin definir',
+                        'primary' => fn($state) => $state === 'No iniciado',
+                        'warning' => fn($state) => $state === 'En proceso',
+                        'success' => fn($state) => $state === 'Culminado',
                     ]),
 
+
                 Tables\Columns\TextColumn::make('quote.correlative')
-                    ->label('Cotización')
+                    ->label('Correlativo de Cotización')
                     ->searchable()
                     ->sortable()
                     ->formatStateUsing(fn($record) => $record->quote ? "{$record->quote->correlative} - {$record->quote->project_description}" : 'Sin cotización'),
@@ -168,26 +189,28 @@ class ProjectResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Estado')
+
+                Tables\Filters\SelectFilter::make('status_text')
+                    ->label('Estado del proyecto')
+                    ->native(false)
                     ->options([
-                        'active' => 'Activo',
-                        'inactive' => 'Inactivo',
+                        'No iniciado' => 'No iniciado',
+                        'En proceso' => 'En proceso',
+                        'Culminado' => 'Culminado',
+                        'Sin definir' => 'Sin definir',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         if (!isset($data['value'])) {
                             return $query;
                         }
-
-                        $now = now()->toDateString();
-
-                        return match ($data['value']) {
-                            'active' => $query->where('start_date', '<=', $now)
-                                ->where('end_date', '>=', $now),
-                            'inactive' => $query->where('end_date', '<', $now)
-                                ->orWhere('start_date', '>', $now),
-                            default => $query,
-                        };
+                        return $query->whereRaw("(
+                            CASE
+                                WHEN start_date IS NOT NULL AND ? < DATE(start_date) THEN 'No iniciado'
+                                WHEN end_date IS NOT NULL AND ? > DATE(end_date) THEN 'Culminado'
+                                WHEN start_date IS NOT NULL AND end_date IS NOT NULL AND ? >= DATE(start_date) AND ? <= DATE(end_date) THEN 'En proceso'
+                                ELSE 'Sin definir'
+                            END
+                        ) = ?", [now()->toDateString(), now()->toDateString(), now()->toDateString(), now()->toDateString(), $data['value']]);
                     }),
 
                 Tables\Filters\Filter::make('date_range')
@@ -224,6 +247,7 @@ class ProjectResource extends Resource
         return [
             //
             TimesheetsRelationManager::class,
+            WorkReportsRelationManager::class,
         ];
     }
 
