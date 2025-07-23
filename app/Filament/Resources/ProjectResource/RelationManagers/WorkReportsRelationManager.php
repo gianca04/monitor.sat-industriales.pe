@@ -91,6 +91,13 @@ class WorkReportsRelationManager extends RelationManager
                     ->relationship('employee', 'first_name')
                     ->searchable()
                     ->preload(),
+                Tables\Filters\SelectFilter::make('project_id')
+                    ->label('Proyecto')
+                    ->relationship('project', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->default(fn() => session('filter_project_id'))
+                    ->placeholder('Todos los proyectos'),
 
             ])
             ->headerActions([

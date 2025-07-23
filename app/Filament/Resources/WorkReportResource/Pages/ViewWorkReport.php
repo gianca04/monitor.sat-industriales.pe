@@ -9,4 +9,11 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewWorkReport extends ViewRecord
 {
     protected static string $resource = WorkReportResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
 }

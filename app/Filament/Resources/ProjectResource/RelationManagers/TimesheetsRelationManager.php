@@ -253,6 +253,14 @@ class TimesheetsRelationManager extends RelationManager
 
             ])
             ->filters([
+                                Tables\Filters\SelectFilter::make('project_id')
+                    ->label('Proyecto')
+                    ->relationship('project', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->default(fn() => session('filter_project_id'))
+                    ->placeholder('Todos los proyectos'),
+
                 Tables\Filters\SelectFilter::make('shift')
                     ->label('Turno')
                     ->options([

@@ -43,7 +43,7 @@ class WorkReportResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->label('Nombre del reporte'),
-                        Forms\Components\DatePicker::make('time')
+                        Forms\Components\DatePicker::make('created_at')
                             ->label('Fecha')
                             ->native(false) // Desactiva el selector nativo para usar el de Filament
                             ->default(now())
@@ -137,6 +137,7 @@ class WorkReportResource extends Resource
                     Section::make([
                         Forms\Components\Select::make('project_id')
                             ->prefixIcon('heroicon-m-briefcase')
+                            ->default(fn() => session('project_id'))
                             ->label('Proyecto') // Título para el campo 'Proyecto'
                             ->options(
                                 function (callable $get) {
@@ -293,14 +294,14 @@ class WorkReportResource extends Resource
             ]);
     }
 
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('employee.first_name')
-                    ->label('Supervisor')
-                    ->formatStateUsing(fn($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
-                    ->searchable(['first_name', 'last_name'])
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nombre del Reporte')
+                    ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('project.name')
@@ -309,9 +310,10 @@ class WorkReportResource extends Resource
                     ->sortable()
                     ->limit(30),
 
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nombre del Reporte')
-                    ->searchable()
+                Tables\Columns\TextColumn::make('employee.first_name')
+                    ->label('Supervisor')
+                    ->formatStateUsing(fn($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
+                    ->searchable(['first_name', 'last_name'])
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('photos_count')
@@ -324,15 +326,14 @@ class WorkReportResource extends Resource
                         default => 'success',
                     }),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Creado')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(),
 
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Actualizado')
-                    ->dateTime('d/m/Y H:i')
+                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -342,13 +343,16 @@ class WorkReportResource extends Resource
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\SelectFilter::make('project')
+                Tables\Filters\SelectFilter::make('project_id')
+                    ->label('Proyecto')
                     ->relationship('project', 'name')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->default(fn() => session('filter_project_id'))
+                    ->placeholder('Todos los proyectos'),
+
             ])
             ->actions([
-
                 Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')
                     ->color('info'),
@@ -359,7 +363,7 @@ class WorkReportResource extends Resource
                     ->icon('heroicon-o-trash')
                     ->color('danger'),
 
-                Tables\Actions\Action::make('generate_report')
+                /*Tables\Actions\Action::make('generate_report')
                     ->label('Reporte PDF')
                     ->icon('heroicon-o-document-text')
                     ->color('success')
@@ -367,13 +371,28 @@ class WorkReportResource extends Resource
                     ->openUrlInNewTab()
                     ->visible(fn(WorkReport $record): bool => $record->photos()->count() > 0)
                     ->tooltip('Generar reporte PDF con evidencias'),
+            */
+                    ])
+            ->headerActions([
+                Tables\Actions\Action::make('back_to_project')
+                    ->label('Volver al Proyecto')
+                    ->icon('heroicon-o-arrow-left')
+                    ->color('gray')
+                    ->visible(fn() => session()->has('project_id'))
+                    ->action(function () {
+                        $projectId = session('project_id');
+                        if ($projectId) {
+                            // Limpiar la sesión
+                            session()->forget('project_id');
+                            return redirect(route('filament.dashboard.resources.projects.edit', $projectId));
+                        }
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->defaultSort('created_at', 'desc');
+            ]);
     }
 
     public static function getRelations(): array
@@ -388,8 +407,8 @@ class WorkReportResource extends Resource
     {
         return [
             'index' => Pages\ListWorkReports::route('/'),
-            'view' => Pages\ViewWorkReport::route('/{record}'),
             'create' => Pages\CreateWorkReport::route('/create'),
+            'view' => Pages\ViewWorkReport::route('/{record}'),
             'edit' => Pages\EditWorkReport::route('/{record}/edit'),
         ];
     }
