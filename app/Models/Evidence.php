@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Evidence extends Model
 {
     use HasFactory;
-    protected $table = 'evidences';
+    protected $table = 'work_reports';
 
     protected $fillable = [
         'name',

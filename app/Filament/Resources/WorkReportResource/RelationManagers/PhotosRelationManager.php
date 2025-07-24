@@ -139,7 +139,6 @@ class PhotosRelationManager extends RelationManager
                                 ->label('Descripción de la evidencia')
                                 ->required()
                                 ->maxLength(500)
-
                                 ->rows(3)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
 

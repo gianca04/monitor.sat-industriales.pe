@@ -17,10 +17,7 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, HasApiTokens;
 
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return str_ends_with($this->email, '@gmail.com') && $this->hasVerifiedEmail();
-    }
+
     /**
      * The attributes that are mass assignable.
      *

@@ -16,19 +16,19 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Credenciales inv¨¢lidas'], 401);
+            return response()->json(['message' => 'Credenciales invalidas'], 401);
         }
 
         $user = User::where('email', $request->email)->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Establecer la expiraci¨®n del token en 3 d¨ªas
+        // Establecer la expiraciÃ³n del token en 3 dÃ­as
         $expiresAt = now()->addDays(3);
         $user->tokens()->latest('id')->first()->update([
             'expires_at' => $expiresAt,
         ]);
 
-        // Cargar relaci¨®n employee si existe
+        // Cargar relaciÃ³n employee si existe
         $user->load('employee');
 
         return response()->json([
@@ -44,6 +44,6 @@ class AuthController extends Controller
     {
         $request->user()->tokens()->delete();
 
-        return response()->json(['message' => 'Sesi¨®n cerrada correctamente']);
+        return response()->json(['message' => 'Sesiï¿½ï¿½n cerrada correctamente']);
     }
 }
