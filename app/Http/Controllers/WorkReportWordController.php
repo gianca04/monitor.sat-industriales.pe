@@ -26,54 +26,71 @@ class WorkReportWordController extends Controller
         }
 
         $phpWord = new PhpWord();
-        $section = $phpWord->addSection();
+        $section = $phpWord->addSection([
+            'marginTop' => 600, // Márgenes en 1 cm
+            'marginLeft' => 600,
+            'marginRight' => 600,
+            'marginBottom' => 600
+        ]);
+
+        // Estilo de fuente por defecto
+        $fontStyle = [
+            'name' => 'Times New Roman',
+            'size' => 12,
+            'align' => 'both'
+        ];
+        $headingStyle = [
+            'name' => 'Times New Roman',
+            'size' => 14,
+            'bold' => true
+        ];
 
         // Título
-        $section->addText($workReport->project->name, ['bold' => true, 'size' => 18]);
-        $section->addText('Reporte #' . $workReport->id, ['bold' => true, 'size' => 14]);
+        $section->addText($workReport->project->name, ['bold' => true, 'size' => 18, 'name' => 'Times New Roman']);
+        $section->addText('Reporte #' . $workReport->id, $headingStyle);
         $section->addTextBreak();
 
         // Información General
-        $section->addText('Información del Reporte', ['bold' => true, 'size' => 14]);
-        $section->addText('Nombre: ' . $workReport->name);
-        $section->addText('Descripción: ' . ($workReport->description ?? 'N/A'));
-        $section->addText('Fecha de creación: ' . $workReport->created_at->format('d/m/Y H:i'));
+        $section->addText('Información del Reporte', $headingStyle);
+        $section->addText('Nombre: ' . $workReport->name, $fontStyle);
+        $section->addText('Descripción: ' . ($workReport->description ?? 'N/A'), $fontStyle);
+        $section->addText('Fecha de creación: ' . $workReport->created_at->format('d/m/Y H:i'), $fontStyle);
         $section->addTextBreak();
 
         // Supervisor
-        $section->addText('Supervisor Responsable', ['bold' => true, 'size' => 14]);
-        $section->addText('Nombre: ' . $workReport->employee->first_name . ' ' . $workReport->employee->last_name);
-        $section->addText('Documento: ' . $workReport->employee->document_type . ' ' . $workReport->employee->document_number);
+        $section->addText('Supervisor Responsable', $headingStyle);
+        $section->addText('Nombre: ' . $workReport->employee->first_name . ' ' . $workReport->employee->last_name, $fontStyle);
+        $section->addText('Documento: ' . $workReport->employee->document_type . ' ' . $workReport->employee->document_number, $fontStyle);
         if ($workReport->employee->user) {
-            $section->addText('Email: ' . $workReport->employee->user->email);
+            $section->addText('Email: ' . $workReport->employee->user->email, $fontStyle);
         }
         $section->addTextBreak();
 
         // Proyecto
-        $section->addText('Proyecto', ['bold' => true, 'size' => 14]);
-        $section->addText('Nombre: ' . $workReport->project->name);
-        $section->addText('Código: ' . ($workReport->project->quote_id ?? 'N/A'));
-        $section->addText('Estado: ' . ($workReport->project->status ?? 'Activo'));
+        $section->addText('Proyecto', $headingStyle);
+        $section->addText('Nombre: ' . $workReport->project->name, $fontStyle);
+        $section->addText('Código: ' . ($workReport->project->quote_id ?? 'N/A'), $fontStyle);
+        $section->addText('Estado: ' . ($workReport->project->status ?? 'Activo'), $fontStyle);
         if ($workReport->project->start_date) {
-            $section->addText('Fecha inicio: ' . \Carbon\Carbon::parse($workReport->project->start_date)->format('d/m/Y'));
+            $section->addText('Fecha inicio: ' . \Carbon\Carbon::parse($workReport->project->start_date)->format('d/m/Y'), $fontStyle);
         }
         $section->addTextBreak();
 
         // Estadísticas
-        $section->addText('Total Evidencias: ' . $workReport->photos->count());
-        $section->addText('Evidencias Hoy: ' . $workReport->photos->where('taken_at', '>=', today())->count());
+        $section->addText('Total Evidencias: ' . $workReport->photos->count(), $fontStyle);
+        $section->addText('Evidencias Hoy: ' . $workReport->photos->where('taken_at', '>=', today())->count(), $fontStyle);
         $diasTrabajo = collect($workReport->photos)->groupBy(function ($item) {
             return $item->taken_at->format('Y-m-d');
         })->count();
-        $section->addText('Días de Trabajo: ' . $diasTrabajo);
+        $section->addText('Días de Trabajo: ' . $diasTrabajo, $fontStyle);
         $section->addTextBreak();
 
         // Fotos
-        $section->addText('Evidencias Fotográficas', ['bold' => true, 'size' => 14]);
+        $section->addText('Evidencias Fotográficas', $headingStyle);
         foreach ($workReport->photos as $index => $photo) {
-            $section->addText('Evidencia #' . ($index + 1), ['bold' => true]);
-            $section->addText('Capturada el: ' . $photo->taken_at->format('d/m/Y H:i'));
-            $section->addText('Descripción: ' . $photo->descripcion);
+            $section->addText('Evidencia #' . ($index + 1), ['bold' => true, 'size' => 12]);
+            $section->addText('Capturada el: ' . $photo->taken_at->format('d/m/Y H:i'), $fontStyle);
+            $section->addText('Descripción: ' . $photo->descripcion, $fontStyle);
 
             // Si la imagen existe, agregarla
             $imgPath = public_path('storage/' . $photo->photo_path);
@@ -90,14 +107,14 @@ class WorkReportWordController extends Controller
                     'alignment' => Jc::CENTER // Centrar imagen
                 ]);
             } else {
-                $section->addText('Imagen no disponible');
+                $section->addText('Imagen no disponible', $fontStyle);
             }
             $section->addTextBreak();
         }
 
         // Footer
-        $section->addText('Reporte generado automáticamente el ' . now()->format('d/m/Y H:i'));
-        $section->addText('SAT INDUSTRIALES - Monitor');
+        $section->addText('Reporte generado automáticamente el ' . now()->format('d/m/Y H:i'), $fontStyle);
+        $section->addText('SAT INDUSTRIALES - Monitor', $fontStyle);
 
         // Descargar el archivo
         $filename = 'reporte_trabajo_' . $workReport->id . '_' . now()->format('Y-m-d_H-i') . '.docx';

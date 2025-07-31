@@ -15,6 +15,8 @@ class WorkReport extends Model
         'project_id',
         'name',
         'description',
+        'supervisor_signature',
+        'manager_signature',
     ];
 
     /**

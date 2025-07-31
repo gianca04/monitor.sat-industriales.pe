@@ -27,9 +27,8 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration'])->group(function () {
 
     // Proyectos
     Route::prefix('projects')->group(function () {
-        Route::get('/', [ProjectController::class, 'index']); // Proyectos vigentes
-        Route::get('/all', [ProjectController::class, 'all']); // Todos los proyectos
-        Route::get('/search', [ProjectController::class, 'search']); // Búsqueda avanzada
+        // Endpoint principal para proyectos vigentes y búsqueda por nombre, cliente y subcliente
+        Route::get('/', [ProjectController::class, 'index']);
         Route::get('/{id}', [ProjectController::class, 'show']);
     });
 

@@ -11,6 +11,7 @@ use App\Models\Quote;
 use Illuminate\Support\Facades\Auth;
 use App\Models\WorkReport;
 use Filament\Forms;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Split;
 use Filament\Forms\Form;
@@ -20,6 +21,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class WorkReportResource extends Resource
 {
@@ -38,6 +40,8 @@ class WorkReportResource extends Resource
             ->schema([
                 Section::make('Información del reporte')
                     ->columns(2)
+                    ->collapsible()
+
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
@@ -56,7 +60,24 @@ class WorkReportResource extends Resource
                             ->helperText('Proporciona una descripción detallada del trabajo realizado.')
                             ->columnSpanFull(),
                     ]),
+                Section::make('Firmas')
+                    ->columns(2)
+                    ->collapsible()
+                    ->schema([
+                        SignaturePad::make('manager_signature')
+                            ->label('Firma del gerente / subgerente')
+                            ->dotSize(2.0)
+                            ->penColor('#000')  // Color negro en modo claro
+                            ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad
 
+                            ->lineMinWidth(0.5)
+                            ->lineMaxWidth(2.5)
+                            ->throttle(16)
+                            ->minDistance(5)
+                            ->velocityFilterWeight(0.7),
+                        SignaturePad::make('supervisor_signature')
+                            ->label('Firma del Validado por supervisor / técnico'),
+                    ]),
                 Split::make([
                     Section::make([
                         Forms\Components\Select::make('employee_id')
@@ -351,6 +372,14 @@ class WorkReportResource extends Resource
                     ->default(fn() => session('filter_project_id'))
                     ->placeholder('Todos los proyectos'),
 
+                Tables\Filters\Filter::make('recent')
+                    ->label('Últimas 24 horas')
+                    ->query(fn(Builder $query): Builder => $query->where('created_at', '>=', now()->subDay())),
+
+                /*Tables\Filters\Filter::make('today')
+                    ->label('Hoy')
+                    ->query(fn(Builder $query): Builder => $query->whereDate('created_at', today())),
+                */
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -372,7 +401,7 @@ class WorkReportResource extends Resource
                     ->visible(fn(WorkReport $record): bool => $record->photos()->count() > 0)
                     ->tooltip('Generar reporte PDF con evidencias'),
             */
-                    ])
+            ])
             ->headerActions([
                 Tables\Actions\Action::make('back_to_project')
                     ->label('Volver al Proyecto')

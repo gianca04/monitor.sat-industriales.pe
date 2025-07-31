@@ -65,7 +65,15 @@
         },
         init() {
             this.decodeValue();
+
+            // 💥 Limpia mapa anterior si ya existe
+            if (this.map) {
+                this.map.remove();
+                this.map = null;
+            }
+
             this.map = L.map('map').setView([this.lat, this.lng], 13);
+
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(this.map);
@@ -88,6 +96,13 @@
 
             this.$watch('lat', value => this.marker.setLatLng([value, this.lng]));
             this.$watch('lng', value => this.marker.setLatLng([this.lat, value]));
+
+            // ✅ Asegura que el mapa calcule correctamente su tamaño
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.map.invalidateSize();
+                });
+            });
         }
     }" x-init="init()">
 
@@ -110,6 +125,7 @@
             <div id="map" class="w-full my-4 border border-gray-300 rounded-lg shadow-sm h-96 dark:border-gray-600">
             </div>
         </div>
+
         {{-- Coordenadas --}}
         <div class="flex gap-3 my-4">
             <input type="text" x-model="lat" placeholder="Latitud"
@@ -121,6 +137,8 @@
         </div>
 
     </div>
+
+    {{-- Estilos --}}
     <style>
         .map-container {
             width: 100%;
@@ -132,12 +150,10 @@
         #map {
             min-height: 350px;
             height: 24rem;
-            /* h-96 */
             z-index: 1;
             border-radius: 0.5rem;
         }
 
-        /* Asegura que los popups y controles estén por encima */
         .leaflet-top,
         .leaflet-bottom {
             z-index: 2 !important;
@@ -147,19 +163,16 @@
             display: flex;
             align-items: stretch;
             margin-bottom: 1rem;
-            gap: 0;
         }
 
         .search-input {
-            flex: 1 1 0%;
+            flex: 1;
             padding: 0.5rem 0.75rem;
             border: 1px solid #d1d5db;
             border-radius: 0.5rem 0 0 0.5rem;
             font-size: 1rem;
             background: #f9fafb;
             color: #222;
-            outline: none;
-            transition: border-color 0.2s;
         }
 
         .search-input:focus {
@@ -168,8 +181,6 @@
         }
 
         .search-btn {
-            display: inline-flex;
-            align-items: center;
             padding: 0 1.25rem;
             background: #2563eb;
             color: #fff;
@@ -179,13 +190,22 @@
             font-size: 1rem;
             text-decoration: none;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s;
         }
 
-        .search-btn:hover,
-        .search-btn:focus {
+        .search-btn:hover {
             background: #1d4ed8;
-            color: #fff;
         }
     </style>
 </x-dynamic-component>
+
+{{-- Re-inicialización tras acciones de Livewire --}}
+<script>
+    document.addEventListener('livewire:load', () => {
+        Livewire.hook('message.processed', (message, component) => {
+            const container = document.querySelector('[x-data]');
+            if (container && container.__x && typeof container.__x.$data.init === 'function') {
+                container.__x.$data.init();
+            }
+        });
+    });
+</script>

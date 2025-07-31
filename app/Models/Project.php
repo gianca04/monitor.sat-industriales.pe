@@ -73,7 +73,7 @@ class Project extends Model
     /**
      * Get the latitude from the location JSON field
      */
-        /**
+    /**
      * Relación: Un proyecto pertenece a un subcliente.
      */
     public function subClient()
@@ -112,6 +112,13 @@ class Project extends Model
     {
         return $this->belongsToMany(Employee::class, 'timesheets');
     }
+
+    public function supervisors()
+    {
+        return $this->belongsToMany(Employee::class, 'employee_project');
+    }
+
+
 
     public function getLocationLatitudeAttribute()
     {
@@ -183,5 +190,4 @@ class Project extends Model
         }
         return 'Sin definir';
     }
-
 }

@@ -8,6 +8,8 @@ use App\Filament\Resources\EmployeeResource\RelationManagers;
 use App\Models\Employee;
 use Filament\Actions\Exports\Enums\Contracts\ExportFormat;
 use Filament\Forms;
+use Filament\Tables\Columns\Layout\Grid;
+
 use App\Filament\Exports\ProductExporter;
 use Filament\Forms\Components\Tabs;
 
@@ -138,7 +140,32 @@ class EmployeeResource extends Resource
                                         'male' => 'Masculino',
                                         'female' => 'Femenino',
                                         'other' => 'No específicado',
-                                    ])
+                                    ]),
+
+                                Forms\Components\Select::make('position_id')
+                                    ->label('Cargo')
+                                    ->relationship('position', 'name')
+                                    ->required()
+                                    ->preload()
+                                    ->searchable()
+                                    ->placeholder('Seleccionar cargo')
+
+                                    ->createOptionForm([
+                                        Forms\Components\Section::make('Información del cargo')
+                                            ->description('Datos generales del cargo')
+                                            ->icon('heroicon-o-identification')
+                                            ->schema([
+                                                Forms\Components\TextInput::make('name')
+                                                    ->required(),
+                                            ])
+                                            ->columns(2),
+                                    ]),
+
+                                Forms\Components\Toggle::make('active')
+                                    ->label('Activo')
+                                    ->helperText('Marca esta opción para activar al colaborador y permitirle iniciar sesión.')
+                                    ->default(true)
+                                    ->live() // Hace que el formulario reaccione al cambio de este toggle
                             ])
                             ->columnSpan('full'),
 
@@ -208,8 +235,12 @@ class EmployeeResource extends Resource
 
     public static function table(Table $table): Table
     {
+
         return $table
+
             ->columns([
+
+
                 Tables\Columns\TextColumn::make('first_name')
                     ->label('Nombres')
                     ->searchable()
@@ -254,6 +285,10 @@ class EmployeeResource extends Resource
                     ->icon('heroicon-o-map-pin')
                     ->searchable(),
 
+                Tables\Columns\IconColumn::make('active')
+                    ->label('Activo')
+                    ->boolean(),
+
                 Tables\Columns\TextColumn::make('user.email')
                     ->icon('heroicon-o-envelope')
                     ->label('Nombre de ususario'),
@@ -279,11 +314,11 @@ class EmployeeResource extends Resource
             ])
             ->headerActions(
                 [
-                    ExportAction::make()
-                        ->exporter(EmployeeExporter::class)
-
+                    //ExportAction::make()
+                    //    ->exporter(EmployeeExporter::class)
                 ]
             )
+
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

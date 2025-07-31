@@ -26,6 +26,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use App\Models\Attendance;
 use App\Models\Project;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 
@@ -134,6 +135,7 @@ class TimesheetResource extends Resource
 
                         Forms\Components\Select::make('employee_id')
                             ->required()
+                            ->default(fn(callable $get) => Auth::user()?->employee_id)
                             ->columns(2)
                             ->prefixIcon('heroicon-m-user')
                             ->label('Responsable del Tareo') // Título para el campo 'Empleado'
@@ -411,6 +413,18 @@ class TimesheetResource extends Resource
                     ->toggle(),
             ])
             ->actions([
+
+                Tables\Actions\Action::make('exportAttendances')
+                    ->label('Exportar Asistencias')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('info')
+                    ->action(function ($record) {
+                        return \Maatwebsite\Excel\Facades\Excel::download(
+                            new \App\Exports\AttendancesExport($record->id),
+                            'asistencias_' . $record->project->name . '_' . $record->check_in_date->format('Y-m-d') . '.xlsx'
+                        );
+                    })
+                    ->visible(fn($record) => $record->attendances()->count() > 0),
                 Tables\Actions\Action::make('goto_project')
                     ->label('Ver Proyecto')
                     ->icon('heroicon-o-puzzle-piece')
@@ -698,6 +712,7 @@ class TimesheetResource extends Resource
                 */
             ])
             ->headerActions([
+
                 Tables\Actions\Action::make('back_to_project')
                     ->label('Volver al Proyecto')
                     ->icon('heroicon-o-arrow-left')

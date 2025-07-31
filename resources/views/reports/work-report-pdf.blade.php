@@ -258,6 +258,27 @@
         @endif
     </div>
 
+    <div class="signature-container">
+        <!-- Firma del supervisor -->
+        <div class="signature-item">
+            <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor" class="photo-image" />
+            <div class="photo-description">
+                <strong>Firma del supervisor</strong>
+            </div>
+        </div>
+
+        <br>
+
+        <!-- Firma del gerente -->
+        <div class="signature-item">
+            <img src="{{ $workReport->manager_signature }}" alt="Firma del Gerente" class="photo-image" />
+            <div class="photo-description">
+                <strong>Firma del gerente</strong>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Fotos del Reporte -->
     <div class="photos-section">
         <h2 class="section-title">Evidencias Fotográficas</h2>

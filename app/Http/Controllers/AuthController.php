@@ -32,11 +32,11 @@ class AuthController extends Controller
         $user->load('employee');
 
         return response()->json([
+            'message' => 'Inicio de sesión exitoso',
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'expires_at' => $expiresAt->toDateTimeString(),
+            'expires_at' => $expiresAt->toIso8601String(),
             'user' => $user,
-            'employee' => $user->employee,
         ]);
     }
 

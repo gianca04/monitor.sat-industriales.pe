@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
+use App\Filament\Resources\ProjectResource\RelationManagers\EmployeesRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\TimesheetsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\WorkReportsRelationManager;
 use App\Models\Project;
@@ -103,7 +104,7 @@ class ProjectResource extends Resource
                 // Sección: Coordenadas geográficas
                 Forms\Components\Section::make('Coordenadas geográficas')
                     ->columns(1)
-                    ->collapsed()
+
                     ->schema([
                         \App\Forms\Components\ubicacion::make('location')
                             ->label('Ubicación en el mapa'),
@@ -248,6 +249,7 @@ class ProjectResource extends Resource
             //
             TimesheetsRelationManager::class,
             WorkReportsRelationManager::class,
+            EmployeesRelationManager::class, // Relación con empleados (supervisores)
         ];
     }
 

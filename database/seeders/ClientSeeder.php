@@ -1404,7 +1404,6 @@ class ClientSeeder extends Seeder
                 'contact_email'  => '',
                 'logo'           => null,
             ],
-
             // Puedes seguir agregando más clientes aquí si tienes más datos
         ];
 

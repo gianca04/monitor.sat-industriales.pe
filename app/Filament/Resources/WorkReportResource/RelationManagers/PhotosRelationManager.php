@@ -70,7 +70,7 @@ class PhotosRelationManager extends RelationManager
                     // Columnas
                     Tables\Columns\ImageColumn::make('photo_path')
                         ->label('Evidencia')
-                        ->height(200)
+                        ->height(125)
 
                         ->visibility('private')
                         ->checkFileExistence(false)
@@ -81,6 +81,7 @@ class PhotosRelationManager extends RelationManager
                     Tables\Columns\TextColumn::make('descripcion')
                         ->label('Descripción')
                         ->limit(50)
+                        ->searchable()
                         ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                             $state = $column->getState();
                             if (strlen($state) <= 50) {
@@ -88,8 +89,6 @@ class PhotosRelationManager extends RelationManager
                             }
                             return $state;
                         })
-                        ->searchable()
-                        ->sortable()
                         ->size('m') // Texto un poco más pequeño para la descripción
                     , // Color secundario para diferenciación
 
@@ -108,13 +107,7 @@ class PhotosRelationManager extends RelationManager
                 'xl' => 3,
             ])
             ->filters([
-                Tables\Filters\Filter::make('recent')
-                    ->label('Últimas 24 horas')
-                    ->query(fn(Builder $query): Builder => $query->where('taken_at', '>=', now()->subDay())),
 
-                Tables\Filters\Filter::make('today')
-                    ->label('Hoy')
-                    ->query(fn(Builder $query): Builder => $query->whereDate('taken_at', today())),
             ])
             ->headerActions([
 
@@ -127,6 +120,7 @@ class PhotosRelationManager extends RelationManager
                             Forms\Components\FileUpload::make('photo_path')
                                 ->label('Fotografía')
                                 ->image()
+                                ->previewable()
                                 ->required()
                                 ->directory('work-reports/photos')
                                 ->visibility('public')
@@ -146,7 +140,6 @@ class PhotosRelationManager extends RelationManager
                                 ->label('Fecha y hora de captura')
                                 ->default(now())
                                 ->required()
-                                ->alignCenter()
                                 ->native(false)
                                 ->displayFormat('d/m/Y H:i'),
                         ]);
@@ -173,6 +166,7 @@ class PhotosRelationManager extends RelationManager
                                 ->label('Fotografía')
                                 ->image()
                                 ->required()
+                                ->previewable()
                                 ->directory('work-reports/photos')
                                 ->visibility('public')
                                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])

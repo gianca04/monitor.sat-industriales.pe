@@ -104,7 +104,7 @@ class AttendancesRelationManager extends RelationManager
                             ->native(false)
                             ->prefixIcon('heroicon-o-clock'),
 
-                        
+
                     ]),
 
                 Forms\Components\Section::make('Horarios de Trabajo')
@@ -187,7 +187,7 @@ class AttendancesRelationManager extends RelationManager
                             ]);
                         } elseif (in_array($state, ['absent', 'justified', 'late'])) {
                             $updates = ['status' => $state];
-                            
+
                             // Solo limpiar horarios si es ausente o justificado, no si llegó tarde
                             if (in_array($state, ['absent', 'justified'])) {
                                 $updates = array_merge($updates, [
@@ -197,7 +197,7 @@ class AttendancesRelationManager extends RelationManager
                                     'check_out_date' => null,
                                 ]);
                             }
-                            
+
                             $record->update($updates);
                         }
                     })
@@ -258,11 +258,11 @@ class AttendancesRelationManager extends RelationManager
 
                         // Tiempo trabajado = tiempo total - tiempo de break
                         $workedMinutes = max(0, $totalMinutes - $breakTime);
-                        
+
                         if ($workedMinutes <= 0) {
                             return null;
                         }
-                        
+
                         $hours = intval($workedMinutes / 60);
                         $minutes = $workedMinutes % 60;
 
@@ -402,180 +402,6 @@ class AttendancesRelationManager extends RelationManager
                     ->toggle(),
             ])
             ->headerActions([
-
-                Tables\Actions\Action::make(name: 'generarAsistencias')
-                    ->label('Generar Asistencias')
-                    ->icon('heroicon-o-user-plus')
-                    ->color('success')
-                    ->form([
-                        Forms\Components\Repeater::make('empleados')
-                            ->label('Empleados para generar asistencias')
-                            ->schema([
-                                Forms\Components\Select::make('employee_id')
-                                    ->label('Empleado')
-                                    ->searchable()
-                                    ->options(function () {
-                                        return Employee::query()
-                                            ->select('id', 'first_name', 'last_name', 'document_number')
-                                            ->get()
-                                            ->mapWithKeys(function ($employee) {
-                                                return [$employee->id => "{$employee->full_name} - {$employee->document_number}"];
-                                            })
-                                            ->toArray();
-                                    })
-                                    ->required()
-                                    ->distinct()
-                                    ->columnSpan(2),
-
-                                Forms\Components\Select::make('status')
-                                    ->label('Estado inicial')
-                                    ->options([
-                                        'attended' => 'Asistió',
-                                        'absent' => 'Faltó',
-                                        'justified' => 'Justificado'
-                                    ])
-                                    ->default('attended')
-                                    ->required(),
-                            ])
-                            ->columns(3)
-                            ->defaultItems(1)
-                            ->addActionLabel('Agregar empleado')
-                            ->reorderable(false)
-                            ->collapsible()
-                            ->itemLabel(
-                                fn(array $state): ?string =>
-                                $state['employee_id'] ? Employee::find($state['employee_id'])?->full_name : 'Nuevo empleado'
-                            ),
-                    ]),
-                Tables\Actions\CreateAction::make(),
-
-                // Acción para descargar plantilla de Excel
-                /*Tables\Actions\Action::make('downloadTemplate')
-                    ->label('Descargar Plantilla Excel')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->action(function () {
-                        $timesheet = $this->getOwnerRecord();
-
-                        if (!$timesheet) {
-                            Notification::make()
-                                ->title('Error')
-                                ->body('No se pudo obtener la información del tareo.')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-
-                        return Excel::download(
-                            new AttendanceTemplateExport($timesheet->project_id, $timesheet->check_in_date),
-                            'plantilla_asistencias_' . $timesheet->project->name . '_' . $timesheet->check_in_date->format('Y-m-d') . '.xlsx'
-                        );
-                    }),
-
-                // Acción para importar desde Excel
-                Tables\Actions\Action::make('importFromExcel')
-                    ->label('Importar desde Excel')
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->color('warning')
-                    ->form([
-                        FileUpload::make('excel_file')
-                            ->label('Archivo Excel')
-                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
-                            ->required()
-                            ->disk('local')
-                            ->directory('temp/imports')
-                            ->helperText('Sube un archivo Excel (.xlsx) con las asistencias. Usa la plantilla descargable para el formato correcto.'),
-
-                        Forms\Components\Toggle::make('replace_existing')
-                            ->label('Reemplazar asistencias existentes')
-                            ->helperText('Si está activado, las asistencias existentes para los empleados en el Excel serán reemplazadas.')
-                            ->default(false),
-                    ])
-                    ->action(function (array $data) {
-                        $timesheet = $this->getOwnerRecord();
-
-                        if (!$timesheet) {
-                            Notification::make()
-                                ->title('Error')
-                                ->body('No se pudo obtener la información del tareo.')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-
-                        $filePath = Storage::disk('local')->path($data['excel_file']);
-
-                        try {
-                            // Si se debe reemplazar, eliminar asistencias existentes para empleados en el Excel
-                            if ($data['replace_existing']) {
-                                // Leer el Excel primero para obtener los empleados
-                                $import = new AttendancesImport($timesheet->id);
-
-                                // Procesar importación
-                                Excel::import($import, $filePath);
-
-                                $errors = $import->getErrors();
-                                $successCount = $import->getSuccessCount();
-
-                                if (empty($errors)) {
-                                    Notification::make()
-                                        ->title('✅ Importación completada')
-                                        ->body("Se importaron {$successCount} asistencias exitosamente.")
-                                        ->success()
-                                        ->send();
-                                } else {
-                                    $errorMsg = "Se importaron {$successCount} asistencias. Errores encontrados:\n" . implode("\n", array_slice($errors, 0, 5));
-                                    if (count($errors) > 5) {
-                                        $errorMsg .= "\n... y " . (count($errors) - 5) . " errores más.";
-                                    }
-
-                                    Notification::make()
-                                        ->title('⚠️ Importación completada con errores')
-                                        ->body($errorMsg)
-                                        ->warning()
-                                        ->persistent()
-                                        ->send();
-                                }
-                            } else {
-                                $import = new AttendancesImport($timesheet->id);
-                                Excel::import($import, $filePath);
-
-                                $errors = $import->getErrors();
-                                $successCount = $import->getSuccessCount();
-
-                                if (empty($errors)) {
-                                    Notification::make()
-                                        ->title('✅ Importación completada')
-                                        ->body("Se importaron {$successCount} asistencias exitosamente.")
-                                        ->success()
-                                        ->send();
-                                } else {
-                                    $errorMsg = "Se importaron {$successCount} asistencias. Errores:\n" . implode("\n", array_slice($errors, 0, 5));
-                                    if (count($errors) > 5) {
-                                        $errorMsg .= "\n... y " . (count($errors) - 5) . " errores más.";
-                                    }
-
-                                    Notification::make()
-                                        ->title('⚠️ Importación con errores')
-                                        ->body($errorMsg)
-                                        ->warning()
-                                        ->persistent()
-                                        ->send();
-                                }
-                            }
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('❌ Error en la importación')
-                                ->body('Error al procesar el archivo: ' . $e->getMessage())
-                                ->danger()
-                                ->persistent()
-                                ->send();
-                        } finally {
-                            // Limpiar archivo temporal
-                            Storage::disk('local')->delete($data['excel_file']);
-                        }
-                    }),
-                    */
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -634,12 +460,12 @@ class AttendancesRelationManager extends RelationManager
                         ->form([
                             Forms\Components\DateTimePicker::make('end_break_date')
                                 ->label('Hora de fin de break')
-                                ->required(),
                         ])
                         ->action(function ($records, array $data) {
                             foreach ($records as $attendance) {
+                                $endBreak = $data['end_break_date'] ?? $attendance->timesheet->end_break_date ?? now();
                                 $attendance->update([
-                                    'end_break_date' => $data['end_break_date'],
+                                    'end_break_date' => $endBreak,
                                 ]);
                             }
                         }),

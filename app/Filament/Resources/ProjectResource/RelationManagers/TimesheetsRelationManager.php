@@ -3,8 +3,12 @@
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use App\Models\Employee;
+use App\Models\Project;
 use App\Models\Timesheet;
+use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -12,6 +16,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class TimesheetsRelationManager extends RelationManager
 {
@@ -28,121 +33,190 @@ class TimesheetsRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\Section::make('Información del Tareo')
-                    ->description('Registra los horarios de trabajo para este proyecto')
-                    ->icon('heroicon-o-clock')
+            ->schema([Section::make('Datos del registro de asistencia')
+                    ->description('Completa los detalles del check-in, break y check-out')
+                    ->icon('heroicon-o-calendar-days')
                     ->schema([
-                        Forms\Components\Select::make('employee_id')
-                            ->label('Responsable del Tareo')
+                        // Sección de empleado
+
+                        Forms\Components\Select::make('project_id')
+                            ->label('Proyecto')
                             ->required()
                             ->searchable()
-                            ->preload()
-                            ->prefixIcon('heroicon-o-user')
-                            ->options(function () {
-                                return Employee::query()
-                                    ->select('id', 'first_name', 'last_name', 'document_number')
-                                    ->get()
-                                    ->mapWithKeys(function ($employee) {
-                                        return [$employee->id => $employee->first_name . ' ' . $employee->last_name . ' - ' . $employee->document_number];
+                            ->options(function (callable $get) {
+                                $search = $get('search');
+                                $sessionprojectId = session('project_id');
+                                $query = Project::query()
+                                    ->select('projects.id', 'projects.name')
+                                    ->when($search, function ($query) use ($search) {
+                                        $query->where('projects.name', 'like', "%{$search}%");
+                                    })
+                                    ->limit(10);
+
+                                return $query->get()
+                                    ->unique('id')
+                                    ->mapWithKeys(function ($project) {
+                                        $label = "{$project->name}";
+                                        return [$project->id => $label];
                                     })
                                     ->toArray();
                             })
-                            ->helperText('Selecciona el empleado para este tareo'),
-
-                        Forms\Components\Select::make('shift')
-                            ->label('Turno')
-                            ->required()
-                            ->prefixIcon('heroicon-o-sun')
-                            ->options([
-                                'morning' => 'Mañana (7:00 - 15:00)',
-                                'afternoon' => 'Tarde (15:00 - 23:00)',
-                                'night' => 'Noche (23:00 - 7:00)',
-                                'full_day' => 'Día completo (7:00 - 18:00)',
-                                'custom' => 'Horario personalizado',
-                            ])
-                            ->default('morning')
-                            ->helperText('Selecciona el turno de trabajo'),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Horarios de Trabajo')
-                    ->description('Registra los horarios de entrada, descanso y salida')
-                    ->icon('heroicon-o-calendar-days')
-                    ->schema([
-                        Forms\Components\DateTimePicker::make('check_in_date')
-                            ->label('Hora de Entrada')
-                            ->required()
-                            ->prefixIcon('heroicon-o-arrow-right-on-rectangle')
-                            ->default(now()->startOfDay()->addHours(7))
-                            ->helperText('Fecha y hora de entrada al trabajo')
+                            ->default(fn() => session('project_id'))
                             ->reactive()
-                            ->afterStateUpdated(function (callable $get, callable $set, $state) {
-                                // Auto-sugerir horarios basados en la entrada
-                                if ($state && !$get('break_date')) {
-                                    $checkIn = \Carbon\Carbon::parse($state);
-                                    $set('break_date', $checkIn->copy()->addHours(4)); // Descanso después de 4 horas
-                                    $set('end_break_date', $checkIn->copy()->addHours(4)->addMinutes(30)); // 30 min de descanso
-                                    $set('check_out_date', $checkIn->copy()->addHours(8)); // 8 horas de trabajo
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                // Validar si ya existe un tareo para este proyecto en la fecha seleccionada
+                                $checkInDate = $get('check_in_date');
+                                if ($state && $checkInDate) {
+                                    $existingTimesheet = Timesheet::where('project_id', $state)
+                                        ->whereDate('check_in_date', Carbon::parse($checkInDate)->toDateString())
+                                        ->first();
+
+                                    if ($existingTimesheet) {
+                                        Notification::make()
+                                            ->title('¡Atención!')
+                                            ->body('Ya existe un tareo para este proyecto en la fecha seleccionada.')
+                                            ->warning()
+                                            ->send();
+                                    }
                                 }
-                            }),
+                            })
+                            ->rules([
+                                function () {
+                                    return function (string $attribute, $value, \Closure $fail) {
+                                        $checkInDate = request()->input('check_in_date');
+                                        $recordId = request()->route('record'); // ID del registro actual (para edición)
 
-                        Forms\Components\DateTimePicker::make('check_out_date')
-                            ->label('Hora de Salida')
-                            ->prefixIcon('heroicon-o-arrow-left-on-rectangle')
-                            ->helperText('Fecha y hora de salida del trabajo')
-                            ->after('check_in_date'),
+                                        if ($value && $checkInDate) {
+                                            $exists = static::validateUniqueTimesheetForProjectDate(
+                                                $value,
+                                                $checkInDate,
+                                                $recordId
+                                            );
 
-                        Forms\Components\DateTimePicker::make('break_date')
-                            ->label('Inicio de Descanso')
+                                            if ($exists) {
+                                                $fail('Ya existe un tareo para este proyecto en la fecha seleccionada.');
+                                            }
+                                        }
+                                    };
+                                },
+                            ])
+                            ->required(),
+
+
+                        Forms\Components\Select::make('employee_id')
+                            ->required()
+                            ->default(fn(callable $get) => Auth::user()?->employee_id)
+                            ->columns(2)
+                            ->prefixIcon('heroicon-m-user')
+                            ->label('Responsable del Tareo') // Título para el campo 'Empleado'
+                            ->options(
+                                function (callable $get) {
+                                    return Employee::query()
+                                        ->select('id', 'first_name', 'last_name', 'document_number')
+                                        ->when($get('search'), function ($query, $search) {
+                                            $query->where('first_name', 'like', "%{$search}%")
+                                                ->orWhere('last_name', 'like', "%{$search}%")
+                                                ->orWhere('document_number', 'like', "%{$search}%");
+                                        })
+                                        ->get()
+                                        ->mapWithKeys(function ($employee) {
+                                            return [$employee->id => $employee->full_name];
+                                        })
+                                        ->toArray();
+                                }
+                            )
+                            ->searchable() // Activa la búsqueda asincrónica
+                            ->placeholder('Seleccionar un supervisor') // Placeholder
+                            ->reactive(),
+
+                        // ...existing code...
+
+                        DateTimePicker::make('check_in_date')
+                            ->label('Fecha de entrada')
+                            ->seconds(false)
+                            ->default(now())
+                            ->weekStartsOnMonday()
+                            ->maxDate(fn(callable $get) => $get('check_out_date'))
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                // Validar si ya existe un tareo para este proyecto en la fecha seleccionada
+                                $projectId = $get('project_id');
+                                if ($state && $projectId) {
+                                    $existingTimesheet = Timesheet::where('project_id', $projectId)
+                                        ->whereDate('check_in_date', Carbon::parse($state)->toDateString())
+                                        ->first();
+
+                                    if ($existingTimesheet) {
+                                        Notification::make()
+                                            ->title('¡Tareo duplicado!')
+                                            ->body('Ya existe un tareo para este proyecto en la fecha seleccionada. No se puede crear otro tareo para el mismo día.')
+                                            ->warning()
+                                            ->persistent()
+                                            ->send();
+                                    }
+                                }
+
+                                $checkIn = $get('check_in_date');
+                                if ($checkIn) {
+                                    $in = Carbon::parse($checkIn)->format('H:i');
+                                    // Turno noche si entra a las 18:00 o después
+                                    if ($in >= '18:00') {
+                                        $set('shift', 'night');
+                                    } else {
+                                        $set('shift', 'day');
+                                    }
+                                }
+                            })
+                            ->rules([
+                                function () {
+                                    return function (string $attribute, $value, \Closure $fail) {
+                                        $projectId = request()->input('project_id');
+                                        $recordId = request()->route('record');
+
+                                        if ($value && $projectId) {
+                                            $exists = static::validateUniqueTimesheetForProjectDate(
+                                                $projectId,
+                                                $value,
+                                                $recordId
+                                            );
+
+                                            if ($exists) {
+                                                $fail('Ya existe un tareo para este proyecto en esta fecha.');
+                                            }
+                                        }
+                                    };
+                                },
+                            ])
+                            ->prefixIcon('heroicon-o-arrow-right-end-on-rectangle'),
+
+                        DateTimePicker::make('break_date')
+                            ->label('Inicio del descanso')
+                            ->seconds(false)
+                            ->default(fn(callable $get) => Carbon::parse($get('check_in_date'))->addHours(4)) // Parse check_in_date as Carbon and add 3 hours
                             ->prefixIcon('heroicon-o-pause')
-                            ->helperText('Hora de inicio del descanso')
-                            ->after('check_in_date')
-                            ->before('end_break_date'),
+                            ->minDate(fn(callable $get) => Carbon::parse($get('check_in_date'))), // Parse check_in_date as Carbon
 
-                        Forms\Components\DateTimePicker::make('end_break_date')
-                            ->label('Fin de Descanso')
-                            ->prefixIcon('heroicon-o-play')
-                            ->helperText('Hora de fin del descanso')
-                            ->after('break_date')
-                            ->before('check_out_date'),
+                        DateTimePicker::make('end_break_date')
+                            ->label('Fin del descanso')
+                            ->seconds(false)
+                            ->default(fn(callable $get) => Carbon::parse($get('break_date'))->addHours(1)) // Parse check_in_date as Carbon and add 3 hours
+                            ->minDate(fn(callable $get) => Carbon::parse($get('break_date'))) // Parse check_in_date as Carbon
+                            ->required()
+                            ->prefixIcon('heroicon-o-play'),
+
+                        DateTimePicker::make('check_out_date')
+                            ->label('Fecha de salida')
+                            ->seconds(false)
+                            ->default(fn(callable $get) => Carbon::parse($get('check_out_date'))->addHours(9))
+                            ->weekStartsOnMonday()
+                            ->minDate(fn(callable $get) => $get('check_in_date'))
+                            ->required()
+                            ->prefixIcon('heroicon-o-arrow-right-start-on-rectangle')
+                            ->reactive(),
+
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Resumen del Tareo')
-                    ->description('Información calculada automáticamente')
-                    ->icon('heroicon-o-calculator')
-                    ->schema([
-                        Forms\Components\Placeholder::make('work_summary')
-                            ->label('Resumen de Horas')
-                            ->content(function (callable $get) {
-                                $checkIn = $get('check_in_date');
-                                $checkOut = $get('check_out_date');
-                                $breakStart = $get('break_date');
-                                $breakEnd = $get('end_break_date');
-
-                                if (!$checkIn || !$checkOut) {
-                                    return 'Ingresa las horas de entrada y salida para ver el resumen';
-                                }
-
-                                $start = \Carbon\Carbon::parse($checkIn);
-                                $end = \Carbon\Carbon::parse($checkOut);
-                                $totalMinutes = $end->diffInMinutes($start);
-
-                                // Restar tiempo de descanso si está definido
-                                if ($breakStart && $breakEnd) {
-                                    $breakStartTime = \Carbon\Carbon::parse($breakStart);
-                                    $breakEndTime = \Carbon\Carbon::parse($breakEnd);
-                                    $breakMinutes = $breakEndTime->diffInMinutes($breakStartTime);
-                                    $totalMinutes -= $breakMinutes;
-                                }
-
-                                $hours = floor($totalMinutes / 60);
-                                $minutes = $totalMinutes % 60;
-
-                                return "Total trabajado: {$hours} horas y {$minutes} minutos";
-                            }),
-                    ]),
             ]);
     }
 
@@ -297,7 +371,7 @@ class TimesheetsRelationManager extends RelationManager
                     }),
             ])
             ->headerActions([
-                /*Tables\Actions\CreateAction::make()
+                Tables\Actions\CreateAction::make()
                     ->label('Nuevo Tareo (Modal)')
                     ->icon('heroicon-o-plus')
                     ->modalHeading('Crear nuevo tareo')
@@ -309,7 +383,7 @@ class TimesheetsRelationManager extends RelationManager
                             ->body('El tareo ha sido registrado exitosamente.')
                     )
                     ->color('gray'),
-                  */
+
                 Tables\Actions\Action::make('create_advanced')
                     ->label('Crear Tareo')
                     ->icon('heroicon-o-document-plus')
@@ -337,13 +411,14 @@ class TimesheetsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                /*Tables\Actions\EditAction::make()
+
+                Tables\Actions\EditAction::make()
                     ->label('Editar (Modal)')
                     ->icon('heroicon-o-pencil-square')
                     ->modalHeading('Editar tareo')
                     ->modalWidth('4xl')
                     ->color('gray'),
-                */
+
                     Tables\Actions\Action::make('edit_advanced')
                     ->label('Editar')
                     ->icon('heroicon-o-pencil-square')
