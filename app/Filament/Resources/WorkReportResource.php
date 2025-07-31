@@ -4,9 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\WorkReportResource\Pages;
 use App\Filament\Resources\WorkReportResource\RelationManagers;
+use App\Filament\Resources\WorkReportResource\RelationManagers\PhotosRelationManager;
 use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Project;
+use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
+
 use App\Models\Quote;
 use Illuminate\Support\Facades\Auth;
 use App\Models\WorkReport;
@@ -349,6 +352,7 @@ class WorkReportResource extends Resource
 
 
 
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -382,6 +386,7 @@ class WorkReportResource extends Resource
                 */
             ])
             ->actions([
+
                 Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')
                     ->color('info'),
@@ -391,6 +396,12 @@ class WorkReportResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->icon('heroicon-o-trash')
                     ->color('danger'),
+
+                RelationManagerAction::make('photos-relation-manager')
+                    ->label('Ver fotografías')
+                    ->slideOver(true)
+                    ->relationManager(PhotosRelationManager::make()),
+
 
                 /*Tables\Actions\Action::make('generate_report')
                     ->label('Reporte PDF')

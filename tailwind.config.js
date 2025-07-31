@@ -7,6 +7,7 @@ export default {
         './storage/framework/views/*.php',
         './resources/**/*.blade.php',
         './resources/**/*.js',
+        './vendor/guava/filament-modal-relation-managers/resources/**/*.blade.php',
         './resources/**/*.vue',
     ],
     theme: {
