@@ -165,14 +165,43 @@
             margin-bottom: 1rem;
         }
 
-        .search-input {
-            flex: 1;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem 0 0 0.5rem;
-            font-size: 1rem;
-            background: #f9fafb;
-            color: #222;
+.search-input {
+    flex: 1;
+    padding: 0.65rem 0.75rem 0.45rem 0.75rem; /* Más padding arriba, menos abajo */
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem 0 0 0.5rem;
+    font-size: 1rem;
+    background: #f9fafb;
+    color: #222;
+    min-width: 0;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    transition: max-width 0.3s;
+}
+
+        /* Responsive: pantalla pequeña (móvil) */
+        @media (max-width: 640px) {
+            .search-input {
+                max-width: 100%;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Responsive: pantalla mediana (tablet) */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .search-input {
+                max-width: 300px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Responsive: pantalla grande (desktop) */
+        @media (min-width: 1025px) {
+            .search-input {
+                max-width: 400px;
+                font-size: 1.05rem;
+            }
         }
 
         .search-input:focus {
@@ -180,17 +209,20 @@
             background: #fff;
         }
 
-        .search-btn {
-            padding: 0 1.25rem;
-            background: #2563eb;
-            color: #fff;
-            font-weight: 600;
-            border: 1px solid #2563eb;
-            border-radius: 0 0.5rem 0.5rem 0;
-            font-size: 1rem;
-            text-decoration: none;
-            cursor: pointer;
-        }
+.search-btn {
+    padding: 0.55rem 1.25rem 0.55rem 1.25rem; /* padding vertical igual al input */
+    background: #2563eb;
+    color: #fff;
+    font-weight: 600;
+    border: 0px solid #2563eb;
+    border-radius: 0 0.5rem 0.5rem 0;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    height: auto;
+}
 
         .search-btn:hover {
             background: #1d4ed8;
