@@ -264,8 +264,14 @@ class EmployeeResource extends Resource
                         'warning' => 'FOREIGN_CARD',
                         'info' => 'PASSPORT',
                     ])
+                    ->searchable()
                     ->badge()
                     ->label('Tipo de Doc'),
+
+                Tables\Columns\TextColumn::make('position.name')
+                    ->searchable()
+                    ->label('Profesión'),
+
 
                 Tables\Columns\TextColumn::make('date_birth')
                     ->label('Fecha de Nacimiento')

@@ -402,7 +402,6 @@ class WorkReportResource extends Resource
                     ->slideOver(true)
                     ->relationManager(PhotosRelationManager::make()),
 
-
                 /*Tables\Actions\Action::make('generate_report')
                     ->label('Reporte PDF')
                     ->icon('heroicon-o-document-text')

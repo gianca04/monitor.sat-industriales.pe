@@ -38,10 +38,10 @@ class PhotosRelationManager extends RelationManager
                     ->directory('work-reports/photos')
                     ->visibility('public')
                     ->acceptedFileTypes(types: ['image/jpeg', 'image/png', 'image/webp'])
-                    ->maxSize(5120) // 5MB
+                    ->maxSize(size: 10240) // 10MB
                     ->extraInputAttributes(['capture' => 'user'])
                     ->columnSpanFull()
-                    ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 5MB'),
+                    ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 10MB'),
 
                 Forms\Components\Textarea::make('descripcion')
                     ->label('Descripción de la evidencia')
@@ -120,14 +120,13 @@ class PhotosRelationManager extends RelationManager
                             Forms\Components\FileUpload::make('photo_path')
                                 ->label('Fotografía')
                                 ->image()
-                                ->previewable()
                                 ->required()
                                 ->directory('work-reports/photos')
                                 ->visibility('public')
                                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                ->maxSize(5120) // 5MB
+                                ->maxSize(30240) // 30MB
                                 ->extraInputAttributes(['capture' => 'environment'])
-                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 5MB.'),
+                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 30MB.'),
 
                             Forms\Components\Textarea::make('descripcion')
                                 ->label('Descripción de la evidencia')
@@ -170,7 +169,7 @@ class PhotosRelationManager extends RelationManager
                                 ->directory('work-reports/photos')
                                 ->visibility('public')
                                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                ->maxSize(5120) // 5MB
+                                ->maxSize(10240) // 10MB
                                 // Sin 'extraInputAttributes' para que abra la galería
                                 ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 5MB.'),
 

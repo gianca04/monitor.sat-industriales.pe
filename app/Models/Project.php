@@ -27,7 +27,7 @@ class Project extends Model
         'latitude',
         'longitude',
         'quote_id',
-
+        'sub_client_id', // Permite asignar el subcliente directamente
     ];
 
 
@@ -53,7 +53,7 @@ class Project extends Model
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
         'location' => 'array', // Convierte automáticamente entre JSON y array
-
+        'sub_client_id' => 'integer',
     ];
 
     public function clients()
@@ -178,14 +178,16 @@ class Project extends Model
     {
         $now = now()->toDateString();
 
+        $start = $this->start_date instanceof \Carbon\Carbon ? $this->start_date->toDateString() : $this->start_date;
+        $end = $this->end_date instanceof \Carbon\Carbon ? $this->end_date->toDateString() : $this->end_date;
 
-        if ($this->start_date && $now < $this->start_date->toDateString()) {
+        if ($start && $now < $start) {
             return 'No iniciado';
         }
-        if ($this->end_date && $now > $this->end_date->toDateString()) {
+        if ($end && $now > $end) {
             return 'Culminado';
         }
-        if ($this->start_date && $this->end_date && $now >= $this->start_date->toDateString() && $now <= $this->end_date->toDateString()) {
+        if ($start && $end && $now >= $start && $now <= $end) {
             return 'En proceso';
         }
         return 'Sin definir';

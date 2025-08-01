@@ -14,14 +14,14 @@ class Employee extends Model
 
     // Atributos asignables en masa
     protected $fillable = [
-        'document_type',
+        'document_type', // DNI','PASAPORTE', 'CARNET DE EXTRANJERIA
         'document_number',
         'first_name',
         'last_name',
         'address',
         'date_contract',
         'date_birth',
-        'sex',
+        'sex', // male', 'female', 'other
         'position_id',
         'active',
     ];

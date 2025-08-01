@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('document_number',12);
             $table->string('first_name',40);
             $table->string('last_name',40);
-            $table->string('address',40);
-            $table->date('date_contract');
-            $table->date('date_birth');
+            $table->string('address',40)->nullable();
+            $table->date('date_contract')->nullable();
+            $table->date('date_birth')->nullable();
             $table->timestamps();
         });
     }

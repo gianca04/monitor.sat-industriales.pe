@@ -398,7 +398,7 @@ class TimesheetsRelationManager extends RelationManager
                     }),
 
                 Tables\Actions\Action::make('manage_all')
-                    ->label('Gestionar Todos los Tareos')
+                    ->label('Todos los Tareos')
                     ->icon('heroicon-o-table-cells')
                     ->color('info')
                     ->tooltip('Ver y gestionar todos los tareos del proyecto en la vista completa')

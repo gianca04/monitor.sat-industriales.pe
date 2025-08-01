@@ -17,14 +17,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ClientSeeder::class,
             SubClientSeeder::class,
-            ApiTestDataSeeder::class,
+            ClientesSSeeder::class,
+            EmployeeSeeder::class,
+            ProyectosSeeder::class,
         ]);
 
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
     }
 }
