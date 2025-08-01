@@ -82,8 +82,7 @@ class ProjectResource extends Resource
                                     })
                                     ->toArray();
                             })
-                            ->default(fn() => session('quote_id'))
-                            ,
+                            ->default(fn() => session('quote_id')),
 
 
                         // ...existing code...
@@ -106,7 +105,7 @@ class ProjectResource extends Resource
                             ->content(fn($record) => $record?->status_text ?? 'Sin definir'),
                     ]),
 
-                    Split::make([
+                Split::make([
                     Section::make([
                         Forms\Components\Select::make('client_id')
                             ->prefixIcon('heroicon-m-briefcase')
@@ -273,65 +272,10 @@ class ProjectResource extends Resource
                                     $set('document_number', null);
                                 }
                             }),
-
-                        /*Section::make('Información del Cliente') // Título de la sección
-                            ->label('Información del Cliente') // Título de la sección
-                            ->collapsed() // Inicia la sección colapsada
-                            ->schema([
-                                Forms\Components\TextInput::make('business_name')
-                                    ->label('Nombre del Negocio') // Título para el campo 'Business Name'
-                                    ->disabled()
-                                    ->default(function (callable $get) {
-                                        return $get('business_name');
-                                    })
-                                    ->helperText('El nombre del negocio/cliente.') // Ayuda para el campo 'Business Name'
-                                ,
-
-                                Forms\Components\Select::make('document_type_client')
-                                    ->label('Tipo de Documento') // Título para el campo 'Tipo de documento'
-                                    ->options([
-                                        'RUC' => 'RUC',
-                                        'DNI' => 'DNI',
-                                        'FOREIGN_CARD' => 'Carné de Extranjería',
-                                        'PASSPORT' => 'Pasaporte',
-                                    ])
-                                    ->disabled()
-                                    ->default(function (callable $get) {
-                                        return $get('document_type');
-                                    }),
-
-                                Forms\Components\TextInput::make('document_number_client')
-                                    ->label('Número de Documento') // Título para el campo 'Document Number'
-                                    ->disabled()
-                                    ->default(function (callable $get) {
-                                        return $get('document_number');
-                                    })
-                                    ->helperText('El número de documento del cliente.'), // Ayuda para el campo 'Document Number'
-
-                                Forms\Components\TextInput::make('contact_phone')
-                                    ->label('Teléfono de Contacto') // Título para el campo 'Teléfono de contacto'
-                                    ->placeholder('Ej: +51 999 999 999')
-                                    ->tel()
-                                    ->maxLength(9)
-                                    ->minLength(7)
-                                    ->disabled()
-                                    ->prefixIcon('heroicon-o-phone'),
-
-                                Forms\Components\TextInput::make('contact_email')
-                                    ->label('Correo Electrónico') // Título para el campo 'Correo electrónico'
-                                    ->placeholder('correo@ejemplo.com')
-                                    ->email()
-                                    ->disabled()
-                                    ->maxLength(255)
-                                    ->columnSpan(1)
-                                    ->prefixIcon('heroicon-o-envelope'),
-                            ]),
-*/
                     ]),
 
                     Section::make([
                         Forms\Components\Select::make('sub_client_id')
-
                             ->required()
                             ->prefixIcon('heroicon-m-home-modern')
                             ->label('Sede') // Título para el campo 'Sede'
@@ -383,6 +327,14 @@ class ProjectResource extends Resource
                                     ->visible(fn(callable $get) => !empty($get('sub_client_id')))
                             )
 
+                            ->afterStateHydrated(function ($state, callable $set) {
+                                if ($state) {
+                                    $subClient = SubClient::find($state);
+                                    if ($subClient) {
+                                        $set('client_id', $subClient->client_id);
+                                    }
+                                }
+                            })
                             ->createOptionForm([
                                 Forms\Components\Hidden::make('client_id')
                                     ->default(fn(callable $get) => $get('client_id')),
@@ -446,9 +398,6 @@ class ProjectResource extends Resource
                                     // Cargar toda la información del Sede en una sola consulta
                                     $subClient = SubClient::find($subClientId);
                                     if ($subClient) {
-                                        // Actualizar los campos de 'name' y 'location' solo si hay un Sede
-                                        $set('name', $subClient->name);
-                                        $set('location', $subClient->location);
                                     }
                                 } else {
                                     // Limpiar los campos si no hay Sede seleccionado
@@ -456,31 +405,7 @@ class ProjectResource extends Resource
                                     $set('location', null);
                                 }
                             }),
-
-                        /*Section::make('Información de sede') // Título de la sección
-                            ->collapsed() // Inicia la sección colapsada
-                            ->schema([
-                                Forms\Components\TextInput::make('name')
-                                    ->label('Nombre del Sede') // Título para el campo 'Sub-client Name'
-                                    ->prefixIcon('heroicon-o-user') // Icono añadido
-                                    ->disabled()
-                                    ->default(function (callable $get) {
-                                        return $get('name');
-                                    })
-                                    ->helperText('El nombre del Sede.') // Ayuda para el campo 'Sub-client Name'
-                                ,
-                                Forms\Components\TextInput::make('location')
-                                    ->label('Ubicación') // Título para el campo 'Location'
-                                    ->prefixIcon('heroicon-o-map-pin') // Icono añadido
-                                    ->disabled()
-                                    ->default(function (callable $get) {
-                                        return $get('location');
-                                    })
-                                    ->helperText('La ubicación del Sede.') // Ayuda para el campo 'Location'
-                            ]),
-*/
                     ]),
-
                 ])
                     ->from('md')
                     ->columnSpanFull(),
