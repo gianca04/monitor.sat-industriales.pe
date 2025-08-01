@@ -295,6 +295,16 @@ class ProjectResource extends Resource
                             ->disabled(fn($get) => !$get('client_id')) // Deshabilita si no hay cliente seleccionado
                             ->helperText('Selecciona el Sede para esta cotización.') // Ayuda para el campo 'Sede'
 
+                            // Cuando se carga un registro existente, seleccionar automáticamente el cliente
+                            ->afterStateHydrated(function ($state, callable $set) {
+                                if ($state) {
+                                    $subClient = SubClient::find($state);
+                                    if ($subClient) {
+                                        $set('client_id', $subClient->client_id);
+                                    }
+                                }
+                            })
+
                             // Botón para ver información de la sede
                             ->suffixAction(
                                 Forms\Components\Actions\Action::make('view_sub_client')
@@ -327,14 +337,6 @@ class ProjectResource extends Resource
                                     ->visible(fn(callable $get) => !empty($get('sub_client_id')))
                             )
 
-                            ->afterStateHydrated(function ($state, callable $set) {
-                                if ($state) {
-                                    $subClient = SubClient::find($state);
-                                    if ($subClient) {
-                                        $set('client_id', $subClient->client_id);
-                                    }
-                                }
-                            })
                             ->createOptionForm([
                                 Forms\Components\Hidden::make('client_id')
                                     ->default(fn(callable $get) => $get('client_id')),
@@ -414,10 +416,17 @@ class ProjectResource extends Resource
                 Forms\Components\Section::make('Coordenadas geográficas')
                     ->columns(1)
                     ->collapsed()
+                    ->description('Ubicación geográfica del proyecto')
                     ->schema([
                         \App\Forms\Components\ubicacion::make('location')
-                            ->label('Ubicación en el mapa'),
-
+                            ->label('Ubicación en el mapa')
+                            ->helperText('Selecciona la ubicación del proyecto en el mapa o ingresa una dirección para buscar.')
+                            ->columnSpanFull()
+                            ->default([
+                                'latitude' => -12.046374,
+                                'longitude' => -77.042793,
+                                'location' => ''
+                            ]),
                     ]),
             ]);
     }
