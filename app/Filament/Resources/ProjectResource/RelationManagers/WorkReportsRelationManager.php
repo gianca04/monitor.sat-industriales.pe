@@ -88,6 +88,7 @@ class WorkReportsRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('employee')
+                    ->label('Colaborador')
                     ->relationship('employee', 'first_name')
                     ->searchable()
                     ->preload(),
@@ -102,19 +103,6 @@ class WorkReportsRelationManager extends RelationManager
             ])
             ->headerActions([
 
-                Tables\Actions\CreateAction::make(),
-                Tables\Actions\Action::make('manage_all')
-                    ->label('Gestionar Todos los reportes')
-                    ->icon('heroicon-o-table-cells')
-                    ->color('info')
-                    ->tooltip('Ver y gestionar todos los reportes del proyecto en la vista completa')
-                    ->action(function () {
-                        // Guardar el project_id en la sesión para filtros
-                        session(['filter_project_id' => $this->ownerRecord->id]);
-
-                        // Redirigir al TimesheetResource index
-                        return redirect(route('filament.dashboard.resources.work-reports.index'));
-                    }),
                 Tables\Actions\Action::make('create_advanced')
                     ->label('Crear reporte')
                     ->icon('heroicon-o-document-plus')
@@ -126,6 +114,18 @@ class WorkReportsRelationManager extends RelationManager
 
                         // Redirigir al TimesheetResource create
                         return redirect(route('filament.dashboard.resources.work-reports.create'));
+                    }),
+                Tables\Actions\Action::make('manage_all')
+                    ->label('Todos los reportes')
+                    ->icon('heroicon-o-table-cells')
+                    ->color('info')
+                    ->tooltip('Ver y gestionar todos los reportes del proyecto en la vista completa')
+                    ->action(function () {
+                        // Guardar el project_id en la sesión para filtros
+                        session(['filter_project_id' => $this->ownerRecord->id]);
+
+                        // Redirigir al TimesheetResource index
+                        return redirect(route('filament.dashboard.resources.work-reports.index'));
                     }),
             ])
             ->actions([

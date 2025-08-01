@@ -18,8 +18,10 @@ class Photo extends Model
         'work_report_id',
         'photo_path',
         'descripcion',
-        'taken_at'
+        'taken_at',
+        'before_work_photo_path' // Nueva columna para la foto antes del trabajo
     ];
+
     protected static function boot()
     {
         parent::boot();

@@ -61,7 +61,21 @@
         }
 
         .info-value {
-            color: #222;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .info-value p {
+            margin: 0 0 10px;
+        }
+
+        .info-value strong {
+            font-weight: bold;
+        }
+
+        .info-value em {
+            font-style: italic;
         }
 
         .photos-section {
@@ -207,13 +221,19 @@
             <span class="info-value">{{ $workReport->name }}</span>
         </div>
         <div class="info-row">
-            <span class="info-label">Descripción:</span>
-            <span class="info-value">{{ $workReport->description ?? 'N/A' }}</span>
-        </div>
-        <div class="info-row">
             <span class="info-label">Fecha de creación:</span>
             <span class="info-value">{{ $workReport->created_at->format('d/m/Y H:i') }}</span>
         </div>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label">Descripción:</span>
+        <span class="info-value">{!! $workReport->description !!}</span>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label">Sugerencias:</span>
+        <span class="info-value">{!! $workReport->suggestions !!}</span>
     </div>
 
     <!-- Información del Supervisor -->

@@ -33,7 +33,8 @@ class TimesheetsRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form
-            ->schema([Section::make('Datos del registro de asistencia')
+            ->schema([
+                Section::make('Datos del registro de asistencia')
                     ->description('Completa los detalles del check-in, break y check-out')
                     ->icon('heroicon-o-calendar-days')
                     ->schema([
@@ -327,14 +328,6 @@ class TimesheetsRelationManager extends RelationManager
 
             ])
             ->filters([
-                                Tables\Filters\SelectFilter::make('project_id')
-                    ->label('Proyecto')
-                    ->relationship('project', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->default(fn() => session('filter_project_id'))
-                    ->placeholder('Todos los proyectos'),
-
                 Tables\Filters\SelectFilter::make('shift')
                     ->label('Turno')
                     ->options([
@@ -371,7 +364,7 @@ class TimesheetsRelationManager extends RelationManager
                     }),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()
+                /*Tables\Actions\CreateAction::make()
                     ->label('Nuevo Tareo (Modal)')
                     ->icon('heroicon-o-plus')
                     ->modalHeading('Crear nuevo tareo')
@@ -383,7 +376,7 @@ class TimesheetsRelationManager extends RelationManager
                             ->body('El tareo ha sido registrado exitosamente.')
                     )
                     ->color('gray'),
-
+*/
                 Tables\Actions\Action::make('create_advanced')
                     ->label('Crear Tareo')
                     ->icon('heroicon-o-document-plus')
@@ -419,7 +412,7 @@ class TimesheetsRelationManager extends RelationManager
                     ->modalWidth('4xl')
                     ->color('gray'),
 
-                    Tables\Actions\Action::make('edit_advanced')
+                Tables\Actions\Action::make('edit_advanced')
                     ->label('Editar')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')

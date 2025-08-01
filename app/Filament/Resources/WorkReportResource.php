@@ -57,11 +57,17 @@ class WorkReportResource extends Resource
                             ->displayFormat('d/m/Y')
                             ->required()
                             ->helperText('Selecciona la fecha y hora del trabajo'),
-                        Forms\Components\Textarea::make('description')
+                        Forms\Components\RichEditor::make('description')
                             ->label('Descripción del reporte')
                             ->required()
                             ->helperText('Proporciona una descripción detallada del trabajo realizado.')
                             ->columnSpanFull(),
+                        Forms\Components\RichEditor::make('suggestions')
+                            ->label('Sugerencias')
+                            ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
+                            ->columnSpanFull()
+                            ->maxLength(5000)
+                            ->required(),
                     ]),
                 Section::make('Firmas')
                     ->columns(2)
@@ -88,7 +94,7 @@ class WorkReportResource extends Resource
                             ->columns(2)
                             ->reactive()
                             ->prefixIcon('heroicon-m-user')
-                            ->label('Supervisor') // Título para el campo 'Empleado'
+                            ->label('Supervisor / Técnico') // Título para el campo 'Empleado'
                             ->options(
                                 function (callable $get) {
                                     return Employee::query()

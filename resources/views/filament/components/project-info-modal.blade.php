@@ -25,6 +25,16 @@
                     <p class="text-sm text-gray-900">{{ $project->end_date }}</p>
                 </div>
             </div>
+
+            <div class="flex items-center space-x-2">
+                <x-heroicon-o-briefcase class="w-5 h-5 text-gray-500" />
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Cliente</p>
+                    <p class="text-sm text-gray-900">
+                        {{ $project->subClient->client->business_name ?? 'No especificada' }}
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="space-y-3">
@@ -45,35 +55,33 @@
             </div>
 
             <div class="flex items-center space-x-2">
-                <x-heroicon-o-map-pin class="w-5 h-5 text-gray-500" />
+                <x-heroicon-o-briefcase class="w-5 h-5 text-gray-500" />
                 <div>
-                    <p class="text-sm font-medium text-gray-700">Dirección</p>
-                    <p class="text-sm text-gray-900">{{ $project->address ?? 'No especificada' }}</p>
+                    <p class="text-sm font-medium text-gray-700">Sede</p>
+                    <p class="text-sm text-gray-900">{{ $project->subClient->name ?? 'No especificada' }}</p>
                 </div>
-
             </div>
 
             <div class="flex items-center space-x-2">
                 <x-heroicon-o-map-pin class="w-5 h-5 text-gray-500" />
                 <div>
-                    <p class="text-sm font-medium text-gray-700">Cliente</p>
-                    <p class="text-sm text-gray-900">{{ $project->client->business_name ?? 'No especificada' }}</p>
+                    <p class="text-sm font-medium text-gray-700">Ubicación</p>
+                    <p class="text-sm text-gray-900">{{ $project->location['location'] ?? 'No especificada' }}</p>
                 </div>
-
             </div>
         </div>
     </div>
 
     @if($project->description)
-    <div class="pt-4 border-t">
-        <div class="flex items-start space-x-2">
-            <x-heroicon-o-document-text class="w-5 h-5 text-gray-500 mt-0.5" />
-            <div>
-                <p class="text-sm font-medium text-gray-700">Descripción</p>
-                <p class="text-sm text-gray-900">{{ $project->description }}</p>
+        <div class="pt-4 border-t">
+            <div class="flex items-start space-x-2">
+                <x-heroicon-o-document-text class="w-5 h-5 text-gray-500 mt-0.5" />
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Descripción</p>
+                    <p class="text-sm text-gray-900">{{ $project->description }}</p>
+                </div>
             </div>
         </div>
-    </div>
     @endif
 
 </div>

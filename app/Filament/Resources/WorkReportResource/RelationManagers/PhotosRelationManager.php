@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\WorkReportResource\RelationManagers;
 
 use Filament\Forms;
+use Filament\Forms\Components\Concerns\HasMaxHeight;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -13,6 +14,8 @@ use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Photo;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Split;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Columns\Layout\Stack;
 use Illuminate\Support\HtmlString;
@@ -30,24 +33,41 @@ class PhotosRelationManager extends RelationManager
         return $form
             ->schema([
 
-                Forms\Components\FileUpload::make('photo_path')
-                    ->label('Fotografía')
-                    ->image()
-                    ->required()
-                    ->downloadable()
-                    ->directory('work-reports/photos')
-                    ->visibility('public')
-                    ->acceptedFileTypes(types: ['image/jpeg', 'image/png', 'image/webp'])
-                    ->maxSize(size: 10240) // 10MB
-                    ->extraInputAttributes(['capture' => 'user'])
-                    ->columnSpanFull()
-                    ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 10MB'),
+                Split::make([
+                    Forms\Components\FileUpload::make('before_work_photo_path')
+                        ->label('Fotografía del trabajo previo')
+                        ->image()
+                        ->required()
+                        ->downloadable()
+                        ->directory('work-reports/photos')
+                        ->visibility('public')
+                        ->acceptedFileTypes(types: ['image/jpeg', 'image/png', 'image/webp'])
+                        ->maxSize(size: 10240) // 10MB
+                        ->extraInputAttributes(['capture' => 'user'])
+                        ->columnSpanFull()
+                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 10MB'),
 
-                Forms\Components\Textarea::make('descripcion')
+                    Forms\Components\FileUpload::make('photo_path')
+                        ->label('Fotografía del trabajo realizado')
+                        ->image()
+                        ->required()
+                        ->downloadable()
+                        ->directory('work-reports/photos')
+                        ->visibility('public')
+                        ->acceptedFileTypes(types: ['image/jpeg', 'image/png', 'image/webp'])
+                        ->maxSize(size: 10240) // 10MB
+                        ->extraInputAttributes(['capture' => 'user'])
+                        ->columnSpanFull()
+                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 10MB'),
+
+                ])->from('md')
+                    ->columnSpanFull()
+                    ->columns(2),
+
+                Forms\Components\RichEditor::make('descripcion')
                     ->label('Descripción de la evidencia')
                     ->required()
                     ->maxLength(500)
-                    ->rows(3)
                     ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
                     ->helperText('Máximo 500 caracteres'),
 
@@ -67,10 +87,17 @@ class PhotosRelationManager extends RelationManager
             ->recordTitleAttribute('descripcion')
             ->columns([
                 Stack::make([
-                    // Columnas
+                    Tables\Columns\ImageColumn::make('before_work_photo_path')
+                        ->label('Evidencia')
+
+                        ->visibility('private')
+                        ->checkFileExistence(false)
+                        ->defaultImageUrl(url(path: '/images/no-image.png'))
+                        ->extraAttributes(['class' => 'rounded-lg shadow-sm'])
+                        ->alignCenter(), // Centra la imagen horizontalmente
+
                     Tables\Columns\ImageColumn::make('photo_path')
                         ->label('Evidencia')
-                        ->height(125)
 
                         ->visibility('private')
                         ->checkFileExistence(false)
@@ -80,7 +107,7 @@ class PhotosRelationManager extends RelationManager
 
                     Tables\Columns\TextColumn::make('descripcion')
                         ->label('Descripción')
-                        ->limit(50)
+
                         ->searchable()
                         ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                             $state = $column->getState();
@@ -106,19 +133,18 @@ class PhotosRelationManager extends RelationManager
                 'md' => 2,
                 'xl' => 3,
             ])
-            ->filters([
-
-            ])
+            ->filters([])
             ->headerActions([
 
                 Tables\Actions\CreateAction::make('take_photo')
                     ->label('Tomar Foto')
+
                     ->icon('heroicon-o-camera')
                     ->modalWidth(MaxWidth::Large)
                     ->form(function (Form $form) {
                         return $form->schema([
-                            Forms\Components\FileUpload::make('photo_path')
-                                ->label('Fotografía')
+                            Forms\Components\FileUpload::make('before_work_photo_path')
+                                ->label('Fotografía Antes del Trabajo')
                                 ->image()
                                 ->required()
                                 ->directory('work-reports/photos')
@@ -128,11 +154,21 @@ class PhotosRelationManager extends RelationManager
                                 ->extraInputAttributes(['capture' => 'environment'])
                                 ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 30MB.'),
 
-                            Forms\Components\Textarea::make('descripcion')
+                            Forms\Components\FileUpload::make('photo_path')
+                                ->label('Fotografía del trabajo culminado')
+                                ->image()
+                                ->required()
+                                ->directory('work-reports/photos')
+                                ->visibility('public')
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                ->maxSize(30240) // 30MB
+                                ->extraInputAttributes(['capture' => 'environment'])
+                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 30MB.'),
+
+                            Forms\Components\RichEditor::make('descripcion')
                                 ->label('Descripción de la evidencia')
                                 ->required()
                                 ->maxLength(500)
-                                ->rows(3)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
 
                             Forms\Components\DateTimePicker::make('taken_at')
@@ -158,9 +194,22 @@ class PhotosRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make('upload_from_gallery')
                     ->label('Subir de Galería')
                     ->icon('heroicon-o-arrow-up-tray') // Icono diferente para distinguirlo
-                    ->modalWidth(MaxWidth::Large)
+
+                    ->modalWidth(width: MaxWidth::Large)
                     ->form(function (Form $form) {
-                        return $form->schema([
+                        return $form->schema(components: [
+                            Forms\Components\FileUpload::make('before_work_photo_path')
+                                ->label('Fotografía')
+                                ->image()
+                                ->required()
+                                ->previewable()
+                                ->directory('work-reports/photos')
+                                ->visibility('public')
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                ->maxSize(10240) // 10MB
+                                // Sin 'extraInputAttributes' para que abra la galería
+                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 5MB.'),
+
                             Forms\Components\FileUpload::make('photo_path')
                                 ->label('Fotografía')
                                 ->image()
@@ -173,11 +222,10 @@ class PhotosRelationManager extends RelationManager
                                 // Sin 'extraInputAttributes' para que abra la galería
                                 ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 5MB.'),
 
-                            Forms\Components\Textarea::make('descripcion')
+                            Forms\Components\RichEditor::make('descripcion')
                                 ->label('Descripción de la evidencia')
                                 ->required()
                                 ->maxLength(500)
-                                ->rows(3)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
 
                             Forms\Components\DateTimePicker::make('taken_at')
@@ -218,22 +266,12 @@ class PhotosRelationManager extends RelationManager
                     ->tooltip('Generar reporte Word del trabajo realizado'),
             ])
             ->actions([
+
                 Tables\Actions\ViewAction::make()
                     ->label('Ver')
                     ->icon('heroicon-o-eye')
-                    //->modalContent(function (Photo $record): HtmlString {
-                    //    $imageUrl = Storage::url($record->photo_path);
-                    //    return new HtmlString("
-                    //        <div class='space-y-4 text-center'>
-                    //            <img src='{$imageUrl}' alt='Evidencia' class='h-auto max-w-full mx-auto rounded-lg shadow-lg' style='max-height: 70vh;'>
-                    //            <div class='text-sm text-gray-600'>
-                    //                <p><strong>Descripción:</strong> {$record->descripcion}</p>
-                    //                <p><strong>Fecha de captura:</strong> {$record->taken_at->format('d/m/Y H:i')}</p>
-                    //            </div>
-                    //        </div>
-                    //    ");
-                    //})
-                    ->modalWidth(MaxWidth::FourExtraLarge)
+                    ->modalWidth(MaxWidth::Full)
+                    ->extraAttributes(['class' => 'custom-modal-class']) // Clase personalizada
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar'),
 
@@ -287,7 +325,7 @@ class PhotosRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make()
                     ->label('Subir primera evidencia')
                     ->icon('heroicon-o-camera')
-                    ->modalWidth(MaxWidth::Large),
+                    ->modalWidth(width: MaxWidth::Large),
             ]);
     }
 }

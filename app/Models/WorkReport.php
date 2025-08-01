@@ -17,6 +17,7 @@ class WorkReport extends Model
         'description',
         'supervisor_signature',
         'manager_signature',
+        'suggestions',
     ];
 
     /**

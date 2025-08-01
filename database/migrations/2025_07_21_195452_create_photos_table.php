@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('photos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('work_report_id'); 
+            $table->unsignedBigInteger('work_report_id');
             $table->foreign('work_report_id')
-            ->references('id') 
-            ->on('work_reports')  
+            ->references('id')
+            ->on('work_reports')
             ->onDelete('cascade');
                   $table->string('photo_path');
-            $table->string('descripcion')->nullable();
+            $table->longText('descripcion')->nullable();
             $table->timestamps();
         });
     }
