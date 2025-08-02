@@ -350,7 +350,7 @@ class WorkReportResource extends Resource
 
                         // INICIO TAB DESCRIPCIÓN DEL REPORTE
                         Tabs\Tab::make('Descripción')
-                            ->icon('heroicon-o-information-circle')
+                            ->icon('heroicon-o-clipboard-document-check')
                             ->columns(2)
                             ->schema([
                                 Forms\Components\RichEditor::make('description')
@@ -378,14 +378,23 @@ class WorkReportResource extends Resource
                                     ->dotSize(2.0)
                                     ->penColor('#000')  // Color negro en modo claro
                                     ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad
-
-                                    ->lineMinWidth(0.5)
+                                    ->lineMinWidth(0.2)
                                     ->lineMaxWidth(2.5)
                                     ->throttle(16)
                                     ->minDistance(5)
                                     ->velocityFilterWeight(0.7),
                                 SignaturePad::make('supervisor_signature')
-                                    ->label('Firma del Validado por supervisor / técnico'),
+                                    ->label('Firma del Validado por supervisor / técnico')
+                                    ->label('Firma del gerente / subgerente')
+                                    ->dotSize(2.0)
+                                    ->penColor('#000')  // Color negro en modo claro
+                                    ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad
+                                    ->lineMinWidth(0.2)
+                                    ->lineMaxWidth(2.5)
+                                    ->throttle(16)
+                                    ->minDistance(5)
+                                    ->velocityFilterWeight(0.7)
+                                    ->confirmable(),
                             ]),
                         // FIN DE TAB DE FIRMAS
                     ])

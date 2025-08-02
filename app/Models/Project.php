@@ -28,6 +28,9 @@ class Project extends Model
         'longitude',
         'quote_id',
         'sub_client_id', // Permite asignar el subcliente directamente
+        'tools',
+        'personnel',
+        'materials',
     ];
 
 
@@ -54,6 +57,9 @@ class Project extends Model
         'longitude' => 'decimal:7',
         'location' => 'array', // Convierte automáticamente entre JSON y array
         'sub_client_id' => 'integer',
+        'tools' => 'string',
+        'personnel' => 'string',
+        'materials' => 'string',
     ];
 
     public function clients()
