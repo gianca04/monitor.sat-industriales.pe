@@ -65,12 +65,20 @@ class PhotosRelationManager extends RelationManager
                     ->columnSpanFull()
                     ->columns(2),
 
+                Forms\Components\RichEditor::make('before_work_descripcion')
+                    ->label('Descripción de la evidencia antes del trabajo')
+                    ->required()
+                    ->maxLength(500)
+                    ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
+                    ->helperText('Máximo 500 caracteres'),
+
                 Forms\Components\RichEditor::make('descripcion')
                     ->label('Descripción de la evidencia')
                     ->required()
                     ->maxLength(500)
                     ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
                     ->helperText('Máximo 500 caracteres'),
+
             ]);
     }
 
@@ -103,11 +111,20 @@ class PhotosRelationManager extends RelationManager
                         ])->from('md'),
                     ])->collapsed(false),
 
+                    Tables\Columns\TextColumn::make('before_work_descripcion')
+                        ->searchable()
+                        ->size('m')
+                        ->lineClamp(2)
+                        ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
+
+
                     Tables\Columns\TextColumn::make('descripcion')
                         ->searchable()
                         ->size('m')
                         ->lineClamp(2)
                         ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
+
+
 
                     Tables\Columns\TextColumn::make('created_at')
                         ->label('Fecha de creación')
@@ -207,11 +224,19 @@ class PhotosRelationManager extends RelationManager
                                 // Sin 'extraInputAttributes' para que abra la galería
                                 ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 5MB.'),
 
+                            Forms\Components\RichEditor::make('before_work_descripcion')
+                                ->label('Descripción de la evidencia')
+                                ->required()
+                                ->maxLength(500)
+                                ->placeholder('Describe brevemente lo que se muestra...'),
+
                             Forms\Components\RichEditor::make('descripcion')
                                 ->label('Descripción de la evidencia')
                                 ->required()
                                 ->maxLength(500)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
+
+
                         ]);
                     })
                     ->mutateFormDataUsing(function (array $data): array {
