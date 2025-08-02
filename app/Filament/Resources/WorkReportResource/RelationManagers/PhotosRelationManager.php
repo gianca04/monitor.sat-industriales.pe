@@ -17,6 +17,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Split;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Tables\Columns\Layout\Panel;
 use Filament\Tables\Columns\Layout\Stack;
 use Illuminate\Support\HtmlString;
 
@@ -87,37 +88,34 @@ class PhotosRelationManager extends RelationManager
             ->recordTitleAttribute('descripcion')
             ->columns([
                 Stack::make([
-                    Tables\Columns\ImageColumn::make('before_work_photo_path')
-                        ->label('Evidencia')
+                    Panel::make([
+                        Tables\Columns\Layout\Split::make([
 
-                        ->visibility('private')
-                        ->checkFileExistence(false)
-                        ->defaultImageUrl(url(path: '/images/no-image.png'))
-                        ->extraAttributes(['class' => 'rounded-lg shadow-sm'])
-                        ->alignCenter(), // Centra la imagen horizontalmente
+                            Tables\Columns\ImageColumn::make('before_work_photo_path')
+                                ->label('Evidencia')
+                                ->width(130)   // Establece el ancho de la imagen en 80px
+                                ->height(130)
+                                ->visibility('private')
+                                ->checkFileExistence(false)
+                                ->defaultImageUrl(url(path: '/images/no-image.png'))
+                                ->extraAttributes(['class' => 'rounded-lg shadow-sm']),
+                            Tables\Columns\ImageColumn::make('photo_path')
+                                ->label('Evidencia')
+                                ->width(130)   // Establece el ancho de la imagen en 80px
+                                ->height(130)
+                                ->visibility('private')
+                                ->checkFileExistence(false)
+                                ->defaultImageUrl(url(path: '/images/no-image.png'))
+                                ->extraAttributes(['class' => 'rounded-lg shadow-sm']), // Centra la imagen horizontalmente
 
-                    Tables\Columns\ImageColumn::make('photo_path')
-                        ->label('Evidencia')
-
-                        ->visibility('private')
-                        ->checkFileExistence(false)
-                        ->defaultImageUrl(url(path: '/images/no-image.png'))
-                        ->extraAttributes(['class' => 'rounded-lg shadow-sm'])
-                        ->alignCenter(), // Centra la imagen horizontalmente
+                        ])->from('md'),
+                    ])->collapsed(false),
 
                     Tables\Columns\TextColumn::make('descripcion')
-                        ->label('Descripción')
-
                         ->searchable()
-                        ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
-                            $state = $column->getState();
-                            if (strlen($state) <= 50) {
-                                return null;
-                            }
-                            return $state;
-                        })
-                        ->size('m') // Texto un poco más pequeño para la descripción
-                    , // Color secundario para diferenciación
+                        ->size('m')
+                        ->lineClamp(2)
+                        ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
 
                     Tables\Columns\TextColumn::make('taken_at')
                         ->label('Fecha de captura')
