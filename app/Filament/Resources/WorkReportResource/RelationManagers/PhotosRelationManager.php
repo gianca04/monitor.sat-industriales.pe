@@ -71,14 +71,6 @@ class PhotosRelationManager extends RelationManager
                     ->maxLength(500)
                     ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
                     ->helperText('Máximo 500 caracteres'),
-
-                Forms\Components\DateTimePicker::make('created_at')
-                    ->label('Fecha y hora de captura')
-                    ->default(now())
-                    ->required()
-                    ->native(false)
-                    ->displayFormat('d/m/Y H:i')
-                    ->helperText('Fecha y hora en que se tomó la fotografía'),
             ]);
     }
 
@@ -118,7 +110,7 @@ class PhotosRelationManager extends RelationManager
                         ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
 
                     Tables\Columns\TextColumn::make('created_at')
-                        ->label('Fecha de captura')
+                        ->label('Fecha de creación')
                         ->dateTime('d/m/Y H:i')
                         ->sortable()
                         ->icon('heroicon-o-calendar')
@@ -138,7 +130,7 @@ class PhotosRelationManager extends RelationManager
                     ->label('Tomar Foto')
 
                     ->icon('heroicon-o-camera')
-                    ->modalWidth(MaxWidth::Large)
+                    ->modalWidth(MaxWidth::Full)
                     ->form(function (Form $form) {
                         return $form->schema([
                             Forms\Components\FileUpload::make('before_work_photo_path')
@@ -168,13 +160,6 @@ class PhotosRelationManager extends RelationManager
                                 ->required()
                                 ->maxLength(500)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
-
-                            Forms\Components\DateTimePicker::make('created_at')
-                                ->label('Fecha y hora de captura')
-                                ->default(now())
-                                ->required()
-                                ->native(false)
-                                ->displayFormat('d/m/Y H:i'),
                         ]);
                     })
                     ->mutateFormDataUsing(function (array $data): array {
@@ -193,7 +178,7 @@ class PhotosRelationManager extends RelationManager
                     ->label('Subir de Galería')
                     ->icon('heroicon-o-arrow-up-tray') // Icono diferente para distinguirlo
 
-                    ->modalWidth(width: MaxWidth::Large)
+                    ->modalWidth(width: MaxWidth::Full)
                     ->form(function (Form $form) {
                         return $form->schema(components: [
                             Forms\Components\FileUpload::make('before_work_photo_path')
@@ -225,13 +210,6 @@ class PhotosRelationManager extends RelationManager
                                 ->required()
                                 ->maxLength(500)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
-
-                            Forms\Components\DateTimePicker::make('created_at')
-                                ->label('Fecha y hora de captura')
-                                ->default(now())
-                                ->required()
-                                ->native(false)
-                                ->displayFormat('d/m/Y H:i'),
                         ]);
                     })
                     ->mutateFormDataUsing(function (array $data): array {
@@ -276,7 +254,7 @@ class PhotosRelationManager extends RelationManager
                 Tables\Actions\EditAction::make()
                     ->label('Editar')
                     ->icon('heroicon-o-pencil')
-                    ->modalWidth(MaxWidth::Large),
+                    ->modalWidth(MaxWidth::Full),
 
                 Tables\Actions\DeleteAction::make()
                     ->label('Eliminar')
@@ -323,7 +301,7 @@ class PhotosRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make()
                     ->label('Subir primera evidencia')
                     ->icon('heroicon-o-camera')
-                    ->modalWidth(width: MaxWidth::Large),
+                    ->modalWidth(width: MaxWidth::Full),
             ]);
     }
 }
