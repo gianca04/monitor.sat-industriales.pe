@@ -131,6 +131,7 @@ class PhotosRelationManager extends RelationManager
 
                     ->icon('heroicon-o-camera')
                     ->modalWidth(MaxWidth::Full)
+                    ->modalHeading('Tomar Fotografía')
                     ->form(function (Form $form) {
                         return $form->schema([
                             Forms\Components\FileUpload::make('before_work_photo_path')
@@ -178,6 +179,7 @@ class PhotosRelationManager extends RelationManager
                     ->label('Subir de Galería')
                     ->icon('heroicon-o-arrow-up-tray') // Icono diferente para distinguirlo
 
+                    ->modalHeading('Subir Fotografía')
                     ->modalWidth(width: MaxWidth::Full)
                     ->form(function (Form $form) {
                         return $form->schema(components: [
@@ -247,6 +249,8 @@ class PhotosRelationManager extends RelationManager
                     ->label('Ver')
                     ->icon('heroicon-o-eye')
                     ->modalWidth(MaxWidth::Full)
+
+                    ->modalHeading('Ver Fotografías')
                     ->extraAttributes(['class' => 'custom-modal-class']) // Clase personalizada
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar'),
@@ -254,6 +258,7 @@ class PhotosRelationManager extends RelationManager
                 Tables\Actions\EditAction::make()
                     ->label('Editar')
                     ->icon('heroicon-o-pencil')
+                    ->modalHeading('Editar Fotografías')
                     ->modalWidth(MaxWidth::Full),
 
                 Tables\Actions\DeleteAction::make()
