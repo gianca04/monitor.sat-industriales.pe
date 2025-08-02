@@ -9,7 +9,8 @@ use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Project;
 use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
-
+use Closure;
+use Illuminate\Validation\ValidationException;
 use App\Models\Quote;
 use Illuminate\Support\Facades\Auth;
 use App\Models\WorkReport;
@@ -44,8 +45,8 @@ class WorkReportResource extends Resource
             ->schema([
                 Tabs::make('MainTabs')
                     ->tabs([
-                        // INICIO DE TAB DE INFORMACIÓN DE REPORTE
-                        Tabs\Tab::make('Información del reporte')
+                        // INICIO DE TAB DE INFORMACIÓN GENERAL
+                        Tabs\Tab::make('Información general')
                             ->icon('heroicon-o-information-circle')
                             ->columns(2)
                             ->schema([
@@ -297,9 +298,75 @@ class WorkReportResource extends Resource
                                     ->required()
                                     ->helperText('Selecciona la fecha y hora del trabajo'),
                                 // FIN DE INPUT DE FECHA
+
+                                // INICIO DE INPUT DE HORA DE INICIO
+                                Forms\Components\TimePicker::make('start_time')
+                                    ->label('Hora de inicio')
+                                    ->default(now()->format('H:i'))
+                                    ->native(false)
+                                    ->seconds(false)
+                                    ->displayFormat(format: 'H:i')
+                                    ->helperText('Selecciona la hora de inicio del trabajo'),
+                                // FIN DE INPUT DE HORA DE INICIO
+
+                                // INICIO DE INPUT DE HORA DE FINALIZACIÓN
+                                Forms\Components\TimePicker::make('end_time')
+                                    ->label('Hora de finalización')
+                                    ->default(now()->format('H:i'))
+                                    ->native(false)
+                                    ->seconds(false)
+                                    ->displayFormat(format: 'H:i')
+                                    ->helperText('Selecciona la hora de finalización del trabajo')
+                                    // Usamos afterStateUpdated para validar y limpiar el campo
+                                    ->afterStateUpdated(function ($state, $get, $livewire) {
+                                        $startTime = $get('start_time');
+                                        $endTime = $state;
+
+                                        // Si no hay hora de inicio, no validamos
+                                        if (!$startTime || !$endTime) {
+                                            return;
+                                        }
+
+                                        $startCarbon = \Carbon\Carbon::parse($startTime);
+                                        $endCarbon = \Carbon\Carbon::parse($endTime);
+
+                                        if ($endCarbon->lessThan($startCarbon)) {
+                                            // Envía una notificación de error
+                                            Notification::make()
+                                                ->title('Error de validación')
+                                                ->body('La hora de finalización no puede ser anterior a la hora de inicio.')
+                                                ->danger()
+                                                ->duration(5000)
+                                                ->send();
+
+                                            // Limpiamos el campo 'end_time'
+                                            $livewire->form->fill(['end_time' => null]);
+                                        }
+                                    }),
+                                // FIN DE INPUT DE HORA DE FINALIZACIÓN
                             ]),
 
-                        // FIN DE TAB DE INFORMACIÓN DE REPORTE
+                        // FIN DE TAB DE INFORMACIÓN GENERAL
+
+                        // INICIO TAB DESCRIPCIÓN DEL REPORTE
+                        Tabs\Tab::make('Descripción')
+                            ->icon('heroicon-o-information-circle')
+                            ->columns(2)
+                            ->schema([
+                                Forms\Components\RichEditor::make('description')
+                                    ->label('Descripción del reporte')
+                                    ->required()
+                                    ->helperText('Proporciona una descripción detallada del trabajo realizado.')
+                                    ->columnSpanFull(),
+                                Forms\Components\RichEditor::make('suggestions')
+                                    ->label('Sugerencias')
+                                    ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
+                                    ->columnSpanFull()
+                                    ->maxLength(5000)
+                                    ->required(),
+                            ]),
+                        // FIN TAB DESCRIPCIÓN DEL REPORTE
+
 
                         // INICIO DE TAB DE FIRMAS
                         Tabs\Tab::make('Firmas')
@@ -319,43 +386,10 @@ class WorkReportResource extends Resource
                                     ->velocityFilterWeight(0.7),
                                 SignaturePad::make('supervisor_signature')
                                     ->label('Firma del Validado por supervisor / técnico'),
-                            ])
+                            ]),
                         // FIN DE TAB DE FIRMAS
-
-
-                        //
                     ])
                     ->columnSpan('full'),
-
-
-                Section::make('Información del reporte')
-                    ->columns(2)
-                    ->collapsible()
-
-                    ->schema([
-
-
-                        Forms\Components\RichEditor::make('description')
-                            ->label('Descripción del reporte')
-                            ->required()
-                            ->helperText('Proporciona una descripción detallada del trabajo realizado.')
-                            ->columnSpanFull(),
-                        Forms\Components\RichEditor::make('suggestions')
-                            ->label('Sugerencias')
-                            ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
-                            ->columnSpanFull()
-                            ->maxLength(5000)
-                            ->required(),
-                    ]),
-
-                Split::make([
-                    Section::make([]), // Sección de proyecto
-
-                ])->from('md')
-                    ->grow(false)
-                    ->columnSpanFull(),
-
-
             ]);
     }
 
