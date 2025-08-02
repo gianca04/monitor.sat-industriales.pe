@@ -280,31 +280,61 @@ class WorkReportResource extends Resource
                                         }
                                     }),
                                 // FIN DE SELECT DE PROYECTO
+
+                                // INICIO DE INPUT DE NOMBRE DEL REPORTE
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->label('Nombre del reporte'),
+                                // FIN DE INPUT DE NOMBRE DEL REPORTE
+
+                                // INICIO DE INPUT DE FECHA
+                                Forms\Components\DatePicker::make('created_at')
+                                    ->label('Fecha')
+                                    ->native(false) // Desactiva el selector nativo para usar el de Filament
+                                    ->default(now())
+                                    ->displayFormat('d/m/Y')
+                                    ->required()
+                                    ->helperText('Selecciona la fecha y hora del trabajo'),
+                                // FIN DE INPUT DE FECHA
                             ]),
 
                         // FIN DE TAB DE INFORMACIÓN DE REPORTE
+
+                        // INICIO DE TAB DE FIRMAS
+                        Tabs\Tab::make('Firmas')
+                            ->icon('heroicon-o-pencil-square')
+                            ->columns(2)
+                            ->schema([
+                                SignaturePad::make('manager_signature')
+                                    ->label('Firma del gerente / subgerente')
+                                    ->dotSize(2.0)
+                                    ->penColor('#000')  // Color negro en modo claro
+                                    ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad
+
+                                    ->lineMinWidth(0.5)
+                                    ->lineMaxWidth(2.5)
+                                    ->throttle(16)
+                                    ->minDistance(5)
+                                    ->velocityFilterWeight(0.7),
+                                SignaturePad::make('supervisor_signature')
+                                    ->label('Firma del Validado por supervisor / técnico'),
+                            ])
+                        // FIN DE TAB DE FIRMAS
 
 
                         //
                     ])
                     ->columnSpan('full'),
 
+
                 Section::make('Información del reporte')
                     ->columns(2)
                     ->collapsible()
 
                     ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->maxLength(255)
-                            ->label('Nombre del reporte'),
-                        Forms\Components\DatePicker::make('created_at')
-                            ->label('Fecha')
-                            ->native(false) // Desactiva el selector nativo para usar el de Filament
-                            ->default(now())
-                            ->displayFormat('d/m/Y')
-                            ->required()
-                            ->helperText('Selecciona la fecha y hora del trabajo'),
+
+
                         Forms\Components\RichEditor::make('description')
                             ->label('Descripción del reporte')
                             ->required()
@@ -317,24 +347,7 @@ class WorkReportResource extends Resource
                             ->maxLength(5000)
                             ->required(),
                     ]),
-                Section::make('Firmas')
-                    ->columns(2)
-                    ->collapsible()
-                    ->schema([
-                        SignaturePad::make('manager_signature')
-                            ->label('Firma del gerente / subgerente')
-                            ->dotSize(2.0)
-                            ->penColor('#000')  // Color negro en modo claro
-                            ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad
 
-                            ->lineMinWidth(0.5)
-                            ->lineMaxWidth(2.5)
-                            ->throttle(16)
-                            ->minDistance(5)
-                            ->velocityFilterWeight(0.7),
-                        SignaturePad::make('supervisor_signature')
-                            ->label('Firma del Validado por supervisor / técnico'),
-                    ]),
                 Split::make([
                     Section::make([]), // Sección de proyecto
 
