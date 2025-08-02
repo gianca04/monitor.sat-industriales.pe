@@ -36,7 +36,7 @@ class PhotosRelationManager extends RelationManager
 
                 Split::make([
                     Forms\Components\FileUpload::make('before_work_photo_path')
-                        ->label('Fotografía del trabajo previo')
+                        ->label('Evidencia del antes')
                         ->image()
                         ->downloadable()
                         ->directory('work-reports/photos')
@@ -149,7 +149,7 @@ class PhotosRelationManager extends RelationManager
                         return $form->schema([
                             Split::make([
                                 Forms\Components\FileUpload::make('before_work_photo_path')
-                                    ->label('Fotografía del trabajo previo')
+                                    ->label('Evidencia del antes')
                                     ->image()
                                     ->downloadable()
                                     ->directory('work-reports/photos')
