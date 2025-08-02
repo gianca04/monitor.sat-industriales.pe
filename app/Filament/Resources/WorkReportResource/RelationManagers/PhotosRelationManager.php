@@ -48,6 +48,19 @@ class PhotosRelationManager extends RelationManager
                         ->columnSpanFull()
                         ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 10MB'),
 
+                    Forms\Components\RichEditor::make('before_work_descripcion')
+                        ->label('Descripción de la evidencia antes del trabajo')
+                        ->required()
+                        ->maxLength(500)
+                        ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
+                        ->helperText('Máximo 500 caracteres'),
+
+                ])->from('md')
+                    ->columnSpanFull()
+                    ->columns(2),
+
+                Split::make([
+
                     Forms\Components\FileUpload::make('photo_path')
                         ->label('Fotografía del trabajo realizado')
                         ->image()
@@ -61,24 +74,16 @@ class PhotosRelationManager extends RelationManager
                         ->columnSpanFull()
                         ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 10MB'),
 
+                    Forms\Components\RichEditor::make('descripcion')
+                        ->label('Descripción de la evidencia del trabajo realizado')
+                        ->required()
+                        ->maxLength(500)
+                        ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
+                        ->helperText('Máximo 500 caracteres'),
+
                 ])->from('md')
                     ->columnSpanFull()
                     ->columns(2),
-
-                Forms\Components\RichEditor::make('before_work_descripcion')
-                    ->label('Descripción de la evidencia antes del trabajo')
-                    ->required()
-                    ->maxLength(500)
-                    ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
-                    ->helperText('Máximo 500 caracteres'),
-
-                Forms\Components\RichEditor::make('descripcion')
-                    ->label('Descripción de la evidencia')
-                    ->required()
-                    ->maxLength(500)
-                    ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
-                    ->helperText('Máximo 500 caracteres'),
-
             ]);
     }
 
@@ -172,6 +177,14 @@ class PhotosRelationManager extends RelationManager
                                 ->maxSize(30240) // 30MB
                                 ->extraInputAttributes(['capture' => 'environment'])
                                 ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 30MB.'),
+
+
+
+                            Forms\Components\RichEditor::make('before_work_descripcion')
+                                ->label('Descripción de la evidencia antes del trabajo')
+                                ->required()
+                                ->maxLength(500)
+                                ->placeholder('Describe brevemente lo que se muestra...'),
 
                             Forms\Components\RichEditor::make('descripcion')
                                 ->label('Descripción de la evidencia')
@@ -276,7 +289,6 @@ class PhotosRelationManager extends RelationManager
                     ->modalWidth(MaxWidth::Full)
 
                     ->modalHeading('Ver Fotografías')
-                    ->extraAttributes(['class' => 'custom-modal-class']) // Clase personalizada
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar'),
 
