@@ -469,7 +469,7 @@ class QuoteResource extends Resource
                                     return SubClient::where('client_id', $clientId)
                                         ->get()
                                         ->mapWithKeys(function ($subClient) {
-                                            return [$subClient->id => $subClient->name . ' - ' . $subClient->location];
+                                            return [$subClient->id => $subClient->name];
                                         })
                                         ->toArray();
                                 }
