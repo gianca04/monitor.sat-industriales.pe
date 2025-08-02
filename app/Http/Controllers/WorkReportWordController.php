@@ -16,7 +16,7 @@ class WorkReportWordController extends Controller
             'employee',
             'project.clients',
             'photos' => function ($query) {
-                $query->orderBy('taken_at', 'asc');
+                $query->orderBy('created_at', 'asc');
             }
         ])->findOrFail($workReportId);
 
@@ -78,9 +78,9 @@ class WorkReportWordController extends Controller
 
         // Estadísticas
         $section->addText('Total Evidencias: ' . $workReport->photos->count(), $fontStyle);
-        $section->addText('Evidencias Hoy: ' . $workReport->photos->where('taken_at', '>=', today())->count(), $fontStyle);
+        $section->addText('Evidencias Hoy: ' . $workReport->photos->where('created_at', '>=', today())->count(), $fontStyle);
         $diasTrabajo = collect($workReport->photos)->groupBy(function ($item) {
-            return $item->taken_at->format('Y-m-d');
+            return $item->created_at->format('Y-m-d');
         })->count();
         $section->addText('Días de Trabajo: ' . $diasTrabajo, $fontStyle);
         $section->addTextBreak();
@@ -89,7 +89,7 @@ class WorkReportWordController extends Controller
         $section->addText('Evidencias Fotográficas', $headingStyle);
         foreach ($workReport->photos as $index => $photo) {
             $section->addText('Evidencia #' . ($index + 1), ['bold' => true, 'size' => 12]);
-            $section->addText('Capturada el: ' . $photo->taken_at->format('d/m/Y H:i'), $fontStyle);
+            $section->addText('Capturada el: ' . $photo->created_at->format('d/m/Y H:i'), $fontStyle);
             $section->addText('Descripción: ' . $photo->descripcion, $fontStyle);
 
             // Si la imagen existe, agregarla

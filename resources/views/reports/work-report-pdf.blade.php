@@ -196,13 +196,13 @@
             <div class="stat-label">Total Evidencias</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ $photos->where('taken_at', '>=', today())->count() }}</div>
+            <div class="stat-number">{{ $photos->where('created_at', '>=', today())->count() }}</div>
             <div class="stat-label">Evidencias Hoy</div>
         </div>
         <div class="stat-item">
             <div class="stat-number">
                 {{ $photos->groupBy(function ($item) {
-    return $item->taken_at->format('Y-m-d'); })->count() }}
+    return $item->created_at->format('Y-m-d'); })->count() }}
             </div>
             <div class="stat-label">Días de Trabajo</div>
         </div>
@@ -312,7 +312,7 @@
                 <div class="photo-header">
                     <div class="photo-title">Evidencia #{{ $loop->iteration }}</div>
                     <div class="photo-date">
-                        Capturada el: {{ $photo->taken_at->format('d/m/Y H:i') }}
+                        Capturada el: {{ $photo->created_at->format('d/m/Y H:i') }}
                     </div>
                 </div>
 

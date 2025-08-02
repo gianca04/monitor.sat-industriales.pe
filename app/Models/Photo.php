@@ -18,7 +18,6 @@ class Photo extends Model
         'work_report_id',
         'photo_path',
         'descripcion',
-        'taken_at',
         'before_work_photo_path' // Nueva columna para la foto antes del trabajo
     ];
 
@@ -63,7 +62,7 @@ class Photo extends Model
     }
 
     protected $casts = [
-        'taken_at' => 'datetime',
+        'created_at' => 'datetime',
     ];
 
     public function workReport()

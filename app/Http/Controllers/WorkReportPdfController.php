@@ -16,7 +16,7 @@ class WorkReportPdfController extends Controller
             'employee',
             'project.clients',
             'photos' => function ($query) {
-                $query->orderBy('taken_at', 'asc');
+                $query->orderBy('created_at', 'asc');
             }
         ])->findOrFail($workReportId);
 

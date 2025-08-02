@@ -72,7 +72,7 @@ class PhotosRelationManager extends RelationManager
                     ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
                     ->helperText('Máximo 500 caracteres'),
 
-                Forms\Components\DateTimePicker::make('taken_at')
+                Forms\Components\DateTimePicker::make('created_at')
                     ->label('Fecha y hora de captura')
                     ->default(now())
                     ->required()
@@ -117,7 +117,7 @@ class PhotosRelationManager extends RelationManager
                         ->lineClamp(2)
                         ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
 
-                    Tables\Columns\TextColumn::make('taken_at')
+                    Tables\Columns\TextColumn::make('created_at')
                         ->label('Fecha de captura')
                         ->dateTime('d/m/Y H:i')
                         ->sortable()
@@ -169,7 +169,7 @@ class PhotosRelationManager extends RelationManager
                                 ->maxLength(500)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
 
-                            Forms\Components\DateTimePicker::make('taken_at')
+                            Forms\Components\DateTimePicker::make('created_at')
                                 ->label('Fecha y hora de captura')
                                 ->default(now())
                                 ->required()
@@ -226,7 +226,7 @@ class PhotosRelationManager extends RelationManager
                                 ->maxLength(500)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
 
-                            Forms\Components\DateTimePicker::make('taken_at')
+                            Forms\Components\DateTimePicker::make('created_at')
                                 ->label('Fecha y hora de captura')
                                 ->default(now())
                                 ->required()
@@ -314,7 +314,7 @@ class PhotosRelationManager extends RelationManager
                         }),
                 ]),
             ])
-            ->defaultSort('taken_at', 'desc')
+            ->defaultSort('created_at', 'desc')
             ->poll('30s') // Actualizar cada 30 segundos
             ->emptyStateHeading('Sin evidencias')
             ->emptyStateDescription('No hay fotografías registradas para este reporte de trabajo.')
