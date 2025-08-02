@@ -38,21 +38,18 @@ class PhotosRelationManager extends RelationManager
                     Forms\Components\FileUpload::make('before_work_photo_path')
                         ->label('Fotografía del trabajo previo')
                         ->image()
-                        ->required()
                         ->downloadable()
                         ->directory('work-reports/photos')
                         ->visibility('public')
                         ->acceptedFileTypes(types: ['image/jpeg', 'image/png', 'image/webp'])
-                        ->maxSize(size: 10240) // 10MB
+                        ->maxSize(25600) // 25MB
                         ->extraInputAttributes(['capture' => 'user'])
                         ->columnSpanFull()
-                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 10MB'),
+                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 25MB.'),
 
                     Forms\Components\RichEditor::make('before_work_descripcion')
                         ->label('Descripción de la evidencia antes del trabajo')
-                        ->required()
                         ->maxLength(500)
-                        ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
                         ->helperText('Máximo 500 caracteres'),
 
                 ])->from('md')
@@ -64,21 +61,17 @@ class PhotosRelationManager extends RelationManager
                     Forms\Components\FileUpload::make('photo_path')
                         ->label('Fotografía del trabajo realizado')
                         ->image()
-                        ->required()
                         ->downloadable()
                         ->directory('work-reports/photos')
                         ->visibility('public')
                         ->acceptedFileTypes(types: ['image/jpeg', 'image/png', 'image/webp'])
-                        ->maxSize(size: 10240) // 10MB
+                        ->maxSize(25600) // 25MB
                         ->extraInputAttributes(['capture' => 'user'])
-                        ->columnSpanFull()
-                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 10MB'),
+                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 25MB.'),
 
                     Forms\Components\RichEditor::make('descripcion')
                         ->label('Descripción de la evidencia del trabajo realizado')
-                        ->required()
                         ->maxLength(500)
-                        ->placeholder('Describe brevemente lo que se muestra en la fotografía...')
                         ->helperText('Máximo 500 caracteres'),
 
                 ])->from('md')
@@ -129,8 +122,6 @@ class PhotosRelationManager extends RelationManager
                         ->lineClamp(2)
                         ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
 
-
-
                     Tables\Columns\TextColumn::make('created_at')
                         ->label('Fecha de creación')
                         ->dateTime('d/m/Y H:i')
@@ -156,41 +147,48 @@ class PhotosRelationManager extends RelationManager
                     ->modalHeading('Tomar Fotografía')
                     ->form(function (Form $form) {
                         return $form->schema([
-                            Forms\Components\FileUpload::make('before_work_photo_path')
-                                ->label('Fotografía Antes del Trabajo')
-                                ->image()
-                                ->required()
-                                ->directory('work-reports/photos')
-                                ->visibility('public')
-                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                ->maxSize(30240) // 30MB
-                                ->extraInputAttributes(['capture' => 'environment'])
-                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 30MB.'),
+                            Split::make([
+                                Forms\Components\FileUpload::make('before_work_photo_path')
+                                    ->label('Fotografía del trabajo previo')
+                                    ->image()
+                                    ->downloadable()
+                                    ->directory('work-reports/photos')
+                                    ->visibility('public')
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                    ->maxSize(25600) // 25MB
+                                    ->extraInputAttributes(['capture' => 'environment'])
+                                    ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
 
-                            Forms\Components\FileUpload::make('photo_path')
-                                ->label('Fotografía del trabajo culminado')
-                                ->image()
-                                ->required()
-                                ->directory('work-reports/photos')
-                                ->visibility('public')
-                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                ->maxSize(30240) // 30MB
-                                ->extraInputAttributes(['capture' => 'environment'])
-                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 30MB.'),
+                                Forms\Components\RichEditor::make('before_work_descripcion')
+                                    ->label('Descripción de la evidencia antes del trabajo')
+                                    ->maxLength(500)
+                                    ->placeholder('Describe brevemente lo que se muestra...'),
 
+                            ])->from('md')
+                                ->columnSpanFull()
+                                ->columns(2),
 
+                            Split::make([
 
-                            Forms\Components\RichEditor::make('before_work_descripcion')
-                                ->label('Descripción de la evidencia antes del trabajo')
-                                ->required()
-                                ->maxLength(500)
-                                ->placeholder('Describe brevemente lo que se muestra...'),
+                                Forms\Components\FileUpload::make('photo_path')
+                                    ->label('Fotografía del trabajo culminado')
+                                    ->image()
+                                    ->downloadable()
+                                    ->directory('work-reports/photos')
+                                    ->visibility('public')
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                    ->maxSize(25600) // 25MB
+                                    ->extraInputAttributes(['capture' => 'environment'])
+                                    ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
 
-                            Forms\Components\RichEditor::make('descripcion')
-                                ->label('Descripción de la evidencia')
-                                ->required()
-                                ->maxLength(500)
-                                ->placeholder('Describe brevemente lo que se muestra...'),
+                                Forms\Components\RichEditor::make('descripcion')
+                                    ->label('Descripción de la evidencia')
+                                    ->maxLength(500)
+                                    ->placeholder('Describe brevemente lo que se muestra...'),
+
+                            ])->from('md')
+                                ->columnSpanFull()
+                                ->columns(2),
                         ]);
                     })
                     ->mutateFormDataUsing(function (array $data): array {
@@ -216,36 +214,36 @@ class PhotosRelationManager extends RelationManager
                             Forms\Components\FileUpload::make('before_work_photo_path')
                                 ->label('Fotografía')
                                 ->image()
-                                ->required()
+
                                 ->previewable()
                                 ->directory('work-reports/photos')
                                 ->visibility('public')
                                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                ->maxSize(10240) // 10MB
+                                ->maxSize(25600) // 25MB
                                 // Sin 'extraInputAttributes' para que abra la galería
-                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 5MB.'),
+                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
 
                             Forms\Components\FileUpload::make('photo_path')
                                 ->label('Fotografía')
                                 ->image()
-                                ->required()
+
                                 ->previewable()
                                 ->directory('work-reports/photos')
                                 ->visibility('public')
                                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                ->maxSize(10240) // 10MB
+                                ->maxSize(25600) // 25MB
                                 // Sin 'extraInputAttributes' para que abra la galería
-                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 5MB.'),
+                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
 
                             Forms\Components\RichEditor::make('before_work_descripcion')
                                 ->label('Descripción de la evidencia')
-                                ->required()
+
                                 ->maxLength(500)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
 
                             Forms\Components\RichEditor::make('descripcion')
                                 ->label('Descripción de la evidencia')
-                                ->required()
+
                                 ->maxLength(500)
                                 ->placeholder('Describe brevemente lo que se muestra...'),
 
