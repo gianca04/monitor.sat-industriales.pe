@@ -1,0 +1,163 @@
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header" style="position: relative; min-height: 60px; margin-bottom: 30px;">
+        <img src="{{ public_path('images/Logo2.png') }}" alt="Logo SAT"
+            style="position: absolute; left: 0; top: 0; height: 100px; width: auto;">
+        <div style="text-align: center;">
+            <div class="report-title" style="font-size:30px;font-weight:bold;">{{ $project->name }}</div>
+            <div class="report-title" style="font-size:16px;font-weight:bold;">Reporte #{{ $workReport->id }}</div>
+        </div>
+    </div>
+
+    <!--
+    <div class="summary-stats">
+        <div class="stat-item">
+            <div class="stat-number">{{ $photos->count() }}</div>
+            <div class="stat-label">Total Evidencias</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{ $photos->where('created_at', '>=', today())->count() }}</div>
+            <div class="stat-label">Evidencias Hoy</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">
+                {{ $photos->groupBy(function ($item) {
+    return $item->created_at->format('Y-m-d'); })->count() }}
+            </div>
+            <div class="stat-label">Días de Trabajo</div>
+        </div>
+    </div>
+    Estadísticas del Reporte -->
+
+    <!-- Información General -->
+    <div class="info-section">
+        <h4 style="margin-top: 0; color: #000000;">Información del Reporte</h4>
+        <div class="info-row">
+            <span class="info-label">Reporte #:</span>
+            <span class="info-value">{{ $workReport->id }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Nombre:</span>
+            <span class="info-value">{{ $workReport->name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Fecha de creación:</span>
+            <span class="info-value">{{ $workReport->created_at->format('d/m/Y H:i') }}</span>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label">Descripción:</span>
+        <span class="info-value">{!! $workReport->description !!}</span>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label">Sugerencias:</span>
+        <span class="info-value">{!! $workReport->suggestions !!}</span>
+    </div>
+
+    <!-- Información del Supervisor -->
+    <div class="info-section">
+        <h4 style="margin-top: 0; color: #000000;">Supervisor Responsable</h4>
+        <div class="info-row">
+            <span class="info-label">Nombre:</span>
+            <span class="info-value">{{ $employee->first_name }} {{ $employee->last_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Documento:</span>
+            <span class="info-value">{{ $employee->document_type }} {{ $employee->document_number }}</span>
+        </div>
+        @if($employee->user)
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ $employee->user->email }}</span>
+            </div>
+        @endif
+    </div>
+
+    <!-- Información del Proyecto -->
+    <div class="info-section">
+        <h4 style="margin-top: 0; color: #000000;">Proyecto</h4>
+        <div class="info-row">
+            <span class="info-label">Nombre:</span>
+            <span class="info-value">{{ $project->name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Código:</span>
+            <span class="info-value">{{ $project->quote_id ?? 'N/A' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Estado:</span>
+            <span class="info-value">{{ $project->status ?? 'Activo' }}</span>
+        </div>
+        @if($project->start_date)
+            <div class="info-row">
+                <span class="info-label">Fecha inicio:</span>
+                <span class="info-value">{{ \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') }}</span>
+            </div>
+        @endif
+    </div>
+
+    <div class="signature-container">
+        <!-- Firma del supervisor -->
+        <div class="signature-item">
+            <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor" class="photo-image" />
+            <div class="photo-description">
+                <strong>Firma del supervisor</strong>
+            </div>
+        </div>
+
+        <br>
+
+        <!-- Firma del gerente -->
+        <div class="signature-item">
+            <img src="{{ $workReport->manager_signature }}" alt="Firma del Gerente" class="photo-image" />
+            <div class="photo-description">
+                <strong>Firma del gerente</strong>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Fotos del Reporte -->
+    <div class="photos-section">
+        <h2 class="section-title">Evidencias Fotográficas</h2>
+
+        @foreach($photos as $index => $photo)
+            @if($index > 0 && $index % 2 == 0)
+                <div class="page-break"></div>
+            @endif
+
+            <div class="photo-container">
+                <div class="photo-header">
+                    <div class="photo-title">Evidencia #{{ $loop->iteration }}</div>
+                    <div class="photo-date">
+                        Capturada el: {{ $photo->created_at->format('d/m/Y H:i') }}
+                    </div>
+                </div>
+
+                @php
+                    $imgPath = public_path('storage/' . $photo->photo_path);
+                @endphp
+                @if(file_exists($imgPath))
+                    <div style="width:100%;text-align:center;padding:18px 0;background:#fff;">
+                        <img src="{{ $imgPath }}" alt="Evidencia {{ $loop->iteration }}" class="photo-image">
+                    </div>
+                @else
+                    <div style="padding:18px 0;text-align:center;background:#fff;">Imagen no disponible<br>{{ $imgPath }}</div>
+                @endif
+
+                <div class="photo-description">
+                    <strong>Descripción:</strong> {{ $photo->descripcion }}
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Reporte generado automáticamente el {{ $generatedAt->format('d/m/Y H:i') }}</p>
+        <p>SAT INDUSTRIALES - Monitor</p>
+    </div>

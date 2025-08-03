@@ -5,121 +5,273 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte de Trabajo - {{ $workReport->name }}</title>
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    <img src="{{ public_path('images/Logo2.png') }}" alt="Logo" style="width: 100px; height: auto;">
+                </th>
+                <th>
+                    <div>{{ $project->name }}</div>
+                </th>
+                <th>
+                    <img src="{{ public_path('storage/' . $project->subClient->client->logo) }}" alt="Logo"
+                        style="width: 100px; height: auto;">
+                </th>
+            </tr>
+        </thead>
+    </table>
+
+    <br>
+
+    {{-- TABLA DE CLIENTE --}}
+    <table>
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>SubCliente</th>
+                <th>RUC</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ $project->subClient->client->business_name ?? 'N/A' }}</td>
+                <td>{{ $project->subClient->name ?? 'N/A' }}</td>
+                <td>{{ $project->subClient->client->document_number ?? 'N/A' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+    {{-- TABLA DE DESCRIPCIÓN DE PROYECTO --}}
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha de inicio del proyecto</th>
+                <th>Fecha de fin del proyecto</th>
+                <th>TDR</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ $workReport->project->start_date->format('d/m/Y') ?? 'N/A' }}</td>
+                <td>{{ $project->end_date->format('d/m/Y') ?? 'N/A' }}</td>
+                <td>{{ $project->quote->TDR ?? 'N/A' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    {{-- TABLA DE INFORMACIÓN DEL REPORTE --}}
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre de la Actividad</th>
+                <th>Fecha de Reporte</th>
+                <th>Supervisor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ $workReport->name ?? 'N/A' }}</td>
+                <td>{{ $workReport->employee->full_name ?? 'N/A' }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha de Reporte</th>
+                <th>Hora de inicio</th>
+                <th>Hora de finalización</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ $workReport->created_at->format('d/m/Y') ?? 'N/A' }}</td>
+                <td>{{ $workReport->start_time ?? 'N/A' }}</td>
+                <td>{{ $workReport->end_time ?? 'N/A' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+    {{-- TABLA DE DESCRIPCIÓN DE ACTIVIDAD --}}
+    <table>
+        <thead>
+            <tr>
+                <th>Descripción de actividad</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{!! $workReport->description ?? 'N/A' !!}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+    {{-- TABLA DE sugerencias --}}
+    <table>
+        <thead>
+            <tr>
+                <th>Sugerencias</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{!! $workReport->suggestions ?? 'N/A' !!}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+
+    {{-- TABLA DE HERRAMIENTAS --}}
+    <table>
+        <thead>
+            <tr>
+                <th>Herramientas</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{!! $workReport->tools ?? 'N/A' !!}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+
+    {{-- TABLA DE HERRAMIENTAS --}}
+    <table>
+        <thead>
+            <tr>
+                <th>Materiales</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{!! $workReport->materials ?? 'N/A' !!}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+
+    {{-- TABLA DE HERRAMIENTAS --}}
+    <table>
+        <thead>
+            <tr>
+                <th>Personal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{!! $workReport->personnel ?? 'N/A' !!}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+    {{-- EVIDENCIAS FOTOGRAFICAS --}}
+
+    @foreach($photos as $index => $photo)
+        <table>
+            <thead>
+                <tr>
+                    <th>Evidencia Inicial</th>
+                    <th>Evidencia del Trabajo Realizado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div>
+                            @php
+                                $imgbefore_work_photo_path = public_path('storage/' . $photo->before_work_photo_path);
+                            @endphp
+                            @if(file_exists($imgbefore_work_photo_path))
+                                <img class="photo-image" src="{{ $imgbefore_work_photo_path }}"
+                                    alt="Evidencia {{ $loop->iteration }}">
+                            @else
+                                <div>Imagen no disponible<br>{{ $imgbefore_work_photo_path }}</div>
+                            @endif
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            @php
+                                $imgPath = public_path('storage/' . $photo->photo_path);
+                            @endphp
+                            @if(file_exists($imgPath))
+                                <img class="photo-image" src="{{ $imgPath }}" alt="Evidencia {{ $loop->iteration }}">
+                            @else
+                                <div>Imagen no disponible<br>{{ $imgPath }}</div>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {!! $photo->before_work_descripcion ?? 'N/A' !!}
+                    </td>
+                    <td>
+                        {!! $photo->descripcion ?? 'N/A' !!}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    @endforeach
+
+
+    <br>
+
+    {{-- TABLA DE FIRMAS --}}
+    <table>
+        <thead>
+            <tr>
+                <th>Firma del gerente / subgerente</th>
+                <th>Firma del Validado por supervisor / técnico</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    @if($workReport->manager_signature)
+                        <img src="{{ $workReport->manager_signature }}" alt="Firma del Gerente" class="photo-image" />
+                    @else
+                        N/A
+                    @endif
+                </td>
+                <td>
+                    @if($workReport->supervisor_signature)
+                        <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor" class="photo-image" />
+                    @else
+                        N/A
+                    @endif
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <div>
+        <p class="footer">Reporte generado automáticamente el {{ $generatedAt->format('d/m/Y H:i') }}</p>
+        <p class="footer">SAT INDUSTRIALES - Monitor</p>
+    </div>
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            color: #111;
-            line-height: 1.4;
-        }
-
-        .header {
-            text-align: center;
-            border-bottom: 3px solid #222;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #111;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #444;
-            font-size: 14px;
-        }
-
-        .report-title {
-            font-size: 20px;
-            color: #111;
-            margin: 20px 0;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .info-section {
-            background-color: #f3f3f3;
-            padding: 15px;
-            margin: 20px 0;
-            border-left: 4px solid #222;
-        }
-
-        .info-row {
-            display: flex;
-            margin-bottom: 8px;
-        }
-
-        .info-label {
-            font-weight: bold;
-            font-size: medium;
-            width: 150px;
-            color: #111;
-        }
-
-        .info-value {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #333;
-        }
-
-        .info-value p {
-            margin: 0 0 10px;
-        }
-
-        .info-value strong {
-            font-weight: bold;
-        }
-
-        .info-value em {
-            font-style: italic;
-        }
-
-        .photos-section {
-            margin-top: 30px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            color: #111;
-            border-bottom: 2px solid #bbb;
-            padding-bottom: 5px;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .photo-container {
-            margin-bottom: 40px;
-            page-break-inside: avoid;
-            border: 1px solid #bbb;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-            background: #fafafa;
-            overflow: hidden;
-        }
-
-        .photo-header {
-            background: #222;
-            padding: 16px 18px;
-            border-bottom: 1px solid #bbb;
-            color: #fff;
-        }
-
-        .photo-title {
-            font-weight: bold;
-            color: #fff;
-            font-size: 16px;
-            margin-bottom: 2px;
-        }
-
-        .photo-date {
-            font-size: 12px;
-            color: #eee;
-        }
-
         .photo-image {
             display: block;
             margin: 0 auto;
@@ -131,14 +283,6 @@
             object-fit: contain;
         }
 
-        .photo-description {
-            padding: 18px;
-            background-color: #fff;
-            color: #222;
-            font-style: italic;
-            border-top: 1px solid #bbb;
-        }
-
         .footer {
             margin-top: 50px;
             text-align: center;
@@ -147,198 +291,7 @@
             border-top: 1px solid #bbb;
             padding-top: 24px;
         }
-
-        .page-break {
-            page-break-before: always;
-        }
-
-        .summary-stats {
-            display: flex;
-            justify-content: space-around;
-            background-color: #ededed;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #111;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #444;
-        }
     </style>
-</head>
-
-<body>
-    <!-- Header -->
-    <div class="header" style="position: relative; min-height: 60px; margin-bottom: 30px;">
-        <img src="{{ public_path('images/Logo2.png') }}" alt="Logo SAT"
-            style="position: absolute; left: 0; top: 0; height: 100px; width: auto;">
-        <div style="text-align: center;">
-            <div class="report-title" style="font-size:30px;font-weight:bold;">{{ $project->name }}</div>
-            <div class="report-title" style="font-size:16px;font-weight:bold;">Reporte #{{ $workReport->id }}</div>
-        </div>
-    </div>
-
-    <!--
-    <div class="summary-stats">
-        <div class="stat-item">
-            <div class="stat-number">{{ $photos->count() }}</div>
-            <div class="stat-label">Total Evidencias</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">{{ $photos->where('created_at', '>=', today())->count() }}</div>
-            <div class="stat-label">Evidencias Hoy</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">
-                {{ $photos->groupBy(function ($item) {
-    return $item->created_at->format('Y-m-d'); })->count() }}
-            </div>
-            <div class="stat-label">Días de Trabajo</div>
-        </div>
-    </div>
-    Estadísticas del Reporte -->
-
-    <!-- Información General -->
-    <div class="info-section">
-        <h4 style="margin-top: 0; color: #000000;">Información del Reporte</h4>
-        <div class="info-row">
-            <span class="info-label">Reporte #:</span>
-            <span class="info-value">{{ $workReport->id }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Nombre:</span>
-            <span class="info-value">{{ $workReport->name }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Fecha de creación:</span>
-            <span class="info-value">{{ $workReport->created_at->format('d/m/Y H:i') }}</span>
-        </div>
-    </div>
-
-    <div class="info-row">
-        <span class="info-label">Descripción:</span>
-        <span class="info-value">{!! $workReport->description !!}</span>
-    </div>
-
-    <div class="info-row">
-        <span class="info-label">Sugerencias:</span>
-        <span class="info-value">{!! $workReport->suggestions !!}</span>
-    </div>
-
-    <!-- Información del Supervisor -->
-    <div class="info-section">
-        <h4 style="margin-top: 0; color: #000000;">Supervisor Responsable</h4>
-        <div class="info-row">
-            <span class="info-label">Nombre:</span>
-            <span class="info-value">{{ $employee->first_name }} {{ $employee->last_name }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Documento:</span>
-            <span class="info-value">{{ $employee->document_type }} {{ $employee->document_number }}</span>
-        </div>
-        @if($employee->user)
-            <div class="info-row">
-                <span class="info-label">Email:</span>
-                <span class="info-value">{{ $employee->user->email }}</span>
-            </div>
-        @endif
-    </div>
-
-    <!-- Información del Proyecto -->
-    <div class="info-section">
-        <h4 style="margin-top: 0; color: #000000;">Proyecto</h4>
-        <div class="info-row">
-            <span class="info-label">Nombre:</span>
-            <span class="info-value">{{ $project->name }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Código:</span>
-            <span class="info-value">{{ $project->quote_id ?? 'N/A' }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Estado:</span>
-            <span class="info-value">{{ $project->status ?? 'Activo' }}</span>
-        </div>
-        @if($project->start_date)
-            <div class="info-row">
-                <span class="info-label">Fecha inicio:</span>
-                <span class="info-value">{{ \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') }}</span>
-            </div>
-        @endif
-    </div>
-
-    <div class="signature-container">
-        <!-- Firma del supervisor -->
-        <div class="signature-item">
-            <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor" class="photo-image" />
-            <div class="photo-description">
-                <strong>Firma del supervisor</strong>
-            </div>
-        </div>
-
-        <br>
-
-        <!-- Firma del gerente -->
-        <div class="signature-item">
-            <img src="{{ $workReport->manager_signature }}" alt="Firma del Gerente" class="photo-image" />
-            <div class="photo-description">
-                <strong>Firma del gerente</strong>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Fotos del Reporte -->
-    <div class="photos-section">
-        <h2 class="section-title">Evidencias Fotográficas</h2>
-
-        @foreach($photos as $index => $photo)
-            @if($index > 0 && $index % 2 == 0)
-                <div class="page-break"></div>
-            @endif
-
-            <div class="photo-container">
-                <div class="photo-header">
-                    <div class="photo-title">Evidencia #{{ $loop->iteration }}</div>
-                    <div class="photo-date">
-                        Capturada el: {{ $photo->created_at->format('d/m/Y H:i') }}
-                    </div>
-                </div>
-
-                @php
-                    $imgPath = public_path('storage/' . $photo->photo_path);
-                @endphp
-                @if(file_exists($imgPath))
-                    <div style="width:100%;text-align:center;padding:18px 0;background:#fff;">
-                        <img src="{{ $imgPath }}" alt="Evidencia {{ $loop->iteration }}" class="photo-image">
-                    </div>
-                @else
-                    <div style="padding:18px 0;text-align:center;background:#fff;">Imagen no disponible<br>{{ $imgPath }}</div>
-                @endif
-
-                <div class="photo-description">
-                    <strong>Descripción:</strong> {{ $photo->descripcion }}
-                </div>
-            </div>
-        @endforeach
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <p>Reporte generado automáticamente el {{ $generatedAt->format('d/m/Y H:i') }}</p>
-        <p>SAT INDUSTRIALES - Monitor</p>
-    </div>
 </body>
 
 </html>

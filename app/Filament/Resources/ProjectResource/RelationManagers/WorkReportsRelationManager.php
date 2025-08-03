@@ -498,6 +498,13 @@ class WorkReportsRelationManager extends RelationManager
                     ->extraAttributes(['class' => 'font-bold'])
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Fecha')
+                    ->weight('bold')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->label('Supervisor')
                     ->formatStateUsing(fn($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
@@ -514,14 +521,9 @@ class WorkReportsRelationManager extends RelationManager
                         default => 'success',
                     }),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Creado')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(),
-
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->label('Actualizado')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

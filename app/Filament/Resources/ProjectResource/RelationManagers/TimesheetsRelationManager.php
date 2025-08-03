@@ -64,6 +64,14 @@ class TimesheetsRelationManager extends RelationManager
                             })
                             ->default(fn() => session('project_id'))
                             ->reactive()
+                            ->afterStateHydrated(function ($state, callable $set) {
+                                if ($state) {
+                                    $project = Project::find($state);
+                                    if ($project) {
+                                        $set('project_id', $project->name);
+                                    }
+                                }
+                            })
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 // Validar si ya existe un tareo para este proyecto en la fecha seleccionada
                                 $checkInDate = $get('check_in_date');
@@ -220,112 +228,129 @@ class TimesheetsRelationManager extends RelationManager
 
             ]);
     }
+    public static function validateUniqueTimesheetForProjectDate($projectId, $checkInDate, $excludeId = null)
+    {
+        $query = Timesheet::where('project_id', $projectId)
+            ->whereDate('check_in_date', Carbon::parse($checkInDate)->toDateString());
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        return $query->exists();
+    }
 
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('id')
+
             ->columns([
-                Tables\Columns\TextColumn::make('employee.first_name')
-                    ->label('Responsable del Tareo')
-                    ->formatStateUsing(function ($record) {
-                        return $record->employee ?
-                            $record->employee->first_name . ' ' . $record->employee->last_name :
-                            'Sin empleado';
-                    })
-                    ->searchable(['first_name', 'last_name'])
+                Tables\Columns\TextColumn::make('check_in_date')
+                    ->label('Fecha')
+                    ->dateTime('d/m/Y')
                     ->sortable()
-                    ->icon('heroicon-o-user'),
+                    ->weight('bold')
+                    ->description(function ($record) {
+                        if (!$record || !$record->project_id || !$record->check_in_date) {
+                            return '';
+                        }
+
+                        $sameDay = Timesheet::where('project_id', $record->project_id)
+                            ->whereDate('check_in_date', Carbon::parse($record->check_in_date)->toDateString())
+                            ->where('id', '!=', $record->id)
+                            ->count();
+
+                        return $sameDay > 0 ? 'Conflicto detectado' : 'Único del día';
+                    })
+                    ->color(function ($record) {
+                        if (!$record || !$record->project_id || !$record->check_in_date) {
+                            return 'gray';
+                        }
+
+                        $sameDay = Timesheet::where('project_id', $record->project_id)
+                            ->whereDate('check_in_date', Carbon::parse($record->check_in_date)->toDateString())
+                            ->where('id', '!=', $record->id)
+                            ->count();
+                        return $sameDay > 0 ? 'danger' : 'success';
+                    }),
 
                 Tables\Columns\BadgeColumn::make('shift')
                     ->label('Turno')
-                    ->formatStateUsing(fn($state) => match ($state) {
-                        'morning' => 'Mañana',
-                        'afternoon' => 'Tarde',
-                        'night' => 'Noche',
-                        'full_day' => 'Día Completo',
-                        'custom' => 'Personalizado',
-                        default => $state,
-                    })
                     ->colors([
-                        'warning' => 'morning',
-                        'primary' => 'afternoon',
-                        'secondary' => 'night',
-                        'success' => 'full_day',
-                        'info' => 'custom',
+                        'success' => 'day',
+                        'info' => 'night',
                     ])
                     ->icons([
-                        'heroicon-o-sun' => 'morning',
+                        'heroicon-o-sun' => 'day',
                         'heroicon-o-moon' => 'night',
-                        'heroicon-o-clock' => ['afternoon', 'full_day', 'custom'],
-                    ]),
+                    ])
+                    ->formatStateUsing(fn(?string $state): string => match ($state) {
+                        'day' => 'Día',
+                        'night' => 'Noche',
+                        null => 'No definido',
+                        default => $state,
+                    }),
 
-                Tables\Columns\TextColumn::make('check_in_date')
-                    ->label('Entrada')
-                    ->dateTime('d/m/Y H:i')
+                Tables\Columns\TextColumn::make('employee.full_name')
+                    ->label('Supervisor')
+                    ->searchable(['first_name', 'last_name', 'document_number'])
                     ->sortable()
-                    ->icon('heroicon-o-arrow-right-on-rectangle')
-                    ->color('success'),
+                    ->toggleable(),
 
-                Tables\Columns\TextColumn::make('check_out_date')
-                    ->label('Salida')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->icon('heroicon-o-arrow-left-on-rectangle')
-                    ->color('danger'),
+                Tables\Columns\TextColumn::make('attended_count')
+                    ->label('Asistió')
+                    ->badge()
+                    ->icon('heroicon-o-check-circle')
 
-                /*Tables\Columns\TextColumn::make('break_duration')
-                    ->label('Descanso')
-                    ->formatStateUsing(function ($record) {
-                        if (!$record->break_date || !$record->end_break_date) {
-                            return 'Sin descanso';
-                        }
+                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'attended')->count())
+                    ->sortable(),
 
-                        $start = \Carbon\Carbon::parse($record->break_date);
-                        $end = \Carbon\Carbon::parse($record->end_break_date);
-                        $minutes = $end->diffInMinutes($start);
+                Tables\Columns\TextColumn::make('absent_count')
+                    ->label('Faltó')
+                    ->badge()
+                    ->color('danger')
+                    ->icon('heroicon-o-x-circle')
 
-                        return "{$minutes} min";
-                    })
-                    ->icon('heroicon-o-pause')
-                    ->color('warning'),
+                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'absent')->count())
+                    ->sortable(),
 
+                Tables\Columns\TextColumn::make('justified_count')
+                    ->label('Justificado')
+                    ->badge()
+                    ->color('warning')
+                    ->icon('heroicon-o-exclamation-circle')
 
-                Tables\Columns\TextColumn::make('total_hours')
-                    ->label('Horas Totales')
-                    ->formatStateUsing(function ($record) {
-                        if (!$record->check_in_date || !$record->check_out_date) {
-                            return 'Incompleto';
-                        }
+                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'justified')->count())
+                    ->sortable(),
 
-                        $start = \Carbon\Carbon::parse($record->check_in_date);
-                        $end = \Carbon\Carbon::parse($record->check_out_date);
-                        $totalMinutes = $end->diffInMinutes($start);
-
-                        // Restar tiempo de descanso
-                        if ($record->break_date && $record->end_break_date) {
-                            $breakStart = \Carbon\Carbon::parse($record->break_date);
-                            $breakEnd = \Carbon\Carbon::parse($record->end_break_date);
-                            $breakMinutes = $breakEnd->diffInMinutes($breakStart);
-                            $totalMinutes -= $breakMinutes;
-                        }
-
-                        $hours = floor($totalMinutes / 60);
-                        $minutes = $totalMinutes % 60;
-
-                        return "{$hours}h {$minutes}m";
-                    })
-                    ->icon('heroicon-o-clock')
+                Tables\Columns\TextColumn::make('attendances_total')
+                    ->label('Total')
+                    ->badge()
                     ->color('primary')
-                    ->weight('bold'),
-                    */
+                    ->getStateUsing(fn($record) => $record->attendances()->count())
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('schedule_info')
+                    ->label('Horario')
+                    ->icon('heroicon-o-clock')
+                    ->getStateUsing(function ($record) {
+                        if (!$record) {
+                            return '--:-- - --:--';
+                        }
+
+                        $checkIn = $record->check_in_date ? Carbon::parse($record->check_in_date)->format('H:i') : '--:--';
+                        $checkOut = $record->check_out_date ? Carbon::parse($record->check_out_date)->format('H:i') : '--:--';
+
+                        return "{$checkIn} - {$checkOut}";
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Registrado')
+                    ->label('Creado')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('shift')

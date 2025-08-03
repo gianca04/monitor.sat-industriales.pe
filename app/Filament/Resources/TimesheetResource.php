@@ -68,31 +68,40 @@ class TimesheetResource extends Resource
                     ->icon('heroicon-o-calendar-days')
                     ->schema([
                         // Sección de empleado
-
                         Forms\Components\Select::make('project_id')
                             ->label('Proyecto')
                             ->required()
                             ->searchable()
-                            ->options(function (callable $get) {
-                                $search = $get('search');
-                                $sessionprojectId = session('project_id');
-                                $query = Project::query()
-                                    ->select('projects.id', 'projects.name')
-                                    ->when($search, function ($query) use ($search) {
-                                        $query->where('projects.name', 'like', "%{$search}%");
-                                    })
-                                    ->limit(10);
+                            ->options(
+                                function (callable $get) {
+                                    $search = $get('search');
+                                    $sessionprojectId = session('project_id');
+                                    $query = Project::query()
+                                        ->select('projects.id', 'projects.name')
+                                        ->when($search, function ($query) use ($search) {
+                                            $query->where('projects.name', 'like', "%{$search}%");
+                                        })
+                                        ->limit(10);
 
-                                return $query->get()
-                                    ->unique('id')
-                                    ->mapWithKeys(function ($project) {
-                                        $label = "{$project->name}";
-                                        return [$project->id => $label];
-                                    })
-                                    ->toArray();
-                            })
+                                    return $query->get()
+                                        ->unique('id')
+                                        ->mapWithKeys(function ($project) {
+                                            $label = "{$project->name}";
+                                            return [$project->id => $label];
+                                        })
+                                        ->toArray();
+                                }
+                            )
                             ->default(fn() => session('project_id'))
                             ->reactive()
+                            ->afterStateHydrated(function ($state, callable $set) {
+                                if ($state) {
+                                    $project = Project::find($state);
+                                    if ($project) {
+                                        $set('project_id', $project->name);
+                                    }
+                                }
+                            })
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 // Validar si ya existe un tareo para este proyecto en la fecha seleccionada
                                 $checkInDate = $get('check_in_date');
