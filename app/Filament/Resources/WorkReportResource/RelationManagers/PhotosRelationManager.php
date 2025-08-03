@@ -36,7 +36,7 @@ class PhotosRelationManager extends RelationManager
 
                 Split::make([
                     Forms\Components\FileUpload::make('before_work_photo_path')
-                        ->label('Tomar Foto')
+                        ->label('Fotografía al iniciar el trabajo')
                         ->image()
                         ->downloadable()
                         ->directory('work-reports/photos')
@@ -50,7 +50,17 @@ class PhotosRelationManager extends RelationManager
                     Forms\Components\RichEditor::make('before_work_descripcion')
                         ->label('Descripción de la evidencia antes del trabajo')
                         ->maxLength(500)
-                        ->helperText('Máximo 500 caracteres'),
+                        ->helperText('Máximo 500 caracteres')
+                        ->toolbarButtons([
+                            'bold',
+                            'h2',
+                            'h3',
+                            'orderedList',
+                            'bulletList',
+                            'redo',
+                            'underline',
+                            'undo',
+                        ]),
 
                 ])->from('md')
                     ->columnSpanFull()
@@ -61,6 +71,7 @@ class PhotosRelationManager extends RelationManager
                     Forms\Components\FileUpload::make('photo_path')
                         ->label('Fotografía del trabajo realizado')
                         ->image()
+                        ->required()
                         ->downloadable()
                         ->directory('work-reports/photos')
                         ->visibility('public')
@@ -115,7 +126,6 @@ class PhotosRelationManager extends RelationManager
                         ->lineClamp(2)
                         ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
 
-
                     Tables\Columns\TextColumn::make('descripcion')
                         ->searchable()
                         ->size('m')
@@ -162,7 +172,17 @@ class PhotosRelationManager extends RelationManager
                                 Forms\Components\RichEditor::make('before_work_descripcion')
                                     ->label('Descripción de la evidencia antes del trabajo')
                                     ->maxLength(500)
-                                    ->placeholder('Describe brevemente lo que se muestra...'),
+                                    ->placeholder('Describe brevemente lo que se muestra...')
+                                    ->toolbarButtons([
+                                        'bold',
+                                        'h2',
+                                        'h3',
+                                        'orderedList',
+                                        'bulletList',
+                                        'redo',
+                                        'underline',
+                                        'undo',
+                                    ]),
 
                             ])->from('md')
                                 ->columnSpanFull()
@@ -173,6 +193,7 @@ class PhotosRelationManager extends RelationManager
                                 Forms\Components\FileUpload::make('photo_path')
                                     ->label('Fotografía del trabajo culminado')
                                     ->image()
+                                    ->required()
                                     ->downloadable()
                                     ->directory('work-reports/photos')
                                     ->visibility('public')
@@ -225,7 +246,17 @@ class PhotosRelationManager extends RelationManager
                                 Forms\Components\RichEditor::make('before_work_descripcion')
                                     ->label('Descripción de la evidencia')
                                     ->maxLength(500)
-                                    ->placeholder('Describe brevemente lo que se muestra...'),
+                                    ->placeholder('Describe brevemente lo que se muestra...')
+                                    ->toolbarButtons([
+                                        'bold',
+                                        'h2',
+                                        'h3',
+                                        'orderedList',
+                                        'bulletList',
+                                        'redo',
+                                        'underline',
+                                        'undo',
+                                    ]),
                             ])->from('md')
                                 ->columnSpanFull()
                                 ->columns(2),
@@ -233,6 +264,7 @@ class PhotosRelationManager extends RelationManager
                             Split::make([
                                 Forms\Components\FileUpload::make('photo_path')
                                     ->label('Fotografía')
+                                    ->required()
                                     ->image()
                                     ->previewable()
                                     ->directory('work-reports/photos')
@@ -244,7 +276,17 @@ class PhotosRelationManager extends RelationManager
                                 Forms\Components\RichEditor::make('descripcion')
                                     ->label('Descripción de la evidencia')
                                     ->maxLength(500)
-                                    ->placeholder('Describe brevemente lo que se muestra...'),
+                                    ->placeholder('Describe brevemente lo que se muestra...')
+                                    ->toolbarButtons([
+                                        'bold',
+                                        'h2',
+                                        'h3',
+                                        'orderedList',
+                                        'bulletList',
+                                        'redo',
+                                        'underline',
+                                        'undo',
+                                    ]),
                             ])->from('md')
                                 ->columnSpanFull()
                                 ->columns(2),
