@@ -438,7 +438,7 @@ class WorkReportResource extends Resource
                             ->columns(2)
                             ->schema([
                                 Forms\Components\RichEditor::make('personnel')
-                                    ->label('Herramientas')
+                                    ->label('Lista de personal')
                                     ->columnSpanFull()
                                     ->maxLength(5000)
                                     ->toolbarButtons([
@@ -468,7 +468,8 @@ class WorkReportResource extends Resource
                                     ->lineMaxWidth(2.5)
                                     ->throttle(16)
                                     ->minDistance(5)
-                                    ->velocityFilterWeight(0.7),
+                                    ->velocityFilterWeight(0.7)
+                                    ->confirmable(),
                                 SignaturePad::make('supervisor_signature')
                                     ->label('Firma del Validado por supervisor / técnico')
                                     ->dotSize(2.0)

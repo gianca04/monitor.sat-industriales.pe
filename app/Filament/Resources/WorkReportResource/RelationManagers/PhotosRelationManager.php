@@ -36,7 +36,7 @@ class PhotosRelationManager extends RelationManager
 
                 Split::make([
                     Forms\Components\FileUpload::make('before_work_photo_path')
-                        ->label('Fotografía al iniciar el trabajo')
+                        ->label('Evidencia Inicial')
                         ->image()
                         ->downloadable()
                         ->directory('work-reports/photos')
@@ -48,8 +48,9 @@ class PhotosRelationManager extends RelationManager
                         ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 25MB.'),
 
                     Forms\Components\RichEditor::make('before_work_descripcion')
-                        ->label('Descripción de la evidencia antes del trabajo')
+                        ->label('Descripción de la evidencia inicial')
                         ->maxLength(500)
+                        ->placeholder('Describe brevemente lo que se muestra...')
                         ->helperText('Máximo 500 caracteres')
                         ->toolbarButtons([
                             'bold',
@@ -69,7 +70,7 @@ class PhotosRelationManager extends RelationManager
                 Split::make([
 
                     Forms\Components\FileUpload::make('photo_path')
-                        ->label('Fotografía del trabajo realizado')
+                        ->label('Evidencia del Trabajo Realizado')
                         ->image()
                         ->required()
                         ->downloadable()
@@ -83,7 +84,18 @@ class PhotosRelationManager extends RelationManager
                     Forms\Components\RichEditor::make('descripcion')
                         ->label('Descripción de la evidencia del trabajo realizado')
                         ->maxLength(500)
-                        ->helperText('Máximo 500 caracteres'),
+                        ->placeholder('Describe brevemente lo que se muestra...')
+                        ->helperText('Máximo 500 caracteres')
+                        ->toolbarButtons([
+                            'bold',
+                            'h2',
+                            'h3',
+                            'orderedList',
+                            'bulletList',
+                            'redo',
+                            'underline',
+                            'undo',
+                        ]),
 
                 ])->from('md')
                     ->columnSpanFull()
@@ -159,7 +171,7 @@ class PhotosRelationManager extends RelationManager
                         return $form->schema([
                             Split::make([
                                 Forms\Components\FileUpload::make('before_work_photo_path')
-                                    ->label('Tomar Foto')
+                                    ->label('Evidencia Inicial')
                                     ->image()
                                     ->downloadable()
                                     ->directory('work-reports/photos')
@@ -170,9 +182,10 @@ class PhotosRelationManager extends RelationManager
                                     ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
 
                                 Forms\Components\RichEditor::make('before_work_descripcion')
-                                    ->label('Descripción de la evidencia antes del trabajo')
+                                    ->label('Descripción de la evidencia inicial')
                                     ->maxLength(500)
                                     ->placeholder('Describe brevemente lo que se muestra...')
+                                    ->helperText('Máximo 500 caracteres')
                                     ->toolbarButtons([
                                         'bold',
                                         'h2',
@@ -191,7 +204,7 @@ class PhotosRelationManager extends RelationManager
                             Split::make([
 
                                 Forms\Components\FileUpload::make('photo_path')
-                                    ->label('Fotografía del trabajo culminado')
+                                    ->label('Evidencia del Trabajo Realizado')
                                     ->image()
                                     ->required()
                                     ->downloadable()
@@ -203,9 +216,20 @@ class PhotosRelationManager extends RelationManager
                                     ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
 
                                 Forms\Components\RichEditor::make('descripcion')
-                                    ->label('Descripción de la evidencia')
+                                    ->label('Descripción de la evidencia del trabajo realizado')
                                     ->maxLength(500)
-                                    ->placeholder('Describe brevemente lo que se muestra...'),
+                                    ->placeholder('Describe brevemente lo que se muestra...')
+                                    ->helperText('Máximo 500 caracteres')
+                                    ->toolbarButtons([
+                                        'bold',
+                                        'h2',
+                                        'h3',
+                                        'orderedList',
+                                        'bulletList',
+                                        'redo',
+                                        'underline',
+                                        'undo',
+                                    ]),
 
                             ])->from('md')
                                 ->columnSpanFull()
@@ -234,7 +258,7 @@ class PhotosRelationManager extends RelationManager
                         return $form->schema(components: [
                             Split::make([
                                 Forms\Components\FileUpload::make('before_work_photo_path')
-                                    ->label('Fotografía')
+                                    ->label('Evidencia Inicial')
                                     ->image()
                                     ->previewable()
                                     ->directory('work-reports/photos')
@@ -244,9 +268,10 @@ class PhotosRelationManager extends RelationManager
                                     // Sin 'extraInputAttributes' para que abra la galería
                                     ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
                                 Forms\Components\RichEditor::make('before_work_descripcion')
-                                    ->label('Descripción de la evidencia')
+                                    ->label('Descripción de la evidencia inicial')
                                     ->maxLength(500)
                                     ->placeholder('Describe brevemente lo que se muestra...')
+                                    ->helperText('Máximo 500 caracteres')
                                     ->toolbarButtons([
                                         'bold',
                                         'h2',
@@ -263,7 +288,7 @@ class PhotosRelationManager extends RelationManager
 
                             Split::make([
                                 Forms\Components\FileUpload::make('photo_path')
-                                    ->label('Fotografía')
+                                    ->label('Evidencia del Trabajo Realizado')
                                     ->required()
                                     ->image()
                                     ->previewable()
@@ -273,10 +298,12 @@ class PhotosRelationManager extends RelationManager
                                     ->maxSize(25600) // 25MB
                                     // Sin 'extraInputAttributes' para que abra la galería
                                     ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
+
                                 Forms\Components\RichEditor::make('descripcion')
-                                    ->label('Descripción de la evidencia')
+                                    ->label('Descripción de la evidencia del trabajo realizado')
                                     ->maxLength(500)
                                     ->placeholder('Describe brevemente lo que se muestra...')
+                                    ->helperText('Máximo 500 caracteres')
                                     ->toolbarButtons([
                                         'bold',
                                         'h2',
