@@ -18,6 +18,9 @@ class WorkReport extends Model
         'supervisor_signature',
         'manager_signature',
         'suggestions',
+        'tools',
+        'personnel',
+        'materials',
         'start_time', // Hora de inicio del trabajo
         'end_time'    // Hora de finalización del trabajo
     ];

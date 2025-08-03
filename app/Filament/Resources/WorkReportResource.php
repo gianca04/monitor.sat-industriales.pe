@@ -357,7 +357,6 @@ class WorkReportResource extends Resource
                                     ->label('Descripción del reporte')
                                     ->required()
                                     ->helperText('Proporciona una descripción detallada del trabajo realizado.')
-                                    ->columnSpanFull()
                                     ->toolbarButtons([
                                         'attachFiles',
                                         'bold',
@@ -374,7 +373,6 @@ class WorkReportResource extends Resource
                                 Forms\Components\RichEditor::make('suggestions')
                                     ->label('Sugerencias')
                                     ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
-                                    ->columnSpanFull()
                                     ->maxLength(5000)
                                     ->toolbarButtons([
                                         'attachFiles',
@@ -395,11 +393,11 @@ class WorkReportResource extends Resource
                         // INICIO DEL TAB DE HERRAMIENTAS Y MATERIALES
                         Tabs\Tab::make('Herramientas y materiales')
                             ->icon('heroicon-o-wrench')
+                            ->columns(2)
                             ->schema([
                                 Forms\Components\RichEditor::make('tools')
                                     ->label('Herramientas')
                                     ->helperText('Detalla las herramientas utilizadas durante el trabajo.')
-                                    ->columnSpanFull()
                                     ->maxLength(5000)
                                     ->toolbarButtons([
                                         'attachFiles',
@@ -417,7 +415,6 @@ class WorkReportResource extends Resource
                                 Forms\Components\RichEditor::make('materials')
                                     ->label('Materiales')
                                     ->helperText('Detalla los materiales utilizados durante el trabajo.')
-                                    ->columnSpanFull()
                                     ->maxLength(5000)
                                     ->toolbarButtons([
                                         'attachFiles',
@@ -442,7 +439,6 @@ class WorkReportResource extends Resource
                             ->schema([
                                 Forms\Components\RichEditor::make('personnel')
                                     ->label('Herramientas')
-                                    ->helperText('Detalla las herramientas utilizadas durante el trabajo.')
                                     ->columnSpanFull()
                                     ->maxLength(5000)
                                     ->toolbarButtons([
@@ -475,7 +471,6 @@ class WorkReportResource extends Resource
                                     ->velocityFilterWeight(0.7),
                                 SignaturePad::make('supervisor_signature')
                                     ->label('Firma del Validado por supervisor / técnico')
-                                    ->label('Firma del gerente / subgerente')
                                     ->dotSize(2.0)
                                     ->penColor('#000')  // Color negro en modo claro
                                     ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad

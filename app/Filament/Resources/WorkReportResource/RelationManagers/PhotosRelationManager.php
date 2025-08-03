@@ -211,43 +211,43 @@ class PhotosRelationManager extends RelationManager
                     ->modalWidth(width: MaxWidth::Full)
                     ->form(function (Form $form) {
                         return $form->schema(components: [
-                            Forms\Components\FileUpload::make('before_work_photo_path')
-                                ->label('Fotografía')
-                                ->image()
+                            Split::make([
+                                Forms\Components\FileUpload::make('before_work_photo_path')
+                                    ->label('Fotografía')
+                                    ->image()
+                                    ->previewable()
+                                    ->directory('work-reports/photos')
+                                    ->visibility('public')
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                    ->maxSize(25600) // 25MB
+                                    // Sin 'extraInputAttributes' para que abra la galería
+                                    ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
+                                Forms\Components\RichEditor::make('before_work_descripcion')
+                                    ->label('Descripción de la evidencia')
+                                    ->maxLength(500)
+                                    ->placeholder('Describe brevemente lo que se muestra...'),
+                            ])->from('md')
+                                ->columnSpanFull()
+                                ->columns(2),
 
-                                ->previewable()
-                                ->directory('work-reports/photos')
-                                ->visibility('public')
-                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                ->maxSize(25600) // 25MB
-                                // Sin 'extraInputAttributes' para que abra la galería
-                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
-
-                            Forms\Components\FileUpload::make('photo_path')
-                                ->label('Fotografía')
-                                ->image()
-
-                                ->previewable()
-                                ->directory('work-reports/photos')
-                                ->visibility('public')
-                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                ->maxSize(25600) // 25MB
-                                // Sin 'extraInputAttributes' para que abra la galería
-                                ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
-
-                            Forms\Components\RichEditor::make('before_work_descripcion')
-                                ->label('Descripción de la evidencia')
-
-                                ->maxLength(500)
-                                ->placeholder('Describe brevemente lo que se muestra...'),
-
-                            Forms\Components\RichEditor::make('descripcion')
-                                ->label('Descripción de la evidencia')
-
-                                ->maxLength(500)
-                                ->placeholder('Describe brevemente lo que se muestra...'),
-
-
+                            Split::make([
+                                Forms\Components\FileUpload::make('photo_path')
+                                    ->label('Fotografía')
+                                    ->image()
+                                    ->previewable()
+                                    ->directory('work-reports/photos')
+                                    ->visibility('public')
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                    ->maxSize(25600) // 25MB
+                                    // Sin 'extraInputAttributes' para que abra la galería
+                                    ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
+                                Forms\Components\RichEditor::make('descripcion')
+                                    ->label('Descripción de la evidencia')
+                                    ->maxLength(500)
+                                    ->placeholder('Describe brevemente lo que se muestra...'),
+                            ])->from('md')
+                                ->columnSpanFull()
+                                ->columns(2),
                         ]);
                     })
                     ->mutateFormDataUsing(function (array $data): array {

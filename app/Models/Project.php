@@ -28,9 +28,6 @@ class Project extends Model
         'longitude',
         'quote_id',
         'sub_client_id', // Permite asignar el subcliente directamente
-        'tools',
-        'personnel',
-        'materials',
     ];
 
 
