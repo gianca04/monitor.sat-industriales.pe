@@ -34,11 +34,7 @@ class ClientResource extends Resource
         return $form
             ->schema([
 
-
                 Split::make([
-
-
-
                     Forms\Components\Section::make('Información principal')
                         ->description('Datos generales del cliente')
                         ->icon('heroicon-o-identification')
@@ -127,9 +123,8 @@ class ClientResource extends Resource
                                 ->directory('logos')
                                 ->columnSpan(2)
                                 ->hint('Sube el logo de la empresa')
-                                ->panelAspectRatio('1:1')
                                 ->panelLayout('integrated')
-                                ->avatar()
+
                                 ->directory('uploads/users')
                                 ->previewable(true),
                         ])

@@ -12,14 +12,13 @@
         <thead>
             <tr>
                 <th>
-                    <img src="{{ public_path('images/Logo2.png') }}" alt="Logo" style="width: 100px; height: auto;">
+                    <img src="{{ public_path('images/Logo2.png') }}" alt="Logo" style="width: 150px; height: auto;">
                 </th>
                 <th>
                     <div>{{ $project->name }}</div>
                 </th>
                 <th>
-                    <img src="{{ public_path('storage/' . $project->subClient->client->logo) }}" alt="Logo"
-                        style="width: 100px; height: auto;">
+                    <img src="{{ public_path('storage/' . $project->subClient->client->logo) }}" alt="Logo"style="width: 150px; height: auto;">
                 </th>
             </tr>
         </thead>
@@ -70,7 +69,6 @@
         <thead>
             <tr>
                 <th>Nombre de la Actividad</th>
-                <th>Fecha de Reporte</th>
                 <th>Supervisor</th>
             </tr>
         </thead>
@@ -238,7 +236,7 @@
     <br>
 
     {{-- TABLA DE FIRMAS --}}
-    <table>
+    <table class="half-width">
         <thead>
             <tr>
                 <th>Firma del gerente / subgerente</th>
@@ -272,14 +270,27 @@
     </div>
 
     <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
         .photo-image {
             display: block;
             margin: 0 auto;
             max-width: 90%;
-            height: auto;
             max-height: 350px;
-            border-radius: 8px;
-            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
             object-fit: contain;
         }
 
@@ -287,7 +298,6 @@
             margin-top: 50px;
             text-align: center;
             font-size: 13px;
-            color: #222;
             border-top: 1px solid #bbb;
             padding-top: 24px;
         }
