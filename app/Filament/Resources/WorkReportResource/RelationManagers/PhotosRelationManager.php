@@ -36,7 +36,7 @@ class PhotosRelationManager extends RelationManager
 
                 Split::make([
                     Forms\Components\FileUpload::make('before_work_photo_path')
-                        ->label('Evidencia del antes')
+                        ->label('Tomar Foto')
                         ->image()
                         ->downloadable()
                         ->directory('work-reports/photos')
@@ -140,7 +140,7 @@ class PhotosRelationManager extends RelationManager
             ->headerActions([
 
                 Tables\Actions\CreateAction::make('take_photo')
-                    ->label('Tomar Foto')
+                    ->label('Capturar')
 
                     ->icon('heroicon-o-camera')
                     ->modalWidth(MaxWidth::Full)
@@ -149,7 +149,7 @@ class PhotosRelationManager extends RelationManager
                         return $form->schema([
                             Split::make([
                                 Forms\Components\FileUpload::make('before_work_photo_path')
-                                    ->label('Evidencia del antes')
+                                    ->label('Tomar Foto')
                                     ->image()
                                     ->downloadable()
                                     ->directory('work-reports/photos')
@@ -204,7 +204,7 @@ class PhotosRelationManager extends RelationManager
 
                 // Botón para SUBIR DE GALERÍA (abre el selector de archivos)
                 Tables\Actions\CreateAction::make('upload_from_gallery')
-                    ->label('Subir de Galería')
+                    ->label('Subir')
                     ->icon('heroicon-o-arrow-up-tray') // Icono diferente para distinguirlo
 
                     ->modalHeading('Subir Fotografía')
@@ -260,24 +260,6 @@ class PhotosRelationManager extends RelationManager
                             ->title('Evidencia subida')
                             ->body('La fotografía se ha registrado correctamente.')
                     ),
-
-                Action::make('generate_report')
-                    ->label('Generar PDF')
-                    ->icon('heroicon-o-document-text')
-                    ->color('danger')
-                    ->icon('heroicon-o-document')
-                    ->url(fn() => route('work-report.pdf', $this->ownerRecord->id))
-                    ->openUrlInNewTab()
-                    ->visible(fn() => $this->ownerRecord->photos()->count() > 0)
-                    ->tooltip('Generar reporte PDF del trabajo realizado'),
-                Action::make('generate_word_report')
-                    ->label('Generar Word')
-                    ->icon('heroicon-o-document-text')
-                    ->color('info')
-                    ->url(fn() => route('work-report.word', $this->ownerRecord->id))
-                    ->openUrlInNewTab()
-                    ->visible(fn() => $this->ownerRecord->photos()->count() > 0)
-                    ->tooltip('Generar reporte Word del trabajo realizado'),
             ])
             ->actions([
 

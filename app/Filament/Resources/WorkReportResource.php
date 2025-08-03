@@ -357,16 +357,106 @@ class WorkReportResource extends Resource
                                     ->label('Descripción del reporte')
                                     ->required()
                                     ->helperText('Proporciona una descripción detallada del trabajo realizado.')
-                                    ->columnSpanFull(),
+                                    ->columnSpanFull()
+                                    ->toolbarButtons([
+                                        'attachFiles',
+                                        'bold',
+                                        'bulletList',
+                                        'h2',
+                                        'h3',
+                                        'italic',
+                                        'orderedList',
+                                        'redo',
+                                        'strike',
+                                        'underline',
+                                        'undo',
+                                    ]),
                                 Forms\Components\RichEditor::make('suggestions')
                                     ->label('Sugerencias')
                                     ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
                                     ->columnSpanFull()
                                     ->maxLength(5000)
-                                    ->required(),
+                                    ->toolbarButtons([
+                                        'attachFiles',
+                                        'bold',
+                                        'bulletList',
+                                        'h2',
+                                        'h3',
+                                        'italic',
+                                        'orderedList',
+                                        'redo',
+                                        'strike',
+                                        'underline',
+                                        'undo',
+                                    ]),
                             ]),
                         // FIN TAB DESCRIPCIÓN DEL REPORTE
 
+                        // INICIO DEL TAB DE HERRAMIENTAS Y MATERIALES
+                        Tabs\Tab::make('Herramientas y materiales')
+                            ->icon('heroicon-o-wrench')
+                            ->schema([
+                                Forms\Components\RichEditor::make('tools')
+                                    ->label('Herramientas')
+                                    ->helperText('Detalla las herramientas utilizadas durante el trabajo.')
+                                    ->columnSpanFull()
+                                    ->maxLength(5000)
+                                    ->toolbarButtons([
+                                        'attachFiles',
+                                        'bold',
+                                        'bulletList',
+                                        'h2',
+                                        'h3',
+                                        'italic',
+                                        'orderedList',
+                                        'redo',
+                                        'strike',
+                                        'underline',
+                                        'undo',
+                                    ]),
+                                Forms\Components\RichEditor::make('materials')
+                                    ->label('Materiales')
+                                    ->helperText('Detalla los materiales utilizados durante el trabajo.')
+                                    ->columnSpanFull()
+                                    ->maxLength(5000)
+                                    ->toolbarButtons([
+                                        'attachFiles',
+                                        'bold',
+                                        'bulletList',
+                                        'h2',
+                                        'h3',
+                                        'italic',
+                                        'orderedList',
+                                        'redo',
+                                        'strike',
+                                        'underline',
+                                        'undo',
+                                    ]),
+                            ]),
+                        // FIN DEL TAB DE HERRAMIENTAS Y MATERIALES
+
+                        // INICIO DEL TAB DE LISTA DE PERSONAL
+                        Tabs\Tab::make('Personal')
+                            ->icon('heroicon-o-user-group')
+                            ->columns(2)
+                            ->schema([
+                                Forms\Components\RichEditor::make('personnel')
+                                    ->label('Herramientas')
+                                    ->helperText('Detalla las herramientas utilizadas durante el trabajo.')
+                                    ->columnSpanFull()
+                                    ->maxLength(5000)
+                                    ->toolbarButtons([
+                                        'bold',
+                                        'h2',
+                                        'h3',
+                                        'orderedList',
+                                        'bulletList',
+                                        'redo',
+                                        'underline',
+                                        'undo',
+                                    ]),
+                            ]),
+                        // FIN DL TAB DE LISTA DE PERSONAL
 
                         // INICIO DE TAB DE FIRMAS
                         Tabs\Tab::make('Firmas')
@@ -525,7 +615,6 @@ class WorkReportResource extends Resource
             RelationManagers\PhotosRelationManager::class,
         ];
     }
-
     public static function getPages(): array
     {
         return [
