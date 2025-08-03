@@ -496,6 +496,7 @@ class WorkReportResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre del Reporte')
                     ->searchable()
+                    ->extraAttributes(['class' => 'font-bold'])
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('project.name')
@@ -520,13 +521,12 @@ class WorkReportResource extends Resource
                         default => 'success',
                     }),
 
-
-
-
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Creado')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -549,11 +549,6 @@ class WorkReportResource extends Resource
                 Tables\Filters\Filter::make('recent')
                     ->label('Últimas 24 horas')
                     ->query(fn(Builder $query): Builder => $query->where('created_at', '>=', now()->subDay())),
-
-                /*Tables\Filters\Filter::make('today')
-                    ->label('Hoy')
-                    ->query(fn(Builder $query): Builder => $query->whereDate('created_at', today())),
-                */
             ])
             ->actions([
 
@@ -572,15 +567,25 @@ class WorkReportResource extends Resource
                     ->slideOver(true)
                     ->relationManager(PhotosRelationManager::make()),
 
-                /*Tables\Actions\Action::make('generate_report')
-                    ->label('Reporte PDF')
-                    ->icon('heroicon-o-document-text')
-                    ->color('success')
-                    ->url(fn(WorkReport $record): string => route('work-report.pdf', $record))
+
+                Tables\Actions\Action::make('generate_report')
+                    ->label('Generar PDF')
+                    ->color('danger')
+                    ->icon('heroicon-o-document')
+                    ->url(fn($action) => route('work-report.pdf', $action->getRecord()->id))
                     ->openUrlInNewTab()
-                    ->visible(fn(WorkReport $record): bool => $record->photos()->count() > 0)
-                    ->tooltip('Generar reporte PDF con evidencias'),
-            */
+                    ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
+                    ->tooltip('Generar reporte PDF del trabajo realizado'),
+
+                Tables\Actions\Action::make('generate_word_report')
+                    ->label('Generar Word')
+                    ->icon('heroicon-o-document-text')
+                    ->color('info')
+                    ->url(fn($action) => route('work-report.word', $action->getRecord()->id))
+                    ->openUrlInNewTab()
+                    ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
+                    ->tooltip('Generar reporte Word del trabajo realizado'),
+
             ])
             ->headerActions([
                 Tables\Actions\Action::make('back_to_project')

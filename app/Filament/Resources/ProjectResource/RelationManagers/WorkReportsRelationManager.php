@@ -6,6 +6,7 @@ use App\Filament\Resources\WorkReportResource\Pages\CreateWorkReport;
 use App\Filament\Resources\WorkReportResource\Pages\EditWorkReport;
 use App\Filament\Resources\WorkReportResource\Pages\ListWorkReports;
 use App\Filament\Resources\WorkReportResource\Pages\ViewWorkReport;
+use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
 use App\Filament\Resources\WorkReportResource\RelationManagers\PhotosRelationManager;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -47,21 +48,16 @@ class WorkReportsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nombre del Reporte')
+                    ->searchable()
+                    ->extraAttributes(['class' => 'font-bold'])
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->label('Supervisor')
                     ->formatStateUsing(fn($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
                     ->searchable(['first_name', 'last_name'])
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('project.name')
-                    ->label('Proyecto')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(30),
-
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nombre del Reporte')
-                    ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('photos_count')
@@ -81,8 +77,7 @@ class WorkReportsRelationManager extends RelationManager
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Actualizado')
-                    ->dateTime('d/m/Y H:i')
+                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -129,29 +124,42 @@ class WorkReportsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('view_advanced')
-                    ->label('Ver')
+
+
+                Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->tooltip('Ver en la vista completa con todas las relaciones')
-                    ->action(function ($record) {
-                        // Redirigir al WorkReportResource view
-                        return redirect(route('filament.dashboard.resources.work-reports.view', $record));
-                    }),
-                Tables\Actions\Action::make('edit_advanced')
-                    ->label('Editar')
+                    ->color('info'),
+                Tables\Actions\EditAction::make()
                     ->icon('heroicon-o-pencil-square')
-                    ->color('primary')
-                    ->tooltip('Editar en el formulario completo con todas las funcionalidades')
-                    ->action(function ($record) {
-                        // Guardar el project_id en la sesión
-                        session(['project_id' => $this->ownerRecord->id]);
+                    ->color('primary'),
+                Tables\Actions\DeleteAction::make()
+                    ->icon('heroicon-o-trash')
+                    ->color('danger'),
 
-                        // Redirigir al WorkReportResource edit
-                        return redirect(route('filament.dashboard.resources.work-reports.edit', $record));
-                    }),
+                RelationManagerAction::make('photos-relation-manager')
+                    ->label('Ver fotografías')
+                    ->slideOver(true)
+                    ->relationManager(PhotosRelationManager::make()),
 
-                Tables\Actions\DeleteAction::make(),
+
+                Tables\Actions\Action::make('generate_report')
+                    ->label('Generar PDF')
+                    ->color('danger')
+                    ->icon('heroicon-o-document')
+                    ->url(fn($action) => route('work-report.pdf', $action->getRecord()->id))
+                    ->openUrlInNewTab()
+                    ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
+                    ->tooltip('Generar reporte PDF del trabajo realizado'),
+
+                Tables\Actions\Action::make('generate_word_report')
+                    ->label('Generar Word')
+                    ->icon('heroicon-o-document-text')
+                    ->color('info')
+                    ->url(fn($action) => route('work-report.word', $action->getRecord()->id))
+                    ->openUrlInNewTab()
+                    ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
+                    ->tooltip('Generar reporte Word del trabajo realizado'),
+
             ])
             ->emptyStateHeading('No hay reportes registrados')
             ->emptyStateDescription('Comienza creando el primer reporte para este proyecto.')

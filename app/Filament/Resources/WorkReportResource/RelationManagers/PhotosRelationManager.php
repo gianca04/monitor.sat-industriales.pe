@@ -155,8 +155,8 @@ class PhotosRelationManager extends RelationManager
                 ]),
             ])
             ->contentGrid([
-                'md' => 2,
-                'xl' => 3,
+                'md' => 1,
+                'xl' => 2,
             ])
             ->filters([])
             ->headerActions([
@@ -331,7 +331,6 @@ class PhotosRelationManager extends RelationManager
                     ),
             ])
             ->actions([
-
                 Tables\Actions\ViewAction::make()
                     ->label('Ver')
                     ->icon('heroicon-o-eye')

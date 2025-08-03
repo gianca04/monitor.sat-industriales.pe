@@ -435,24 +435,24 @@ class ProjectResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre del Proyecto')
                     ->searchable()
+                    ->alignJustify()
+                    ->extraAttributes(['class' => 'font-bold'])
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('quote.client.business_name')
+                Tables\Columns\TextColumn::make('subClient.client.business_name')
                     ->label('Cliente')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('quote.sub_client.name')
+                Tables\Columns\TextColumn::make('subClient.name')
                     ->label('Subcliente')
                     ->searchable()
                     ->sortable(),
-
-
-
 
                 Tables\Columns\BadgeColumn::make('status_text')
                     ->label('Estado del proyecto')
@@ -557,7 +557,8 @@ class ProjectResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

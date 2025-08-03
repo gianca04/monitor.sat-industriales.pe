@@ -41,6 +41,11 @@ class EmployeeResource extends Resource
     protected static ?string $model = Employee::class;
 
     protected static ?string $pluralModelLabel = 'Colaboradores';
+    protected static ?string $modelLabel = 'Colaborador';
+
+    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationGroup = 'Recursos Humanos';
+
     protected static int $globalSearchResultsLimit = 10;
     public static function getGloballySearchableAttributes(): array
     {
@@ -60,12 +65,6 @@ class EmployeeResource extends Resource
         return parent::getGlobalSearchEloquentQuery()
             ->with('user'); // Selecciona solo las columnas necesarias del modelo Employee
     }
-
-    protected static ?string $modelLabel = 'Colaborador';
-
-    protected static ?string $navigationIcon = 'heroicon-o-users';
-    protected static ?string $navigationGroup = 'Recursos Humanos';
-
 
 
     public static function form(Form $form): Form
