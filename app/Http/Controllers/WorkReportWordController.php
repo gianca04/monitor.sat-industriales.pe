@@ -14,7 +14,7 @@ class WorkReportWordController extends Controller
     {
         $workReport = WorkReport::with([
             'employee',
-            'project.clients',
+            'project',
             'photos' => function ($query) {
                 $query->orderBy('created_at', 'asc');
             }
@@ -27,10 +27,10 @@ class WorkReportWordController extends Controller
 
         $phpWord = new PhpWord();
         $section = $phpWord->addSection([
-            'marginTop' => 600, // Márgenes en 1 cm
-            'marginLeft' => 600,
-            'marginRight' => 600,
-            'marginBottom' => 600
+            'marginTop' => 1440, // 2.54 cm en puntos
+            'marginLeft' => 1440, // 2.54 cm en puntos
+            'marginRight' => 1440, // 2.54 cm en puntos
+            'marginBottom' => 1440 // 2.54 cm en puntos
         ]);
 
         // Estilo de fuente por defecto
@@ -50,70 +50,43 @@ class WorkReportWordController extends Controller
         $section->addText('Reporte #' . $workReport->id, $headingStyle);
         $section->addTextBreak();
 
-        // Información General
-        $section->addText('Información del Reporte', $headingStyle);
-        $section->addText('Nombre: ' . $workReport->name, $fontStyle);
-        $section->addText('Descripción: ' . ($workReport->description ?? 'N/A'), $fontStyle);
-        $section->addText('Fecha de creación: ' . $workReport->created_at->format('d/m/Y H:i'), $fontStyle);
-        $section->addTextBreak();
+        $table = $section->addTable(['width' => 100 * 50]); // Configurar la tabla para ocupar todo el ancho disponible
 
-        // Supervisor
-        $section->addText('Supervisor Responsable', $headingStyle);
-        $section->addText('Nombre: ' . $workReport->employee->first_name . ' ' . $workReport->employee->last_name, $fontStyle);
-        $section->addText('Documento: ' . $workReport->employee->document_type . ' ' . $workReport->employee->document_number, $fontStyle);
-        if ($workReport->employee->user) {
-            $section->addText('Email: ' . $workReport->employee->user->email, $fontStyle);
+        // Agregar una fila
+        $table->addRow();
+
+        // Primera celda con imagen
+        $imgPath1 = public_path('images/Logo2.png');
+        if (file_exists($imgPath1)) {
+            $table->addCell(5000)->addImage($imgPath1, [
+                'width' => 100,
+                'height' => 100,
+                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
+            ]);
+        } else {
+            $table->addCell(5000)->addText('Imagen no disponible', ['name' => 'Times New Roman', 'size' => 12]);
         }
-        $section->addTextBreak();
 
-        // Proyecto
-        $section->addText('Proyecto', $headingStyle);
-        $section->addText('Nombre: ' . $workReport->project->name, $fontStyle);
-        $section->addText('Código: ' . ($workReport->project->quote_id ?? 'N/A'), $fontStyle);
-        $section->addText('Estado: ' . ($workReport->project->status ?? 'Activo'), $fontStyle);
-        if ($workReport->project->start_date) {
-            $section->addText('Fecha inicio: ' . \Carbon\Carbon::parse($workReport->project->start_date)->format('d/m/Y'), $fontStyle);
-        }
-        $section->addTextBreak();
+        // Segunda celda con texto
+        $table->addCell(5000)->addText($workReport->project->name, [
+            'name' => 'Times New Roman',
+            'size' => 12,
+            'align' => 'center'
+        ]);
 
-        // Estadísticas
-        $section->addText('Total Evidencias: ' . $workReport->photos->count(), $fontStyle);
-        $section->addText('Evidencias Hoy: ' . $workReport->photos->where('created_at', '>=', today())->count(), $fontStyle);
-        $diasTrabajo = collect($workReport->photos)->groupBy(function ($item) {
-            return $item->created_at->format('Y-m-d');
-        })->count();
-        $section->addText('Días de Trabajo: ' . $diasTrabajo, $fontStyle);
-        $section->addTextBreak();
-
-        // Fotos
-        $section->addText('Evidencias Fotográficas', $headingStyle);
-        foreach ($workReport->photos as $index => $photo) {
-            $section->addText('Evidencia #' . ($index + 1), ['bold' => true, 'size' => 12]);
-            $section->addText('Capturada el: ' . $photo->created_at->format('d/m/Y H:i'), $fontStyle);
-            $section->addText('Descripción: ' . $photo->descripcion, $fontStyle);
-
-            // Si la imagen existe, agregarla
-            $imgPath = public_path('storage/' . $photo->photo_path);
-            if (file_exists($imgPath)) {
-                list($origWidth, $origHeight) = getimagesize($imgPath);
-                $maxWidth = 400;
-                $maxHeight = 250;
-                $ratio = min($maxWidth / $origWidth, $maxHeight / $origHeight, 1);
-                $newWidth = intval($origWidth * $ratio);
-                $newHeight = intval($origHeight * $ratio);
-                $section->addImage($imgPath, [
-                    'width' => $newWidth,
-                    'height' => $newHeight,
-                    'alignment' => Jc::CENTER // Centrar imagen
-                ]);
-            } else {
-                $section->addText('Imagen no disponible', $fontStyle);
-            }
-            $section->addTextBreak();
+        // Tercera celda con imagen
+        $imgPath2 = public_path('storage/' . $workReport->project->subClient->client->logo);
+        if (file_exists($imgPath2)) {
+            $table->addCell(5000)->addImage($imgPath2, [
+                'width' => 100,
+                'height' => 100,
+                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
+            ]);
+        } else {
+            $table->addCell(5000)->addText('Imagen no disponible', ['name' => 'Times New Roman', 'size' => 12]);
         }
 
         // Footer
-        $section->addText('Reporte generado automáticamente el ' . now()->format('d/m/Y H:i'), $fontStyle);
         $section->addText('SAT INDUSTRIALES - Monitor', $fontStyle);
 
         // Descargar el archivo
