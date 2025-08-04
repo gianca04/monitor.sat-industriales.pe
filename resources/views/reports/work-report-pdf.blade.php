@@ -18,7 +18,13 @@
                     <div>{{ $project->name }}</div>
                 </th>
                 <th>
-                    <img src="{{ public_path('storage/' . $project->subClient->client->logo) }}" alt="Logo"style="width: 150px; height: auto;">
+                    @if($project->subClient->client->logo && file_exists(public_path('storage/' . $project->subClient->client->logo)))
+                        <img src="{{ public_path('storage/' . $project->subClient->client->logo) }}" alt="Logo Cliente" style="width: 150px; height: auto;">
+                    @else
+                        <div style="text-align: center; font-weight: bold; font-size: 14px; padding: 20px;">
+                            {{ $project->subClient->client->business_name ?? 'Cliente' }}
+                        </div>
+                    @endif
                 </th>
             </tr>
         </thead>

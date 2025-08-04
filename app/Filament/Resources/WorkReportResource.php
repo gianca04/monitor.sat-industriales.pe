@@ -131,6 +131,7 @@ class WorkReportResource extends Resource
 
                                 // INICIO DE SELECT DE PROYECTO
                                 Forms\Components\Select::make('project_id')
+                                    ->required()
                                     ->prefixIcon('heroicon-m-briefcase')
                                     ->default(fn() => session('project_id'))
                                     ->label('Proyecto') // Título para el campo 'Proyecto'

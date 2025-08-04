@@ -18,6 +18,7 @@ class SubClient extends Model
         'location',
         'latitude',
         'longitude',
+        'address',
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class SubClient extends Model
         'location' => 'array',
         'latitude' => 'float',
         'longitude' => 'float',
+        'address' => 'string',
     ];
 
     public function client()
@@ -75,5 +77,10 @@ class SubClient extends Model
         }
 
         return null;
+    }
+
+    public function contactData()
+    {
+        return $this->hasMany(ContactData::class);
     }
 }
