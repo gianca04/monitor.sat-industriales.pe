@@ -56,7 +56,7 @@ class DashboardPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
                 SpatieLaravelTranslatablePlugin::make()
-                    ->defaultLocales(['es', 'en'])
+                    ->defaultLocales(['es'])
             ])
             ->authMiddleware([
                 Authenticate::class,
