@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('work_report_id');
             $table->foreign('work_report_id')
-            ->references('id')
-            ->on('work_reports')
-            ->onDelete('cascade');
-                  $table->string('photo_path');
+                ->references('id')
+                ->on('work_reports')
+                ->onDelete('cascade');
+            $table->string('photo_path')->nullable();
             $table->longText('descripcion')->nullable();
             $table->timestamps();
         });

@@ -140,21 +140,51 @@ class ClientResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->prefixIcon('heroicon-o-user'),
+
+                        Forms\Components\TextInput::make('address')
+                            ->label('Dirección')
+                            ->placeholder('Dirección del subcliente')
+                            ->maxLength(255)
+                            ->prefixIcon('heroicon-o-map-pin'),
+
                         Forms\Components\Textarea::make('description')
                             ->label('Descripción')
                             ->maxLength(500)
-                            ->rows(2)
-                            ->autosize(),
+                            ->autosize()
+                            ->columnSpanFull(),
 
+                        Forms\Components\Repeater::make('contactData')
+                            ->label('Datos de contacto')
+                            ->relationship('contactData')
+                            ->columnSpanFull()
+                            ->schema([
+                                Forms\Components\TextInput::make('email')
+                                    ->label('Correo electrónico')
+                                    ->email()
+                                    ->maxLength(255)
+                                    ->placeholder('correo@ejemplo.com'),
 
-                        Forms\Components\Section::make('Coordenadas geográficas')
+                                Forms\Components\TextInput::make('phone_number')
+                                    ->label('Teléfono')
+                                    ->tel()
+                                    ->maxLength(15)
+                                    ->placeholder('Ej: +51 999 999 999'),
+
+                                Forms\Components\TextInput::make('contact_name')
+                                    ->label('Nombre de contacto')
+                                    ->maxLength(255)
+                                    ->placeholder('Nombre del contacto'),
+
+                            ]),
+
+                        /*Forms\Components\Section::make('Coordenadas geográficas')
                             ->columns(1)
                             ->schema([
                                 \App\Forms\Components\ubicacion::make('location')
                                     ->label('Ubicación en el mapa'),
 
                             ]),
-
+*/
                     ])
                     ->createItemButtonLabel('Agregar subcliente')
                     ->columns(2)

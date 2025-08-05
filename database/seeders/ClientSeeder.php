@@ -1404,6 +1404,17 @@ class ClientSeeder extends Seeder
                 'contact_email'  => '',
                 'logo'           => null,
             ],
+            [
+                'person_type'    => 'JURIDICA',
+                'document_type'  => 'RUC',
+                'document_number'=> '20608300393',
+                'business_name'  => 'COMPAÑIA FOOD RETAIL S.A.C.',
+                'description'    => '',
+                'address'        => 'Cal. Cesar Morelli Nro. 181 - San Borja Norte (Piso 3) - Lima, Perú',
+                'contact_phone'  => '01 620 3000',
+                'contact_email'  => 'servicioalcliente@spsa.pe',
+                'logo'           => null,
+            ],
             // Puedes seguir agregando más clientes aquí si tienes más datos
         ];
 
