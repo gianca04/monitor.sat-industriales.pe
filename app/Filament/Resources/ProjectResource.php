@@ -7,6 +7,7 @@ use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Filament\Resources\ProjectResource\RelationManagers\EmployeesRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\TimesheetsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\WorkReportsRelationManager;
+use App\Forms\Components\ClientMainInfo;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\Quote;
@@ -108,7 +109,7 @@ class ProjectResource extends Resource
                 Split::make([
                     Section::make([
                         Forms\Components\Select::make('client_id')
-                        ->required()
+                            ->required()
                             ->prefixIcon('heroicon-m-briefcase')
                             ->label('Cliente') // Título para el campo 'Cliente'
                             ->options(
@@ -164,84 +165,8 @@ class ProjectResource extends Resource
                             )
 
                             ->createOptionForm([
-                                Forms\Components\Section::make('Información principal')
-                                    ->description('Datos generales del cliente')
-                                    ->icon('heroicon-o-identification')
-                                    ->schema([
-                                        Forms\Components\Select::make('document_type')
-                                            ->label('Tipo de documento')
-                                            ->options([
-                                                'RUC' => 'RUC',
-                                                'DNI' => 'DNI',
-                                                'FOREIGN_CARD' => 'Carné de Extranjería',
-                                                'PASSPORT' => 'Pasaporte',
-                                            ])
-                                            ->required()
-                                            ->searchable()
-                                            ->placeholder('Selecciona tipo de documento')
-                                            ->columnSpan(1)
-                                            ->prefixIcon('heroicon-o-identification'),
-                                        Forms\Components\TextInput::make('document_number')
-                                            ->label('Número de documento')
-                                            ->placeholder('Ej: 12345678901')
-                                            ->required()
-                                            ->maxLength(11)
-                                            ->minLength(8)
-                                            ->alphaNum()
-                                            ->columnSpan(1)
-                                            ->prefixIcon('heroicon-o-hashtag'),
-                                        Forms\Components\Select::make('person_type')
-                                            ->label('Tipo de persona')
-                                            ->options([
-                                                'Natural Person' => 'Persona Natural',
-                                                'Legal Entity' => 'Persona Jurídica',
-                                            ])
-                                            ->required()
-                                            ->searchable()
-                                            ->placeholder('Selecciona tipo de persona')
-                                            ->columnSpan(1)
-                                            ->prefixIcon('heroicon-o-user-group'),
-                                        Forms\Components\TextInput::make('business_name')
-                                            ->label('Razón social')
-                                            ->placeholder('Nombre de la empresa o persona')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->columnSpan(2)
-                                            ->prefixIcon('heroicon-o-building-office-2'),
-                                    ])
-                                    ->columns(2),
-                                Forms\Components\Section::make('Contacto')
-                                    ->icon('heroicon-o-phone')
-                                    ->description('Información de contacto y dirección')
-                                    ->schema([
-                                        Forms\Components\Textarea::make('description')
-                                            ->label('Descripción')
-                                            ->placeholder('Descripción del cliente')
-                                            ->columnSpanFull()
-                                            ->rows(2)
-                                            ->autosize(),
-                                        Forms\Components\TextInput::make('address')
-                                            ->label('Dirección')
-                                            ->placeholder('Dirección fiscal o comercial')
-                                            ->maxLength(255)
-                                            ->columnSpan(2)
-                                            ->prefixIcon('heroicon-o-map-pin'),
-                                        Forms\Components\TextInput::make('contact_phone')
-                                            ->label('Teléfono de contacto')
-                                            ->placeholder('Ej: +51 999 999 999')
-                                            ->tel()
-                                            ->maxLength(15)
-                                            ->columnSpan(1)
-                                            ->prefixIcon('heroicon-o-phone'),
-                                        Forms\Components\TextInput::make('contact_email')
-                                            ->label('Correo electrónico')
-                                            ->placeholder('correo@ejemplo.com')
-                                            ->email()
-                                            ->maxLength(255)
-                                            ->columnSpan(1)
-                                            ->prefixIcon('heroicon-o-envelope'),
-                                    ])
-                                    ->columns(2),
+                                ClientMainInfo::make()
+                                    
                             ])
                             ->createOptionUsing(function (array $data): int {
                                 $client = Client::create($data);
@@ -339,50 +264,24 @@ class ProjectResource extends Resource
                             )
 
                             ->createOptionForm([
-                                Forms\Components\Hidden::make('client_id')
-                                    ->default(fn(callable $get) => $get('client_id')),
-                                Forms\Components\Section::make('Información de la Sede')
-                                    ->description('Datos de la nueva sede')
-                                    ->icon('heroicon-o-building-office')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('name')
-                                            ->label('Nombre de la sede')
-                                            ->placeholder('Ej: Sede Central, Sucursal Norte')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->prefixIcon('heroicon-o-building-office-2'),
-                                        Forms\Components\Textarea::make('description')
-                                            ->label('Descripción')
-                                            ->placeholder('Descripción de la sede')
-                                            ->maxLength(500)
-                                            ->rows(2)
-                                            ->autosize(),
-                                        Forms\Components\TextInput::make('location')
-                                            ->label('Ubicación')
-                                            ->placeholder('Dirección de la sede')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->prefixIcon('heroicon-o-map-pin'),
-                                    ])
-                                    ->columns(1),
-                                Forms\Components\Section::make('Coordenadas (Opcional)')
-                                    ->description('Ubicación geográfica de la sede')
-                                    ->icon('heroicon-o-globe-americas')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('latitude')
-                                            ->label('Latitud')
-                                            ->placeholder('Ej: -12.046374')
-                                            ->numeric()
-                                            ->step(0.000001)
-                                            ->prefixIcon('heroicon-o-arrow-long-up'),
-                                        Forms\Components\TextInput::make('longitude')
-                                            ->label('Longitud')
-                                            ->placeholder('Ej: -77.042793')
-                                            ->numeric()
-                                            ->step(0.000001)
-                                            ->prefixIcon('heroicon-o-arrow-long-right'),
-                                    ])
-                                    ->columns(2),
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nombre del subcliente')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->prefixIcon('heroicon-o-user'),
+
+                                Forms\Components\TextInput::make('address')
+                                    ->label('Dirección')
+                                    ->columnSpanFull()
+                                    ->placeholder('Dirección del subcliente')
+                                    ->maxLength(255)
+                                    ->prefixIcon('heroicon-o-map-pin'),
+
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Descripción')
+                                    ->maxLength(500)
+                                    ->autosize()
+                                    ->columnSpanFull(),
                             ])
                             ->createOptionUsing(function (array $data, callable $get): int {
                                 $data['client_id'] = $get('client_id');

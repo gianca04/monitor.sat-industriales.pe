@@ -514,24 +514,6 @@ class WorkReportResource extends Resource
                                                                     ->prefixIcon('heroicon-o-map-pin'),
                                                             ])
                                                             ->columns(1),
-                                                        Forms\Components\Section::make('Coordenadas (Opcional)')
-                                                            ->description('Ubicación geográfica de la sede')
-                                                            ->icon('heroicon-o-globe-americas')
-                                                            ->schema([
-                                                                Forms\Components\TextInput::make('latitude')
-                                                                    ->label('Latitud')
-                                                                    ->placeholder('Ej: -12.046374')
-                                                                    ->numeric()
-                                                                    ->step(0.000001)
-                                                                    ->prefixIcon('heroicon-o-arrow-long-up'),
-                                                                Forms\Components\TextInput::make('longitude')
-                                                                    ->label('Longitud')
-                                                                    ->placeholder('Ej: -77.042793')
-                                                                    ->numeric()
-                                                                    ->step(0.000001)
-                                                                    ->prefixIcon('heroicon-o-arrow-long-right'),
-                                                            ])
-                                                            ->columns(2),
                                                     ])
                                                     ->createOptionUsing(function (array $data, callable $get): int {
                                                         $data['client_id'] = $get('client_id');
@@ -670,6 +652,7 @@ class WorkReportResource extends Resource
 
                         // FIN DE TAB DE INFORMACIÓN GENERAL
 
+                        
                         // INICIO TAB DESCRIPCIÓN DEL REPORTE
                         Tabs\Tab::make('Descripción')
                             ->icon('heroicon-o-clipboard-document-check')
