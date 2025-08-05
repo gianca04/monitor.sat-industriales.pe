@@ -18,11 +18,13 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Split;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Columns\Layout\Panel;
+use Filament\Resources\RelationManagers\Concerns\Translatable;
 use Filament\Tables\Columns\Layout\Stack;
 use Illuminate\Support\HtmlString;
 
 class PhotosRelationManager extends RelationManager
 {
+    use Translatable;
     protected static string $relationship = 'photos';
     protected static ?string $title = 'Evidencias Fotográficas';
     protected static ?string $modelLabel = 'Evidencia';

@@ -108,6 +108,7 @@ class ProjectResource extends Resource
                 Split::make([
                     Section::make([
                         Forms\Components\Select::make('client_id')
+                        ->required()
                             ->prefixIcon('heroicon-m-briefcase')
                             ->label('Cliente') // Título para el campo 'Cliente'
                             ->options(
