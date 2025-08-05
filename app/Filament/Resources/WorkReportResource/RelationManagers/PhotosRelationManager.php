@@ -72,7 +72,7 @@ class PhotosRelationManager extends RelationManager
                     Forms\Components\FileUpload::make('photo_path')
                         ->label('Evidencia del Trabajo Realizado')
                         ->image()
-                        ->required()
+
                         ->downloadable()
                         ->directory('work-reports/photos')
                         ->visibility('public')
@@ -206,7 +206,7 @@ class PhotosRelationManager extends RelationManager
                                 Forms\Components\FileUpload::make('photo_path')
                                     ->label('Evidencia del Trabajo Realizado')
                                     ->image()
-                                    ->required()
+
                                     ->downloadable()
                                     ->directory('work-reports/photos')
                                     ->visibility('public')
@@ -289,7 +289,7 @@ class PhotosRelationManager extends RelationManager
                             Split::make([
                                 Forms\Components\FileUpload::make('photo_path')
                                     ->label('Evidencia del Trabajo Realizado')
-                                    ->required()
+
                                     ->image()
                                     ->previewable()
                                     ->directory('work-reports/photos')

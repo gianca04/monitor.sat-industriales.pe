@@ -45,7 +45,6 @@ class ClientResource extends Resource
                                 ->placeholder('Nombre de la empresa o persona')
                                 ->required()
                                 ->maxLength(255)
-                                ->columnSpan(2)
                                 ->prefixIcon('heroicon-o-building-office-2'),
                             Forms\Components\Select::make('document_type')
                                 ->label('Tipo de documento')
@@ -58,7 +57,6 @@ class ClientResource extends Resource
                                 ->required()
                                 ->searchable()
                                 ->placeholder('Selecciona tipo de documento')
-                                ->columnSpan(1)
                                 ->alphaNum()
                                 ->prefixIcon('heroicon-o-identification'),
                             Forms\Components\TextInput::make('document_number')
@@ -68,7 +66,6 @@ class ClientResource extends Resource
                                 ->maxLength(11)
                                 ->minLength(8)
                                 ->alphaNum()
-                                ->columnSpan(1)
                                 ->prefixIcon('heroicon-o-hashtag'),
                             Forms\Components\Select::make('person_type')
                                 ->label('Tipo de persona')
@@ -88,18 +85,29 @@ class ClientResource extends Resource
                                 ->rows(2)
                                 ->autosize(),
 
+
                         ])
-                        ->columns(2),
+                        ->columns([
+                            'sm' => 1,
+                            'md' => 1,
+                            'xl' => 2,
+                            '2xl' => 2,
+                        ]),
 
                     Forms\Components\Section::make('Contacto')
                         ->icon('heroicon-o-phone')
+                        ->columns([
+                            'sm' => 1,
+                            'md' => 1,
+                            'xl' => 2,
+                            '2xl' => 2,
+                        ])
                         ->description('Información de contacto y dirección')
                         ->schema([
                             Forms\Components\TextInput::make('address')
                                 ->label('Dirección')
                                 ->placeholder('Dirección fiscal o comercial')
                                 ->maxLength(255)
-                                ->columnSpan(2)
                                 ->prefixIcon('heroicon-o-map-pin'),
                             Forms\Components\TextInput::make('contact_phone')
                                 ->label('Teléfono de contacto')
@@ -107,21 +115,19 @@ class ClientResource extends Resource
                                 ->tel()
                                 ->maxLength(9)
                                 ->minLength(7)
-                                ->columnSpan(1)
                                 ->prefixIcon('heroicon-o-phone'),
                             Forms\Components\TextInput::make('contact_email')
                                 ->label('Correo electrónico')
                                 ->placeholder('correo@ejemplo.com')
                                 ->email()
                                 ->maxLength(255)
-                                ->columnSpan(1)
                                 ->prefixIcon('heroicon-o-envelope'),
                             Forms\Components\FileUpload::make('logo')
                                 ->label('Logo')
                                 ->image()
                                 ->imageEditor()
                                 ->directory('logos')
-                                ->columnSpan(2)
+                                ->columnSpanFull()
                                 ->hint('Sube el logo de la empresa')
                                 ->panelLayout('integrated')
 
@@ -130,8 +136,11 @@ class ClientResource extends Resource
                         ])
                         ->columns(2),
                 ])
+
+                    ->from('md')
                     ->columnSpanFull(),
                 Forms\Components\Repeater::make('subClients')
+                ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
                     ->label('Subclientes')
                     ->relationship('subClients')
                     ->schema([
@@ -143,6 +152,7 @@ class ClientResource extends Resource
 
                         Forms\Components\TextInput::make('address')
                             ->label('Dirección')
+                            ->columnSpanFull()
                             ->placeholder('Dirección del subcliente')
                             ->maxLength(255)
                             ->prefixIcon('heroicon-o-map-pin'),
@@ -154,6 +164,8 @@ class ClientResource extends Resource
                             ->columnSpanFull(),
 
                         Forms\Components\Repeater::make('contactData')
+                        ->itemLabel(fn (array $state): ?string => $state['contact_name'] ?? null)
+                        ->collapsed()
                             ->label('Datos de contacto')
                             ->relationship('contactData')
                             ->columnSpanFull()
@@ -174,7 +186,6 @@ class ClientResource extends Resource
                                     ->label('Nombre de contacto')
                                     ->maxLength(255)
                                     ->placeholder('Nombre del contacto'),
-
                             ]),
 
                         /*Forms\Components\Section::make('Coordenadas geográficas')
