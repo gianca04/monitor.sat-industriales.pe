@@ -140,7 +140,7 @@ class ClientResource extends Resource
                     ->from('md')
                     ->columnSpanFull(),
                 Forms\Components\Repeater::make('subClients')
-                ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                    ->itemLabel(fn(array $state): ?string => $state['name'] ?? null)
                     ->label('Subclientes')
                     ->relationship('subClients')
                     ->schema([
@@ -164,8 +164,8 @@ class ClientResource extends Resource
                             ->columnSpanFull(),
 
                         Forms\Components\Repeater::make('contactData')
-                        ->itemLabel(fn (array $state): ?string => $state['contact_name'] ?? null)
-                        ->collapsed()
+                            ->itemLabel(fn(array $state): ?string => $state['contact_name'] ?? null)
+                            ->collapsed()
                             ->label('Datos de contacto')
                             ->relationship('contactData')
                             ->columnSpanFull()
@@ -210,6 +210,7 @@ class ClientResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+
             ->columns([
                 Tables\Columns\ImageColumn::make('logo')
                     ->label('Logo')
@@ -292,6 +293,8 @@ class ClientResource extends Resource
                     ]),
 
             ])
+            ->defaultSort('created_at', 'desc')
+            
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')

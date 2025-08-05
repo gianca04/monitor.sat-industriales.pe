@@ -872,6 +872,7 @@ class WorkReportResource extends Resource
                     ->label('Últimas 24 horas')
                     ->query(fn(Builder $query): Builder => $query->where('created_at', '>=', now()->subDay())),
             ])
+            ->defaultSort('created_at', 'desc')
             ->actions([
 
                 Tables\Actions\ViewAction::make()

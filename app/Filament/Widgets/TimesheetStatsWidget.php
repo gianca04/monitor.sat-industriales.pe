@@ -9,7 +9,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class TimesheetStatsWidget extends BaseWidget
 {
-    protected function getStats(): array
+    /*protected function getStats(): array
     {
         $totalTimesheets = Timesheet::count();
         $todayTimesheets = Timesheet::whereDate('check_in_date', Carbon::today())->count();
@@ -19,6 +19,7 @@ class TimesheetStatsWidget extends BaseWidget
         ])->count();
 
         return [
+            
             Stat::make('Total Tareos', $totalTimesheets)
                 ->description('Tareos registrados')
                 ->descriptionIcon('heroicon-m-clock')
@@ -33,6 +34,8 @@ class TimesheetStatsWidget extends BaseWidget
                 ->description('Semana actual')
                 ->descriptionIcon('heroicon-m-chart-bar')
                 ->color('info'),
+                
         ];
     }
+    */
 }
