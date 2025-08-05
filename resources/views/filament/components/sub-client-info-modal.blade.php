@@ -14,7 +14,7 @@
                 <x-heroicon-o-map-pin class="w-5 h-5 text-gray-500" />
                 <div>
                     <p class="text-sm font-medium text-gray-700">Ubicación</p>
-                    <p class="text-sm text-gray-900">{{ $subClient->location['location'] ?? 'No especificada' }}</p>
+                    <p class="text-sm text-gray-900">{{ $subClient->address ?? 'No especificada' }}</p>
                 </div>
 
             </div>

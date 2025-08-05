@@ -31,7 +31,7 @@ class SubClientMainInfo
                         ->maxLength(500)
                         ->rows(2)
                         ->autosize(),
-                    TextInput::make('location')
+                    TextInput::make('address')
                         ->label('Ubicación')
                         ->placeholder('Dirección de la sede')
                         ->required()
@@ -39,25 +39,6 @@ class SubClientMainInfo
                         ->prefixIcon('heroicon-o-map-pin'),
                 ])
                 ->columns(1),
-
-            Section::make('Coordenadas (Opcional)')
-                ->description('Ubicación geográfica de la sede')
-                ->icon('heroicon-o-globe-americas')
-                ->schema([
-                    TextInput::make('latitude')
-                        ->label('Latitud')
-                        ->placeholder('Ej: -12.046374')
-                        ->numeric()
-                        ->step(0.000001)
-                        ->prefixIcon('heroicon-o-arrow-long-up'),
-                    TextInput::make('longitude')
-                        ->label('Longitud')
-                        ->placeholder('Ej: -77.042793')
-                        ->numeric()
-                        ->step(0.000001)
-                        ->prefixIcon('heroicon-o-arrow-long-right'),
-                ])
-                ->columns(2),
         ];
     }
 }
