@@ -36,7 +36,7 @@ class DashboardPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            
+
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s') // Actualizar cada 30 segundos
             ->middleware([
@@ -121,7 +121,6 @@ class DashboardPanelProvider extends PanelProvider
             ->brandLogo(asset('images/logo.svg'))
             ->brandLogoHeight('2rem')
             ->favicon(asset('images/favicon.svg'))
-            // Eliminar esta línea duplicada: ->databaseNotifications()
         ;
     }
 }

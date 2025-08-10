@@ -46,7 +46,7 @@ class EmployeeResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'Recursos Humanos';
 
-    protected static int $globalSearchResultsLimit = 10;
+    protected static int $globalSearchResultsLimit = 5;
     public static function getGloballySearchableAttributes(): array
     {
         return ['first_name', 'last_name', 'document_number'];  // Verifica que estos atributos sean los más relevantes para la búsqueda
@@ -55,8 +55,7 @@ class EmployeeResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Correo' => $record->user->email,
-            'Nombre' => $record->first_name,
+            'Nombre' => $record->first_name . $record->last_name,
         ];
     }
     public static function getGlobalSearchEloquentQuery(): Builder

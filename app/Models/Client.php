@@ -24,8 +24,7 @@ class Client extends Model
     ];
 
     protected $casts = [
-        'document_type'   => 'string',
-        'document_number' => 'string',
+        'document_type'   => 'string',         'document_number' => 'string',
         'person_type'     => 'string',
         'description'     => 'string',
         'address'         => 'string',

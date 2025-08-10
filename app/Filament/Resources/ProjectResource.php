@@ -8,6 +8,7 @@ use App\Filament\Resources\ProjectResource\RelationManagers\EmployeesRelationMan
 use App\Filament\Resources\ProjectResource\RelationManagers\TimesheetsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\WorkReportsRelationManager;
 use App\Forms\Components\ClientMainInfo;
+use Illuminate\Database\Eloquent\Model;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\Quote;
@@ -23,6 +24,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Split;
+use FontLib\Table\Type\name;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -38,6 +40,25 @@ class ProjectResource extends Resource
 
     protected static ?string $navigationGroup = 'Control de operaciones';
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
+
+    // BUSQUEDA GLOBAL DE PROYECTOS
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name'];  // Verifica que estos atributos sean los más relevantes para la búsqueda
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Nombre' => $record->name,
+        ];
+    }
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        // Optimiza la consulta, asegurando que solo cargue lo necesario
+        return parent::getGlobalSearchEloquentQuery()
+            ; // Selecciona solo las columnas necesarias del modelo Employee
+    }
 
     public static function form(Form $form): Form
     {
@@ -166,7 +187,7 @@ class ProjectResource extends Resource
 
                             ->createOptionForm([
                                 ClientMainInfo::make()
-                                    
+
                             ])
                             ->createOptionUsing(function (array $data): int {
                                 $client = Client::create($data);

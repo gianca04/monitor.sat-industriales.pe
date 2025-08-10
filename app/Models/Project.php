@@ -79,7 +79,7 @@ class Project extends Model
     /**
      * Relación: Un proyecto pertenece a un subcliente.
      */
-    public function subClient()
+    public function sub_client_id()
     {
         return $this->belongsTo(SubClient::class, 'sub_client_id');
     }
