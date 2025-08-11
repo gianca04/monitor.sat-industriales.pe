@@ -96,7 +96,7 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $workReport->report_date->format('d/m/Y') ?? 'N/A' }}</td>
+                <td>{{ $workReport->report_date ?? 'N/A' }}</td>
                 <td>{{ $workReport->start_time ?? 'N/A' }}</td>
                 <td>{{ $workReport->end_time ?? 'N/A' }}</td>
             </tr>
