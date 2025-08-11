@@ -96,7 +96,7 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $workReport->created_at->format('d/m/Y') ?? 'N/A' }}</td>
+                <td>{{ $workReport->report_date->format('d/m/Y') ?? 'N/A' }}</td>
                 <td>{{ $workReport->start_time ?? 'N/A' }}</td>
                 <td>{{ $workReport->end_time ?? 'N/A' }}</td>
             </tr>
@@ -237,7 +237,6 @@
             </tbody>
         </table>
     @endforeach
-
 
     <br>
 
