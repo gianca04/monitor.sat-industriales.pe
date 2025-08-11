@@ -116,7 +116,7 @@ class ProjectResource extends Resource
 
                         Forms\Components\DatePicker::make('end_date')
                             ->label('Fecha de finalización')
-                            ->default(now()->addDays(30))
+                            //->default(now()->addDays(30))
                             ->required()
                             ->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
                         // ...existing code...
