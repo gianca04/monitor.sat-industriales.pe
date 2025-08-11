@@ -21,8 +21,9 @@ class WorkReport extends Model
         'tools',
         'personnel',
         'materials',
-        'start_time', // Hora de inicio del trabajo
-        'end_time'    // Hora de finalización del trabajo
+        'start_time',  // Hora de inicio del trabajo
+        'end_time',    // Hora de finalización del trabajo
+        'report_date'  // Fecha del reporte (solo fecha)
     ];
 
     /**

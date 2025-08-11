@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "02b86e639b5a5d0c11222dd75a8476ff",
+    "content-hash": "1f433a4176484427f3416dae8f943209",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1396,6 +1396,129 @@
                 }
             ],
             "time": "2024-10-09T13:47:03+00:00"
+        },
+        {
+            "name": "dvarilek/filament-table-select",
+            "version": "v2.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dvarilek/filament-table-select.git",
+                "reference": "913993a6b4e409ad19e2551b142f62961e2c621b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dvarilek/filament-table-select/zipball/913993a6b4e409ad19e2551b142f62961e2c621b",
+                "reference": "913993a6b4e409ad19e2551b142f62961e2c621b",
+                "shasum": ""
+            },
+            "require": {
+                "dvarilek/livewire-closure-synthesizer": "^1.1",
+                "filament/filament": "^3.0",
+                "php": "^8.2|^8.3|^8.4",
+                "spatie/laravel-package-tools": "^1.18"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.5",
+                "laravel/pint": "^1.22",
+                "orchestra/testbench": "^8.0|^9.0",
+                "pestphp/pest": "^2.31|^3.0.0",
+                "pestphp/pest-plugin-livewire": "^3.0",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-deprecation-rules": "^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Dvarilek\\FilamentTableSelect\\FilamentTableSelectServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Dvarilek\\FilamentTableSelect\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "David Vařílek",
+                    "email": "davan@outlook.cz"
+                }
+            ],
+            "description": "Laravel Filament form component for selecting related records with a table.",
+            "keywords": [
+                "filament",
+                "select",
+                "table"
+            ],
+            "support": {
+                "issues": "https://github.com/dvarilek/filament-table-select/issues",
+                "source": "https://github.com/dvarilek/filament-table-select/tree/v2.0.5"
+            },
+            "time": "2025-07-24T12:37:10+00:00"
+        },
+        {
+            "name": "dvarilek/livewire-closure-synthesizer",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dvarilek/livewire-closure-synthesizer.git",
+                "reference": "1f4fe8c82c401990929c2d01a3268bc97fb5c593"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dvarilek/livewire-closure-synthesizer/zipball/1f4fe8c82c401990929c2d01a3268bc97fb5c593",
+                "reference": "1f4fe8c82c401990929c2d01a3268bc97fb5c593",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/serializable-closure": "^1.1.0 || ^2.0.0",
+                "livewire/livewire": "^3.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.2",
+                "pestphp/pest": "^2.31 || ^3.0.0",
+                "phpstan/phpstan": "^2.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Dvarilek\\ClosureSynthesizer\\ClosureSynthesizerServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Dvarilek\\ClosureSynthesizer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "David Vařílek",
+                    "email": "davan@outlook.cz"
+                }
+            ],
+            "description": "A Closure Synthesizer for Laravel Livewire",
+            "keywords": [
+                "closure",
+                "livewire",
+                "synth",
+                "synthesizer"
+            ],
+            "support": {
+                "issues": "https://github.com/dvarilek/livewire-closure-synthesizer/issues",
+                "source": "https://github.com/dvarilek/livewire-closure-synthesizer/tree/v1.1.0"
+            },
+            "time": "2025-04-19T09:50:07+00:00"
         },
         {
             "name": "egulias/email-validator",

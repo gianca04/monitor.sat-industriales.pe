@@ -594,10 +594,9 @@ class WorkReportResource extends Resource
                                 // FIN DE INPUT DE NOMBRE DEL REPORTE
 
                                 // INICIO DE INPUT DE FECHA
-                                Forms\Components\DatePicker::make('created_at')
+                                Forms\Components\DatePicker::make('report_date')
                                     ->label('Fecha')
                                     ->native(false) // Desactiva el selector nativo para usar el de Filament
-                                    ->default(now())
                                     ->displayFormat('d/m/Y')
                                     ->required()
                                     ->helperText('Selecciona la fecha y hora del trabajo'),
