@@ -659,7 +659,6 @@ class WorkReportResource extends Resource
                             ->schema([
                                 Forms\Components\RichEditor::make('description')
                                     ->label('Descripción del reporte')
-                                    ->required()
                                     ->helperText('Proporciona una descripción detallada del trabajo realizado.')
                                     ->toolbarButtons([
                                         'attachFiles',
