@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Técnico - Sistema SAT Industriales</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background-color: #f8f9fa;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 5px solid #2a5298;
+        }
+        
+        .toc h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .toc li:before {
+            content: "▶";
+            color: #2a5298;
+            position: absolute;
+            left: 0;
+            font-size: 0.8rem;
+        }
+        
+        .toc a {
+            color: #34495e;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .toc a:hover {
+            color: #2a5298;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .section h2 {
+            color: #2a5298;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .section h3 {
+            color: #34495e;
+            font-size: 1.4rem;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+        }
+        
+        .section h4 {
+            color: #5a6c7d;
+            font-size: 1.2rem;
+            margin: 20px 0 10px 0;
+            font-weight: 500;
+        }
+        
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .code-inline {
+            background: #ecf0f1;
+            color: #2c3e50;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background: #2a5298;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #e8f4fd;
+            border-color: #2196F3;
+            color: #1565C0;
+        }
+        
+        .alert-warning {
+            background: #fff8e1;
+            border-color: #ff9800;
+            color: #f57c00;
+        }
+        
+        .alert-success {
+            background: #e8f5e8;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        
+        .diagram {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+            font-family: monospace;
+            white-space: pre-line;
+            overflow-x: auto;
+        }
+        
+        .steps {
+            counter-reset: step-counter;
+        }
+        
+        .step {
+            counter-increment: step-counter;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #2a5298;
+            position: relative;
+        }
+        
+        .step:before {
+            content: "Paso " counter(step-counter);
+            background: #2a5298;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+        }
+        
+        .step h4 {
+            margin-top: 10px;
+            color: #2a5298;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 8px;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .code-block {
+                font-size: 0.8rem;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+        
+        .print-friendly {
+            display: none;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .container {
+                box-shadow: none;
+                max-width: none;
+            }
+            
+            .header {
+                background: #2a5298 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            
+            .print-friendly {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Manual Técnico del Sistema</h1>
+            <p>SAT Industriales - Plataforma de Monitoreo</p>
+            <p style="font-size: 1rem; margin-top: 10px;">Versión 1.0 | Diciembre 2024</p>
+        </div>
+
+        <div class="toc">
+            <h2>Índice de Contenidos</h2>
+            <ul>
+                <li><a href="#introduccion">1. Introducción al Sistema</a></li>
+                <li><a href="#acceso">2. Acceso y Autenticación</a></li>
+                <li><a href="#dashboard">3. Panel Principal (Dashboard)</a></li>
+                <li><a href="#clientes">4. Gestión de Clientes</a></li>
+                <li><a href="#empleados">5. Gestión de Empleados</a></li>
+                <li><a href="#cotizaciones">6. Gestión de Cotizaciones</a></li>
+                <li><a href="#proyectos">7. Gestión de Proyectos</a></li>
+                <li><a href="#tareos">8. Control de Tareos</a></li>
+                <li><a href="#funciones">9. Funciones Avanzadas del Sistema</a></li>
+                <li><a href="#anexos">10. Anexos Técnicos</a></li>
+            </ul>
+        </div>
+
+        <div id="introduccion" class="section">
+            <h2>1. Introducción al Sistema</h2>
+            
+            <h3>1.1 Propósito del Sistema</h3>
+            <p>El Sistema de Monitoreo SAT Industriales es una plataforma integral desarrollada con tecnología Laravel y Filament que permite la gestión completa de operaciones empresariales, desde la prospección de clientes hasta el control detallado de asistencias laborales.</p>
+            
+            <div class="alert alert-info">
+                <strong>Objetivo Principal:</strong> Centralizar y automatizar los procesos de gestión comercial, operativa y de recursos humanos de SAT Industriales S.A.C.
+            </div>
+            
+            <h3>1.2 Arquitectura Técnica</h3>
+            <div class="diagram">
+Sistema SAT Industriales
+├── Core Application (Laravel Framework)
+│   ├── Filament Admin Panel
+│   ├── Laravel Sanctum (Authentication)
+│   └── Spatie Permissions (Authorization)
+├── Modules
+│   ├── Client Management
+│   ├── Human Resources  
+│   ├── Operations Control
+│   └── Reports & Analytics
+├── Database Layer (MySQL)
+└── Infrastructure Services
+            </div>
+
+            <h3>1.3 Tecnologías Implementadas</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Componente</th>
+                            <th>Tecnología</th>
+                            <th>Versión</th>
+                            <th>Propósito</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Backend Framework</td>
+                            <td>Laravel</td>
+                            <td>10.x</td>
+                            <td>Framework principal de aplicación</td>
+                        </tr>
+                        <tr>
+                            <td>Admin Panel</td>
+                            <td>Filament</td>
+                            <td>3.x</td>
+                            <td>Interfaz de administración</td>
+                        </tr>
+                        <tr>
+                            <td>Database</td>
+                            <td>MySQL</td>
+                            <td>8.0+</td>
+                            <td>Sistema de base de datos</td>
+                        </tr>
+                        <tr>
+                            <td>Authentication</td>
+                            <td>Laravel Sanctum</td>
+                            <td>3.x</td>
+                            <td>Sistema de autenticación</td>
+                        </tr>
+                        <tr>
+                            <td>Authorization</td>
+                            <td>Spatie Permissions</td>
+                            <td>5.x</td>
+                            <td>Control de acceso basado en roles</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="acceso" class="section">
+            <h2>2. Acceso y Autenticación</h2>
+            
+            <h3>2.1 Proceso de Acceso</h3>
+            <div class="steps">
+                <div class="step">
+                    <h4>Acceso al Sistema</h4>
+                    <p>Navegue a la URL del sistema: <span class="code-inline">https://monitor.sat-industriales.pe</span></p>
+                </div>
+                
+                <div class="step">
+                    <h4>Credenciales de Acceso</h4>
+                    <p>Ingrese su email corporativo y contraseña asignada por el administrador del sistema.</p>
+                </div>
+                
+                <div class="step">
+                    <h4>Validación de Sesión</h4>
+                    <p>El sistema validará sus credenciales y permisos, redirigiendo al dashboard principal según su rol.</p>
+                </div>
+            </div>
+
+            <h3>2.2 Roles y Permisos del Sistema</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rol</th>
+                            <th>Descripción</th>
+                            <th>Permisos Principales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Super Admin</strong></td>
+                            <td>Administrador del sistema</td>
+                            <td>Acceso completo a todos los módulos y configuraciones</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Comercial</strong></td>
+                            <td>Equipo de ventas</td>
+                            <td>Gestión de clientes, cotizaciones y proyectos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Supervisor</strong></td>
+                            <td>Supervisión operativa</td>
+                            <td>Control de tareos, asistencias y empleados</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Administrativo</strong></td>
+                            <td>Personal administrativo</td>
+                            <td>Consulta de información y generación de reportes</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="dashboard" class="section">
+            <h2>3. Panel Principal (Dashboard)</h2>
+            
+            <h3>3.1 Widgets de Información</h3>
+            <p>El dashboard presenta widgets informativos con métricas clave del sistema:</p>
+            
+            <div class="alert alert-info">
+                <strong>Widgets Disponibles:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Total de Clientes Activos</li>
+                    <li>Empleados Registrados</li>
+                    <li>Proyectos en Ejecución</li>
+                    <li>Cotizaciones del Mes</li>
+                    <li>Asistencias del Día</li>
+                </ul>
+            </div>
+
+            <h3>3.2 Implementación Técnica de Widgets</h3>
+            <div class="code-block">
+class StatsOverviewWidget extends BaseWidget
+{
+    protected function getStats(): array
+    {
+        return [
+            Stat::make('Clientes Activos', Client::where('is_active', true)->count())
+                ->description('Total de clientes en la base de datos')
+                ->descriptionIcon('heroicon-m-users')
+                ->color('success'),
+                
+            Stat::make('Empleados', Employee::count())
+                ->description('Personal registrado')
+                ->descriptionIcon('heroicon-m-user-group')
+                ->color('info'),
+        ];
+    }
+}
+            </div>
+        </div>
+
+        <div id="clientes" class="section">
+            <h2>4. Gestión de Clientes</h2>
+            
+            <h3>4.1 Módulo ClientResource</h3>
+            <p>El módulo de clientes permite la gestión completa de la cartera de clientes empresariales.</p>
+            
+            <h4>4.1.1 Campos de Información</h4>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Campo</th>
+                            <th>Tipo</th>
+                            <th>Requerido</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>business_name</td>
+                            <td>String</td>
+                            <td>Sí</td>
+                            <td>Razón social del cliente</td>
+                        </tr>
+                        <tr>
+                            <td>ruc</td>
+                            <td>String(11)</td>
+                            <td>Sí</td>
+                            <td>Registro Único de Contribuyente</td>
+                        </tr>
+                        <tr>
+                            <td>contact_person</td>
+                            <td>String</td>
+                            <td>Sí</td>
+                            <td>Persona de contacto principal</td>
+                        </tr>
+                        <tr>
+                            <td>email</td>
+                            <td>Email</td>
+                            <td>Sí</td>
+                            <td>Correo electrónico corporativo</td>
+                        </tr>
+                        <tr>
+                            <td>phone</td>
+                            <td>String</td>
+                            <td>No</td>
+                            <td>Teléfono de contacto</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>4.2 SubClients RelationManager</h3>
+            <p>Gestión de sedes, sucursales o divisiones de un cliente principal.</p>
+            
+            <div class="code-block">
+class SubClientsRelationManager extends RelationManager
+{
+    protected static string $relationship = 'subClients';
+    protected static ?string $recordTitleAttribute = 'name';
+    
+    public function form(Form $form): Form
+    {
+        return $form->schema([
+            TextInput::make('name')
+                ->label('Nombre de la Sede')
+                ->required()
+                ->maxLength(255),
+                
+            Textarea::make('address')
+                ->label('Dirección')
+                ->required(),
+                
+            Toggle::make('is_active')
+                ->label('Estado Activo')
+                ->default(true),
+        ]);
+    }
+}
+            </div>
+        </div>
+
+        <div id="empleados" class="section">
+            <h2>5. Gestión de Empleados</h2>
+            
+            <h3>5.1 EmployeeResource</h3>
+            <p>Administración completa del personal de la empresa.</p>
+            
+            <h4>5.1.1 Información Personal</h4>
+            <div class="code-block">
+Forms\Components\TextInput::make('first_name')
+    ->label('Nombres')
+    ->required()
+    ->maxLength(255),
+
+Forms\Components\TextInput::make('last_name')
+    ->label('Apellidos')
+    ->required()
+    ->maxLength(255),
+
+Forms\Components\TextInput::make('dni')
+    ->label('DNI')
+    ->required()
+    ->length(8)
+    ->unique(ignoreRecord: true),
+
+Forms\Components\DatePicker::make('birth_date')
+    ->label('Fecha de Nacimiento')
+    ->required(),
+            </div>
+
+            <h3>5.2 Validaciones Implementadas</h3>
+            <div class="alert alert-warning">
+                <strong>Validaciones Activas:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>DNI único de 8 dígitos</li>
+                    <li>Email corporativo válido</li>
+                    <li>Teléfono con formato peruano</li>
+                    <li>Fecha de nacimiento coherente (mayor de edad)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="cotizaciones" class="section">
+            <h2>6. Gestión de Cotizaciones</h2>
+            
+            <h3>6.1 QuoteResource</h3>
+            <p>Sistema de cotizaciones con numeración automática y seguimiento de estados.</p>
+            
+            <h4>6.1.1 Sistema de Correlativo</h4>
+            <div class="code-block">
+protected function mutateFormDataBeforeCreate(array $data): array
+{
+    $lastQuote = Quote::orderBy('correlative', 'desc')->first();
+    $nextCorrelative = $lastQuote ? $lastQuote->correlative + 1 : 1;
+    
+    $data['correlative'] = $nextCorrelative;
+    $data['quote_number'] = 'COT-' . date('Y') . '-' . 
+                           str_pad($nextCorrelative, 4, '0', STR_PAD_LEFT);
+    
+    return $data;
+}
+            </div>
+
+            <h3>6.2 Estados de Cotización</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Estado</th>
+                            <th>Descripción</th>
+                            <th>Acción Siguiente</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="color: #f39c12;">pending</span></td>
+                            <td>Cotización pendiente de revisión</td>
+                            <td>Revisión comercial</td>
+                        </tr>
+                        <tr>
+                            <td><span style="color: #3498db;">sent</span></td>
+                            <td>Cotización enviada al cliente</td>
+                            <td>Esperar respuesta</td>
+                        </tr>
+                        <tr>
+                            <td><span style="color: #27ae60;">approved</span></td>
+                            <td>Cotización aprobada por el cliente</td>
+                            <td>Crear proyecto</td>
+                        </tr>
+                        <tr>
+                            <td><span style="color: #e74c3c;">rejected</span></td>
+                            <td>Cotización rechazada</td>
+                            <td>Archivar o modificar</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="proyectos" class="section">
+            <h2>7. Gestión de Proyectos</h2>
+            
+            <h3>7.1 ProjectResource</h3>
+            <p>Administración de proyectos desde la aprobación hasta la finalización.</p>
+            
+            <h4>7.1.1 Relación con Cotizaciones</h4>
+            <div class="code-block">
+public function quote(): BelongsTo
+{
+    return $this->belongsTo(Quote::class);
+}
+
+public function timesheets(): HasMany
+{
+    return $this->hasMany(Timesheet::class);
+}
+
+// Scope para proyectos activos
+public function scopeActive($query)
+{
+    return $query->where('status', 'active');
+}
+            </div>
+
+            <h3>7.2 TimesheetsRelationManager</h3>
+            <p>Gestión de tareos asociados al proyecto.</p>
+            
+            <div class="code-block">
+class TimesheetsRelationManager extends RelationManager
+{
+    protected static string $relationship = 'timesheets';
+    
+    public function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('employee.full_name')
+                    ->label('Empleado')
+                    ->searchable()
+                    ->sortable(),
+                    
+                TextColumn::make('check_in_date')
+                    ->label('Fecha de Ingreso')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable(),
+                    
+                TextColumn::make('shift')
+                    ->label('Turno')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'day' => 'success',
+                        'night' => 'warning',
+                        default => 'gray',
+                    }),
+            ]);
+    }
+}
+            </div>
+        </div>
+
+        <div id="tareos" class="section">
+            <h2>8. Control de Tareos</h2>
+            
+            <h3>8.1 TimesheetResource</h3>
+            <p>Sistema de control de horarios laborales con gestión de asistencias.</p>
+            
+            <h4>8.1.1 Campos de Control</h4>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Campo</th>
+                            <th>Descripción</th>
+                            <th>Validación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>project_id</td>
+                            <td>Proyecto asociado</td>
+                            <td>Requerido, debe existir</td>
+                        </tr>
+                        <tr>
+                            <td>employee_id</td>
+                            <td>Empleado asignado</td>
+                            <td>Requerido, debe estar activo</td>
+                        </tr>
+                        <tr>
+                            <td>check_in_date</td>
+                            <td>Fecha y hora de ingreso</td>
+                            <td>Formato datetime, no futuro</td>
+                        </tr>
+                        <tr>
+                            <td>shift</td>
+                            <td>Turno de trabajo</td>
+                            <td>Enum: day, night</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>8.2 AttendancesRelationManager</h3>
+            <p>Control detallado de asistencias por tareo.</p>
+            
+            <div class="code-block">
+class AttendancesRelationManager extends RelationManager
+{
+    protected static string $relationship = 'attendances';
+    
+    public function form(Form $form): Form
+    {
+        return $form->schema([
+            Select::make('employee_id')
+                ->label('Empleado')
+                ->relationship('employee', 'full_name')
+                ->required()
+                ->searchable(),
+                
+            DateTimePicker::make('check_in_time')
+                ->label('Hora de Ingreso')
+                ->required()
+                ->default(now()),
+                
+            DateTimePicker::make('check_out_time')
+                ->label('Hora de Salida')
+                ->after('check_in_time'),
+                
+            Select::make('status')
+                ->label('Estado')
+                ->options([
+                    'present' => 'Presente',
+                    'absent' => 'Ausente',
+                    'late' => 'Tardanza',
+                    'early_departure' => 'Salida Temprana',
+                ])
+                ->required()
+                ->default('present'),
+        ]);
+    }
+}
+            </div>
+        </div>
+
+        <div id="funciones" class="section">
+            <h2>9. Funciones Avanzadas del Sistema</h2>
+            
+            <h3>9.1 Sistema de Exportación</h3>
+            <p>Capacidades de exportación de datos a múltiples formatos.</p>
+            
+            <h4>9.1.1 AttendancesExport</h4>
+            <div class="code-block">
+class AttendancesExport implements FromCollection, WithHeadings, WithStyles
+{
+    public function collection()
+    {
+        return Attendance::with(['employee', 'timesheet.project'])
+            ->orderBy('check_in_time', 'desc')
+            ->get()
+            ->map(function ($attendance) {
+                return [
+                    'employee_name' => $attendance->employee->full_name,
+                    'project_name' => $attendance->timesheet->project->name,
+                    'check_in_time' => $attendance->check_in_time->format('d/m/Y H:i'),
+                    'check_out_time' => $attendance->check_out_time?->format('d/m/Y H:i'),
+                    'status' => $attendance->status,
+                    'hours_worked' => $attendance->hours_worked ?? 0,
+                ];
+            });
+    }
+    
+    public function headings(): array
+    {
+        return [
+            'Empleado',
+            'Proyecto', 
+            'Hora Ingreso',
+            'Hora Salida',
+            'Estado',
+            'Horas Trabajadas'
+        ];
+    }
+}
+            </div>
+
+            <h3>9.2 API Controller</h3>
+            <p>Endpoints RESTful para integración con sistemas externos.</p>
+            
+            <div class="code-block">
+class AttendanceApiController extends Controller
+{
+    public function search(Request $request)
+    {
+        $query = Attendance::with(['employee', 'timesheet.project']);
+        
+        if ($request->filled('timesheet_id')) {
+            $query->where('timesheet_id', $request->timesheet_id);
+        }
+        
+        if ($request->filled('employee_id')) {
+            $query->where('employee_id', $request->employee_id);
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $query->whereBetween('check_in_time', [
+                $request->date_from . ' 00:00:00',
+                $request->date_to . ' 23:59:59'
+            ]);
+        }
+        
+        $attendances = $query->paginate(15);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $attendances->items(),
+            'meta' => [
+                'current_page' => $attendances->currentPage(),
+                'total_pages' => $attendances->lastPage(),
+                'total_records' => $attendances->total(),
+            ]
+        ]);
+    }
+}
+            </div>
+
+            <h3>9.3 Políticas de Seguridad</h3>
+            <p>Control granular de acceso basado en roles y permisos.</p>
+            
+            <div class="code-block">
+class TimesheetPolicy
+{
+    public function viewAny(User $user): bool
+    {
+        return $user->hasPermissionTo('view_timesheets');
+    }
+    
+    public function create(User $user): bool
+    {
+        return $user->hasPermissionTo('create_timesheets');
+    }
+    
+    public function update(User $user, Timesheet $timesheet): bool
+    {
+        if ($user->hasPermissionTo('edit_all_timesheets')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('edit_own_timesheets') && 
+               $timesheet->created_by === $user->id;
+    }
+    
+    public function delete(User $user, Timesheet $timesheet): bool
+    {
+        return $user->hasPermissionTo('delete_timesheets') &&
+               $timesheet->attendances()->count() === 0;
+    }
+}
+            </div>
+        </div>
+
+        <div id="anexos" class="section">
+            <h2>10. Anexos Técnicos</h2>
+            
+            <h3>10.1 Diagrama de Base de Datos</h3>
+            <div class="diagram">
+Database Schema Relationships
+
+Users (1) ←→ (0..1) Employees
+    ↓
+Employees (1) ←→ (N) Attendances
+    ↓              ↓
+    ├→ (N) Timesheets
+    └→ (N) Quotes
+
+Clients (1) ←→ (N) SubClients
+   ↓                  ↓
+   └→ (N) Quotes ←───┘
+        ↓
+        └→ (1) Projects
+             ↓
+             └→ (N) Timesheets
+                  ↓
+                  └→ (N) Attendances
+
+Roles (1) ←→ (N) Users
+  ↓
+  └→ (N) Permissions
+            </div>
+
+            <h3>10.2 Configuración de Entorno</h3>
+            <div class="code-block">
+# Configuración .env principal
+APP_NAME="SAT Industriales Monitor"
+APP_ENV=production
+APP_KEY=base64:generated_key
+APP_DEBUG=false
+APP_URL=https://monitor.sat-industriales.pe
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=sat_monitor
+DB_USERNAME=sat_user
+DB_PASSWORD=secure_password
+
+CACHE_DRIVER=redis
+SESSION_DRIVER=redis
+QUEUE_CONNECTION=redis
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=system@sat-industriales.pe
+            </div>
+
+            <h3>10.3 Comandos de Instalación</h3>
+            <div class="steps">
+                <div class="step">
+                    <h4>Clonar Repositorio</h4>
+                    <div class="code-block">git clone https://github.com/sat-industriales/monitor.git</div>
+                </div>
+                
+                <div class="step">
+                    <h4>Instalar Dependencias</h4>
+                    <div class="code-block">composer install --optimize-autoloader --no-dev
+npm install && npm run production</div>
+                </div>
+                
+                <div class="step">
+                    <h4>Configurar Base de Datos</h4>
+                    <div class="code-block">php artisan migrate --force
+php artisan db:seed --force</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Manual Técnico del Sistema SAT Industriales</strong></p>
+            <p>Versión 1.0 | Diciembre 2024</p>
+            <p>© 2024 SAT Industriales S.A.C. - Todos los derechos reservados</p>
+            <p style="margin-top: 15px;">
+                <strong>Soporte Técnico:</strong> soporte@sat-industriales.pe | 
+                <strong>Documentación:</strong> docs.sat-industriales.pe
+            </p>
+        </div>
+    </div>
+</body>
+</html>
