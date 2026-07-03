@@ -24,6 +24,7 @@ class Employee extends Model
         'sex', // male', 'female', 'other
         'position_id',
         'active',
+        'daily_payment',
     ];
 
     // Casts para fechas
@@ -32,6 +33,7 @@ class Employee extends Model
         'date_birth' => 'date',
         'position_id' => 'integer',
         'active' => 'boolean',
+        'daily_payment' => 'boolean',
     ];
     public function position()
     {

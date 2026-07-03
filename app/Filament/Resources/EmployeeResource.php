@@ -8,6 +8,7 @@ use App\Filament\Resources\EmployeeResource\RelationManagers;
 use App\Models\Employee;
 use Filament\Actions\Exports\Enums\Contracts\ExportFormat;
 use Filament\Forms;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\Layout\Grid;
 
 use App\Filament\Exports\ProductExporter;
@@ -23,7 +24,9 @@ use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,7 +37,6 @@ use Livewire\Attributes\Reactive;
 use PhpParser\Node\Stmt\Label;
 
 class EmployeeResource extends Resource
-
 {
     use Translatable;
 
@@ -114,19 +116,11 @@ class EmployeeResource extends Resource
 
                                 Forms\Components\TextInput::make('address')
                                     ->label('Dirección')
-                                    ->required()
                                     ->maxLength(100)
                                     ->placeholder('Ingresar dirección'),
 
-                                Forms\Components\DatePicker::make('date_contract')
-                                    ->label('Fecha de Contrato')
-                                    ->required()
-                                    ->maxDate(now())
-                                    ->placeholder('Seleccionar fecha de contrato'),
-
                                 Forms\Components\DatePicker::make('date_birth')
                                     ->label('Fecha de Nacimiento')
-                                    ->required()
                                     ->maxDate(now()->subYears(18))
                                     ->placeholder('Seleccionar fecha de nacimiento'),
 
@@ -140,6 +134,18 @@ class EmployeeResource extends Resource
                                         'other' => 'No específicado',
                                     ]),
 
+                                Forms\Components\Toggle::make('active')
+                                    ->label('Activo')
+                                    ->helperText('Marca esta opción para hacer visible al colaborador en el resto de formularios.')
+                                    ->default(true)
+                                    ->live() // Hace que el formulario reaccione al cambio de este toggle
+                            ])
+                            ->columnSpan('full'),
+
+                        Tabs\Tab::make('Contrato')
+                            ->icon('heroicon-o-document-text')
+                            ->columns(2)
+                            ->schema([
                                 Forms\Components\Select::make('position_id')
                                     ->label('Cargo')
                                     ->relationship('position', 'name')
@@ -147,7 +153,6 @@ class EmployeeResource extends Resource
                                     ->preload()
                                     ->searchable()
                                     ->placeholder('Seleccionar cargo')
-
                                     ->createOptionForm([
                                         Forms\Components\Section::make('Información del cargo')
                                             ->description('Datos generales del cargo')
@@ -159,13 +164,15 @@ class EmployeeResource extends Resource
                                             ->columns(2),
                                     ]),
 
-                                Forms\Components\Toggle::make('active')
-                                    ->label('Activo')
-                                    ->helperText('Marca esta opción para activar al colaborador y permitirle iniciar sesión.')
-                                    ->default(true)
-                                    ->live() // Hace que el formulario reaccione al cambio de este toggle
-                            ])
-                            ->columnSpan('full'),
+                                Forms\Components\DatePicker::make('date_contract')
+                                    ->label('Fecha de Ingreso')
+                                    ->maxDate(now())
+                                    ->placeholder('Seleccionar fecha de Ingreso'),
+
+                                Forms\Components\Toggle::make('daily_payment')
+                                    ->label('¿Es pago diario?')
+                                    ->default(false),
+                            ]),
 
                         Tabs\Tab::make('Información del Usuario')
                             ->icon('heroicon-m-lock-closed')
@@ -239,24 +246,24 @@ class EmployeeResource extends Resource
             ->columns([
 
 
-                Tables\Columns\TextColumn::make('first_name')
+                TextColumn::make('first_name')
                     ->label('Nombres')
                     ->searchable()
-                    ->sortable()
-                    ->icon('heroicon-o-identification'),
+                    ->sortable(),
+                //->icon('heroicon-o-identification'),
 
-                Tables\Columns\TextColumn::make('last_name')
+                TextColumn::make('last_name')
                     ->label('Apellidos')
                     ->sortable()
-                    ->icon('heroicon-o-identification')
+                    //->icon('heroicon-o-identification')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('document_number')
+                TextColumn::make('document_number')
                     ->label('N° Documento')
                     ->searchable()
                     ->icon('heroicon-o-hashtag'),
 
-                Tables\Columns\TextColumn::make('document_type')
+                TextColumn::make('document_type')
                     ->colors([
                         'success' => 'DNI',
                         'warning' => 'FOREIGN_CARD',
@@ -266,42 +273,42 @@ class EmployeeResource extends Resource
                     ->badge()
                     ->label('Tipo de Doc'),
 
-                Tables\Columns\TextColumn::make('position.name')
+                TextColumn::make('position.name')
                     ->searchable()
                     ->label('Profesión'),
 
 
-                Tables\Columns\TextColumn::make('date_birth')
+                TextColumn::make('date_birth')
                     ->label('Fecha de Nacimiento')
                     ->date()
                     ->icon('heroicon-o-cake')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('date_contract')
+                TextColumn::make('date_contract')
                     ->label('Fecha de Contrato')
                     ->date()
                     ->sortable()
                     ->icon('heroicon-o-calendar'),
 
-                Tables\Columns\TextColumn::make('address')
+                TextColumn::make('address')
                     ->tooltip(fn($record) => $record->address)
                     ->label('Dirección')
                     ->icon('heroicon-o-map-pin')
                     ->searchable(),
 
-                Tables\Columns\IconColumn::make('active')
+                IconColumn::make('active')
                     ->label('Activo')
                     ->boolean(),
 
-                Tables\Columns\TextColumn::make('user.email')
+                TextColumn::make('user.email')
                     ->icon('heroicon-o-envelope')
                     ->label('Nombre de ususario'),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->label('Actualizado')
                     ->sortable()
@@ -311,10 +318,11 @@ class EmployeeResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->headerActions(
                 [
