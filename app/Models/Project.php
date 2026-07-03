@@ -175,7 +175,10 @@ class Project extends Model
     public function getIsActiveAttribute()
     {
         $now = now()->toDateString();
-        return $this->start_date <= $now && $this->end_date >= $now;
+        $start = $this->start_date instanceof \Carbon\Carbon ? $this->start_date->toDateString() : $this->start_date;
+        $end = $this->end_date instanceof \Carbon\Carbon ? $this->end_date->toDateString() : $this->end_date;
+
+        return $start && $start <= $now && (empty($end) || $end >= $now);
     }
 
     public function getStatusTextAttribute()
@@ -191,7 +194,7 @@ class Project extends Model
         if ($end && $now > $end) {
             return 'Culminado';
         }
-        if ($start && $end && $now >= $start && $now <= $end) {
+        if ($start && ($now >= $start || empty($start)) && (empty($end) || $now <= $end)) {
             return 'En proceso';
         }
         return 'Sin definir';

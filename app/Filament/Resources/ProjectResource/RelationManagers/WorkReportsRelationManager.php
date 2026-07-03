@@ -88,10 +88,12 @@ class WorkReportsRelationManager extends RelationManager
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId) return null;
+                                                if (!$employeeId)
+                                                    return null;
 
                                                 $employee = Employee::with('user')->find($employeeId);
-                                                if (!$employee) return null;
+                                                if (!$employee)
+                                                    return null;
 
                                                 return view('filament.components.employee-info-modal', compact('employee'));
                                             })
@@ -164,10 +166,12 @@ class WorkReportsRelationManager extends RelationManager
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $projectId = $get('project_id');
-                                                if (!$projectId) return null;
+                                                if (!$projectId)
+                                                    return null;
 
                                                 $project = Project::with('clients')->find($projectId);
-                                                if (!$project) return null;
+                                                if (!$project)
+                                                    return null;
 
                                                 return view('filament.components.project-info-modal', compact('project'));
                                             })
@@ -483,7 +487,7 @@ class WorkReportsRelationManager extends RelationManager
     public static function getRelations(): array
     {
         return [
-            //
+                //
             PhotosRelationManager::class,
         ];
     }
@@ -542,7 +546,6 @@ class WorkReportsRelationManager extends RelationManager
                     ->placeholder('Todos los proyectos'),
             ])
             ->headerActions([
-
                 Tables\Actions\Action::make('generate_consolidated_report')
                     ->label('Reporte Consolidado')
                     ->icon('heroicon-o-document-duplicate')
@@ -578,32 +581,31 @@ class WorkReportsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
+                \Filament\Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('generate_report')
+                        ->label('Reporte PDF')
+                        ->color('danger')
+                        ->icon('heroicon-o-document')
+                        ->url(fn($action) => route('work-report.pdf', $action->getRecord()->id))
+                        ->openUrlInNewTab()
+                        ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
+                        ->tooltip('Generar reporte PDF del trabajo realizado'),
+                    Tables\Actions\ViewAction::make()
+                        ->icon('heroicon-o-eye')
+                        ->color('info'),
+                    Tables\Actions\EditAction::make()
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('primary'),
 
+                    Tables\Actions\DeleteAction::make()
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
 
-                Tables\Actions\ViewAction::make()
-                    ->icon('heroicon-o-eye')
-                    ->color('info'),
-                Tables\Actions\EditAction::make()
-                    ->icon('heroicon-o-pencil-square')
-                    ->color('primary'),
-                Tables\Actions\DeleteAction::make()
-                    ->icon('heroicon-o-trash')
-                    ->color('danger'),
-
+                ]),
                 RelationManagerAction::make('photos-relation-manager')
                     ->label('Ver fotografías')
                     ->slideOver(true)
                     ->relationManager(PhotosRelationManager::make()),
-
-
-                Tables\Actions\Action::make('generate_report')
-                    ->label('Generar PDF')
-                    ->color('danger')
-                    ->icon('heroicon-o-document')
-                    ->url(fn($action) => route('work-report.pdf', $action->getRecord()->id))
-                    ->openUrlInNewTab()
-                    ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
-                    ->tooltip('Generar reporte PDF del trabajo realizado'),
 
                 //Tables\Actions\Action::make('generate_word_report')
                 //    ->label('Generar Word')

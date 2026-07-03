@@ -69,7 +69,8 @@ class ProjectResource extends Resource
                             ->label('Nombre del proyecto')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\Select::make('quote_id')
+
+                        /*Forms\Components\Select::make('quote_id')
                             ->label('Cotización')
                             ->searchable()
                             ->prefixIcon('heroicon-m-calculator')
@@ -102,9 +103,8 @@ class ProjectResource extends Resource
                                     ->toArray();
                             })
                             ->default(fn() => session('quote_id')),
+                        */
 
-
-                        // ...existing code...
                         Forms\Components\DatePicker::make('start_date')
                             ->label('Fecha de inicio')
                             ->default(now())
@@ -112,11 +112,8 @@ class ProjectResource extends Resource
                         //->maxDate(fn(callable $get) => $get('end_date')), // Valida contra end_date
 
                         Forms\Components\DatePicker::make('end_date')
-                            ->label('Fecha de finalización')
-                            //->default(now()->addDays(30))
-                            ->required(),
+                            ->label('Fecha de finalización'),
                         //->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
-                        // ...existing code...
 
                         Forms\Components\Placeholder::make('status_text')
                             ->label('Estado del proyecto:')
@@ -168,10 +165,12 @@ class ProjectResource extends Resource
                                     })
                                     ->modalContent(function (callable $get) {
                                         $clientId = $get('client_id');
-                                        if (!$clientId) return null;
+                                        if (!$clientId)
+                                            return null;
 
                                         $client = Client::with('subClients')->find($clientId);
-                                        if (!$client) return null;
+                                        if (!$client)
+                                            return null;
 
                                         return view('filament.components.client-info-modal', compact('client'));
                                     })
@@ -184,10 +183,10 @@ class ProjectResource extends Resource
 
                             ->createOptionForm([
                                 ClientMainInfo::make()
-                                
+
 
                             ])
-                            
+
                             ->createOptionUsing(function (array $data): int {
                                 $client = Client::create($data);
                                 return $client->id;
@@ -269,10 +268,12 @@ class ProjectResource extends Resource
                                     })
                                     ->modalContent(function (callable $get) {
                                         $subClientId = $get('sub_client_id');
-                                        if (!$subClientId) return null;
+                                        if (!$subClientId)
+                                            return null;
 
                                         $subClient = SubClient::with('client')->find($subClientId);
-                                        if (!$subClient) return null;
+                                        if (!$subClient)
+                                            return null;
 
                                         return view('filament.components.sub-client-info-modal', compact('subClient'));
                                     })
@@ -371,7 +372,7 @@ class ProjectResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('subClient.name')
-                    ->label('Subcliente')
+                    ->label('Tienda')
                     ->searchable()
                     ->sortable(),
 
@@ -386,11 +387,12 @@ class ProjectResource extends Resource
                     ]),
 
 
-                Tables\Columns\TextColumn::make('quote.correlative')
+                /*Tables\Columns\TextColumn::make('quote.correlative')
                     ->label('Correlativo de Cotización')
                     ->searchable()
                     ->sortable()
                     ->formatStateUsing(fn($record) => $record->quote ? "{$record->quote->correlative} - {$record->quote->project_description}" : 'Sin cotización'),
+                */
 
                 Tables\Columns\TextColumn::make('start_date')
                     ->label('Fecha Inicio')
@@ -402,18 +404,18 @@ class ProjectResource extends Resource
                     ->date('d/m/Y')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('location_address')
+                /*Tables\Columns\TextColumn::make('location_address')
                     ->label('Ubicación')
                     ->formatStateUsing(function ($record) {
                         return $record->location_address ?? 'Sin ubicación';
                     }),
-
-                Tables\Columns\TextColumn::make('coordinates')
+                */
+                /*Tables\Columns\TextColumn::make('coordinates')
                     ->label('Coordenadas')
                     ->formatStateUsing(function ($record) {
                         return $record->coordinates ?? 'Sin coordenadas';
                     })
-                    ->toggleable(),
+                    ->toggleable(),*/
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Creado')
@@ -446,7 +448,7 @@ class ProjectResource extends Resource
                             CASE
                                 WHEN start_date IS NOT NULL AND ? < DATE(start_date) THEN 'No iniciado'
                                 WHEN end_date IS NOT NULL AND ? > DATE(end_date) THEN 'Culminado'
-                                WHEN start_date IS NOT NULL AND end_date IS NOT NULL AND ? >= DATE(start_date) AND ? <= DATE(end_date) THEN 'En proceso'
+                                WHEN start_date IS NOT NULL AND (? >= DATE(start_date) AND (end_date IS NULL OR ? <= DATE(end_date))) THEN 'En proceso'
                                 ELSE 'Sin definir'
                             END
                         ) = ?", [now()->toDateString(), now()->toDateString(), now()->toDateString(), now()->toDateString(), $data['value']]);
@@ -567,8 +569,8 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
-            
+                //
+
             WorkReportsRelationManager::class,
             TimesheetsRelationManager::class,
             //EmployeesRelationManager::class, // Relación con empleados (supervisores)
