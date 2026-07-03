@@ -36,7 +36,7 @@ class QuoteResource extends Resource
 
     protected static ?string $modelLabel = 'Cotización';
     protected static ?string $model = Quote::class;
-
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-calculator';
     protected static ?string $navigationGroup = 'Gestión de clientes';
 
@@ -168,10 +168,12 @@ class QuoteResource extends Resource
                                     })
                                     ->modalContent(function (callable $get) {
                                         $employeeId = $get('employee_id');
-                                        if (!$employeeId) return null;
+                                        if (!$employeeId)
+                                            return null;
 
                                         $employee = Employee::with('user')->find($employeeId);
-                                        if (!$employee) return null;
+                                        if (!$employee)
+                                            return null;
 
                                         return view('filament.components.employee-info-modal', compact('employee'));
                                     })
@@ -225,7 +227,7 @@ class QuoteResource extends Resource
 
                             ]),
                 */
-                            ]),
+                    ]),
 
 
                 ])
@@ -277,10 +279,12 @@ class QuoteResource extends Resource
                                     })
                                     ->modalContent(function (callable $get) {
                                         $clientId = $get('client_id');
-                                        if (!$clientId) return null;
+                                        if (!$clientId)
+                                            return null;
 
                                         $client = Client::with('subClients')->find($clientId);
-                                        if (!$client) return null;
+                                        if (!$client)
+                                            return null;
 
                                         return view('filament.components.client-info-modal', compact('client'));
                                     })
@@ -497,10 +501,12 @@ class QuoteResource extends Resource
                                     })
                                     ->modalContent(function (callable $get) {
                                         $subClientId = $get('sub_client_id');
-                                        if (!$subClientId) return null;
+                                        if (!$subClientId)
+                                            return null;
 
                                         $subClient = SubClient::with('client')->find($subClientId);
-                                        if (!$subClient) return null;
+                                        if (!$subClient)
+                                            return null;
 
                                         return view('filament.components.sub-client-info-modal', compact('subClient'));
                                     })
