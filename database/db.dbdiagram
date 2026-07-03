@@ -1,0 +1,193 @@
+{
+  "version": "2.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "tablePositions": [
+      {
+        "name": "categories",
+        "schemaName": "public",
+        "x": -25.944884472938313,
+        "y": 652.7994575031752
+      },
+      {
+        "name": "subcategories",
+        "schemaName": "public",
+        "x": 286.6519994599582,
+        "y": 677.5000153134573
+      },
+      {
+        "name": "certifications",
+        "schemaName": "public",
+        "x": 873.0756431060665,
+        "y": -14.311653169510194
+      },
+      {
+        "name": "brands",
+        "schemaName": "public",
+        "x": 875.1319354665463,
+        "y": 371.74273717359125
+      },
+      {
+        "name": "epps",
+        "schemaName": "public",
+        "x": 472.0986328125,
+        "y": 258
+      },
+      {
+        "name": "epp_photos",
+        "schemaName": "public",
+        "x": 873.0756431060665,
+        "y": 198.59055118651668
+      },
+      {
+        "name": "certification_epp",
+        "schemaName": "public",
+        "x": 385.35403276298996,
+        "y": 1.688346830489806
+      },
+      {
+        "name": "epp_subcategory",
+        "schemaName": "public",
+        "x": 62.51613216765702,
+        "y": 446.93136155553213
+      },
+      {
+        "name": "epp_variants",
+        "schemaName": "public",
+        "x": -25.944884472938313,
+        "y": 855.5000153134573
+      },
+      {
+        "name": "warehouses",
+        "schemaName": "public",
+        "x": 256.2504280270617,
+        "y": 855.5000153134573
+      },
+      {
+        "name": "warehouse_locations",
+        "schemaName": "public",
+        "x": 507.0057991208117,
+        "y": 855.5000153134573
+      },
+      {
+        "name": "stocks",
+        "schemaName": "public",
+        "x": 789.8871467770616,
+        "y": 855.5000153134573
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "category_id"
+        ],
+        "firstTableName": "subcategories",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "categories",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "brand_id"
+        ],
+        "firstTableName": "epps",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "brands",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "epp_id"
+        ],
+        "firstTableName": "epp_photos",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "epps",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "epp_id"
+        ],
+        "firstTableName": "certification_epp",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "epps",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "certification_id"
+        ],
+        "firstTableName": "certification_epp",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "certifications",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "epp_id"
+        ],
+        "firstTableName": "epp_subcategory",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "epps",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "subcategory_id"
+        ],
+        "firstTableName": "epp_subcategory",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "subcategories",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      }
+    ]
+  },
+  "views": {}
+}

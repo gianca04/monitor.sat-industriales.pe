@@ -1,0 +1,112 @@
+//////////////////////////////////////////////////////////////
+// CATEGORÍAS
+//////////////////////////////////////////////////////////////
+
+Table categories {
+  id integer [pk, increment]
+  name varchar(100) [not null]
+  description text
+}
+
+Table subcategories {
+  id integer [pk, increment]
+  category_id integer [not null]
+  name varchar(100) [not null]
+}
+
+Table certifications {
+  id integer [pk, increment]
+  code varchar(50) // ANSI Z87.1, EN388...
+  name varchar(150)
+  description text
+}
+
+Table brands {
+  id integer [pk, increment]
+  name varchar(100) [not null]
+}
+
+Table epps {
+  id integer [pk, increment]
+  name varchar(100) [not null]
+  description text
+  brand_id integer [not null]
+  model varchar(100)
+  active boolean [default: true]
+}
+
+Table epp_photos {
+  id integer [pk, increment]
+  epp_id integer [not null]
+  photo_path varchar(255) [not null]
+}
+
+Table certification_epp {
+  epp_id integer [not null]
+  certification_id integer [not null]
+  primary key (epp_id, certification_id)
+}
+
+Table epp_subcategory {
+  epp_id integer [not null]
+  subcategory_id integer [not null]
+  primary key (epp_id, subcategory_id)
+}
+
+Table epp_variants {
+  id integer [pk, increment]
+  epp_id integer [not null]
+  sku varchar(100) [unique]
+  variant_name varchar(150)
+  active boolean [default: true]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table warehouses {
+  id integer [pk, increment]
+  name varchar(100) [not null]
+  location varchar(150)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table warehouse_locations {
+  id integer [pk, increment]
+  warehouse_id integer [not null]
+  code varchar(50)
+  area varchar(100)
+  rack varchar(50)
+  shelf varchar(50)
+  section varchar(50)
+  bin varchar(50)
+  description text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table stocks {
+  id integer [pk, increment]
+  warehouse_id integer [not null]
+  warehouse_location_id integer [not null]
+  epp_variant_id integer [not null]
+  current_stock integer [default: 0]
+  minimum_stock integer [default: 0]
+  maximum_stock integer [default: 0]
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+Ref: subcategories.category_id > categories.id
+Ref: epps.brand_id > brands.id
+Ref: epp_photos.epp_id > epps.id
+Ref: certification_epp.epp_id > epps.id
+Ref: certification_epp.certification_id > certifications.id
+Ref: epp_subcategory.epp_id > epps.id
+Ref: epp_subcategory.subcategory_id > subcategories.id
+Ref: epp_variants.epp_id > epps.id
+Ref: warehouse_locations.warehouse_id > warehouses.id
+Ref: stocks.warehouse_id > warehouses.id
+Ref: stocks.warehouse_location_id > warehouse_locations.id
+Ref: stocks.epp_variant_id > epp_variants.id

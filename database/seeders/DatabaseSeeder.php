@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             SubClientSeeder::class,
             ClientesSSeeder::class,
             EmployeeSeeder::class,
+            CategoryAndSubcategorySeeder::class,
+            BrandAndCertificationSeeder::class,
         ]);
 
     }
