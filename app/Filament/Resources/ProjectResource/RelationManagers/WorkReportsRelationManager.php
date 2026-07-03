@@ -282,7 +282,7 @@ class WorkReportsRelationManager extends RelationManager
                                 // FIN DE INPUT DE NOMBRE DEL REPORTE
 
                                 // INICIO DE INPUT DE FECHA
-                                Forms\Components\DatePicker::make('created_at')
+                                Forms\Components\DatePicker::make('report_date')
                                     ->label('Fecha')
                                     ->native(false) // Desactiva el selector nativo para usar el de Filament
                                     ->default(now())
@@ -498,7 +498,7 @@ class WorkReportsRelationManager extends RelationManager
                     ->extraAttributes(['class' => 'font-bold'])
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('report_date')
                     ->label('Fecha')
                     ->weight('bold')
                     ->dateTime('d/m/Y H:i')
@@ -540,9 +540,17 @@ class WorkReportsRelationManager extends RelationManager
                     ->preload()
                     ->default(fn() => session('filter_project_id'))
                     ->placeholder('Todos los proyectos'),
-
             ])
             ->headerActions([
+
+                Tables\Actions\Action::make('generate_consolidated_report')
+                    ->label('Reporte Consolidado')
+                    ->icon('heroicon-o-document-duplicate')
+                    ->color('success')
+                    ->tooltip('Generar PDF consolidado con todos los reportes del proyecto')
+                    ->url(fn() => route('project.consolidated-report.pdf', $this->ownerRecord->id))
+                    ->openUrlInNewTab()
+                    ->visible(fn() => $this->ownerRecord->workReports()->count() > 0),
 
                 Tables\Actions\Action::make('create_advanced')
                     ->label('Crear reporte')
@@ -597,14 +605,14 @@ class WorkReportsRelationManager extends RelationManager
                     ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
                     ->tooltip('Generar reporte PDF del trabajo realizado'),
 
-                Tables\Actions\Action::make('generate_word_report')
-                    ->label('Generar Word')
-                    ->icon('heroicon-o-document-text')
-                    ->color('info')
-                    ->url(fn($action) => route('work-report.word', $action->getRecord()->id))
-                    ->openUrlInNewTab()
-                    ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
-                    ->tooltip('Generar reporte Word del trabajo realizado'),
+                //Tables\Actions\Action::make('generate_word_report')
+                //    ->label('Generar Word')
+                //    ->icon('heroicon-o-document-text')
+                //    ->color('info')
+                //    ->url(fn($action) => route('work-report.word', $action->getRecord()->id))
+                //    ->openUrlInNewTab()
+                //    ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
+                //    ->tooltip('Generar reporte Word del trabajo realizado'),
 
             ])
             ->emptyStateHeading('No hay reportes registrados')

@@ -3,31 +3,21 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TimesheetResource\Pages;
-use App\Filament\Resources\TimesheetResource\RelationManagers;
-use App\Filament\Resources\TimesheetResource\RelationManagers\AttendanceRelationManager;
 use App\Filament\Resources\TimesheetResource\RelationManagers\AttendancesRelationManager;
-use App\Filament\Resources\TimesheetResource\RelationManagers\EmployeesRelationManager;
 use App\Models\Employee;
 use App\Models\Timesheet;
 use Carbon\Carbon;
 use Filament\Forms;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use App\Models\Attendance;
-use App\Models\Project;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
+use App\Forms\Components\TimesheetForm;
 use Illuminate\Support\Facades\DB;
 
 class TimesheetResource extends Resource
@@ -61,204 +51,8 @@ class TimesheetResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Section::make('Datos del registro de asistencia')
-                    ->description('Completa los detalles del check-in, break y check-out')
-                    ->icon('heroicon-o-calendar-days')
-                    ->schema([
-                        // Sección de empleado
-                        Forms\Components\Select::make('project_id')
-                            ->label('Proyecto')
-                            ->required()
-                            ->searchable()
-                            ->options(
-                                function (callable $get) {
-                                    $search = $get('search');
-                                    $sessionprojectId = session('project_id');
-                                    $query = Project::query()
-                                        ->select('projects.id', 'projects.name')
-                                        ->when($search, function ($query) use ($search) {
-                                            $query->where('projects.name', 'like', "%{$search}%");
-                                        })
-                                        ->limit(10);
-
-                                    return $query->get()
-                                        ->unique('id')
-                                        ->mapWithKeys(function ($project) {
-                                            $label = "{$project->name}";
-                                            return [$project->id => $label];
-                                        })
-                                        ->toArray();
-                                }
-                            )
-                            ->default(fn() => session('project_id'))
-                            ->reactive()
-                            ->afterStateHydrated(function ($state, callable $set) {
-                                if ($state) {
-                                    $project = Project::find($state);
-                                    if ($project) {
-                                        $set('project_id', $project->name);
-                                    }
-                                }
-                            })
-                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                // Validar si ya existe un tareo para este proyecto en la fecha seleccionada
-                                $checkInDate = $get('check_in_date');
-                                if ($state && $checkInDate) {
-                                    $existingTimesheet = Timesheet::where('project_id', $state)
-                                        ->whereDate('check_in_date', Carbon::parse($checkInDate)->toDateString())
-                                        ->first();
-
-                                    if ($existingTimesheet) {
-                                        Notification::make()
-                                            ->title('¡Atención!')
-                                            ->body('Ya existe un tareo para este proyecto en la fecha seleccionada.')
-                                            ->warning()
-                                            ->send();
-                                    }
-                                }
-                            })
-                            ->rules([
-                                function () {
-                                    return function (string $attribute, $value, \Closure $fail) {
-                                        $checkInDate = request()->input('check_in_date');
-                                        $recordId = request()->route('record'); // ID del registro actual (para edición)
-
-                                        if ($value && $checkInDate) {
-                                            $exists = static::validateUniqueTimesheetForProjectDate(
-                                                $value,
-                                                $checkInDate,
-                                                $recordId
-                                            );
-
-                                            if ($exists) {
-                                                $fail('Ya existe un tareo para este proyecto en la fecha seleccionada.');
-                                            }
-                                        }
-                                    };
-                                },
-                            ])
-                            ->required(),
-
-
-                        Forms\Components\Select::make('employee_id')
-                            ->required()
-                            ->default(fn(callable $get) => Auth::user()?->employee_id)
-                            ->columns(2)
-                            ->prefixIcon('heroicon-m-user')
-                            ->label('Responsable del Tareo') // Título para el campo 'Empleado'
-                            ->options(
-                                function (callable $get) {
-                                    return Employee::query()
-                                        ->select('id', 'first_name', 'last_name', 'document_number')
-                                        ->when($get('search'), function ($query, $search) {
-                                            $query->where('first_name', 'like', "%{$search}%")
-                                                ->orWhere('last_name', 'like', "%{$search}%")
-                                                ->orWhere('document_number', 'like', "%{$search}%");
-                                        })
-                                        ->get()
-                                        ->mapWithKeys(function ($employee) {
-                                            return [$employee->id => $employee->full_name];
-                                        })
-                                        ->toArray();
-                                }
-                            )
-                            ->searchable() // Activa la búsqueda asincrónica
-                            ->placeholder('Seleccionar un supervisor') // Placeholder
-                            ->reactive(),
-
-                        // ...existing code...
-
-                        DateTimePicker::make('check_in_date')
-                            ->label('Fecha de entrada')
-                            ->seconds(false)
-                            ->default(now())
-                            ->weekStartsOnMonday()
-                            ->maxDate(fn(callable $get) => $get('check_out_date'))
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                // Validar si ya existe un tareo para este proyecto en la fecha seleccionada
-                                $projectId = $get('project_id');
-                                if ($state && $projectId) {
-                                    $existingTimesheet = Timesheet::where('project_id', $projectId)
-                                        ->whereDate('check_in_date', Carbon::parse($state)->toDateString())
-                                        ->first();
-
-                                    if ($existingTimesheet) {
-                                        Notification::make()
-                                            ->title('¡Tareo duplicado!')
-                                            ->body('Ya existe un tareo para este proyecto en la fecha seleccionada. No se puede crear otro tareo para el mismo día.')
-                                            ->warning()
-                                            ->persistent()
-                                            ->send();
-                                    }
-                                }
-
-                                $checkIn = $get('check_in_date');
-                                if ($checkIn) {
-                                    $in = Carbon::parse($checkIn)->format('H:i');
-                                    // Turno noche si entra a las 18:00 o después
-                                    if ($in >= '18:00') {
-                                        $set('shift', 'night');
-                                    } else {
-                                        $set('shift', 'day');
-                                    }
-                                }
-                            })
-                            ->rules([
-                                function () {
-                                    return function (string $attribute, $value, \Closure $fail) {
-                                        $projectId = request()->input('project_id');
-                                        $recordId = request()->route('record');
-
-                                        if ($value && $projectId) {
-                                            $exists = static::validateUniqueTimesheetForProjectDate(
-                                                $projectId,
-                                                $value,
-                                                $recordId
-                                            );
-
-                                            if ($exists) {
-                                                $fail('Ya existe un tareo para este proyecto en esta fecha.');
-                                            }
-                                        }
-                                    };
-                                },
-                            ])
-                            ->prefixIcon('heroicon-o-arrow-right-end-on-rectangle'),
-
-                        DateTimePicker::make('break_date')
-                            ->label('Inicio del descanso')
-                            ->seconds(false)
-                            ->default(fn(callable $get) => Carbon::parse($get('check_in_date'))->addHours(4)) // Parse check_in_date as Carbon and add 3 hours
-                            ->prefixIcon('heroicon-o-pause')
-                            ->minDate(fn(callable $get) => Carbon::parse($get('check_in_date'))), // Parse check_in_date as Carbon
-
-                        DateTimePicker::make('end_break_date')
-                            ->label('Fin del descanso')
-                            ->seconds(false)
-                            ->default(fn(callable $get) => Carbon::parse($get('break_date'))->addHours(1)) // Parse check_in_date as Carbon and add 3 hours
-                            ->minDate(fn(callable $get) => Carbon::parse($get('break_date'))) // Parse check_in_date as Carbon
-                            ->required()
-                            ->prefixIcon('heroicon-o-play'),
-
-                        DateTimePicker::make('check_out_date')
-                            ->label('Fecha de salida')
-                            ->seconds(false)
-                            ->default(fn(callable $get) => Carbon::parse($get('check_out_date'))->addHours(9))
-                            ->weekStartsOnMonday()
-                            ->minDate(fn(callable $get) => $get('check_in_date'))
-                            ->required()
-                            ->prefixIcon('heroicon-o-arrow-right-start-on-rectangle')
-                            ->reactive(),
-
-                    ])
-                    ->columns(2),
-            ]);
-    }
-
-    public static function table(Table $table): Table
+        return $form->schema(TimesheetForm::getSchema());
+    }    public static function table(Table $table): Table
     {
         return $table
             ->columns([

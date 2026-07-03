@@ -48,6 +48,7 @@
             </tr>
         </thead>
     </table>
+    {{-- TABLA DE INFORMACIÓN DEL REPORTE --}}
     <table class="info-table">
         <thead>
             <tr>
@@ -84,7 +85,7 @@
     <table class="basic-info-table">
         <tbody>
             <tr>
-                <th style="width: 150px;">SubCliente</th>
+                <th style="width: 150px;">Tienda</th>
                 <td style="width: 350px;">{{ $project->subClient->name ?? 'N/A' }}</td>
                 <th style="width: 150px;">TDR</th>
                 <td>{{ $project->quote->TDR ?? 'N/A' }}</td>
@@ -204,110 +205,6 @@
             </tr>
         </tbody>
     </table>
-
-    {{-- EVIDENCIAS FOTOGRAFICAS --}}
-    @foreach ($photos as $index => $photo)
-        <table class="evidence-table">
-            <thead>
-                <tr>
-                    <th class="evidence-th">Evidencia Inicial</th>
-                    <th class="evidence-th">Evidencia del Trabajo Realizado</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="evidence-td">
-                        <div class="evidence-img-container">
-                            @php
-                                $beforeImagePath = $photo->before_work_photo_path
-                                    ? public_path('storage/' . $photo->before_work_photo_path)
-                                    : null;
-                                $defaultImg = public_path('images/image-no-found.png');
-                            @endphp
-
-                            @if ($beforeImagePath && file_exists($beforeImagePath))
-                                <img class="photo-image" src="{{ $beforeImagePath }}"
-                                    alt="Evidencia inicial {{ $loop->iteration }}">
-                            @else
-                                <img class="photo-image" src="{{ $defaultImg }}" alt="Sin imagen inicial disponible">
-                            @endif
-                        </div>
-                    </td>
-                    <td class="evidence-td">
-                        <div class="evidence-img-container">
-                            @php
-                                $afterImagePath = $photo->photo_path
-                                    ? public_path('storage/' . $photo->photo_path)
-                                    : null;
-                            @endphp
-
-                            @if ($afterImagePath && file_exists($afterImagePath))
-                                <img class="photo-image" src="{{ $afterImagePath }}"
-                                    alt="Evidencia final {{ $loop->iteration }}">
-                            @else
-                                <img class="photo-image" src="{{ $defaultImg }}" alt="Sin imagen final disponible">
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="evidence-desc">
-                        {!! $photo->before_work_descripcion ?? 'Sin descripción' !!}
-                    </td>
-                    <td class="evidence-desc">
-                        {!! $photo->descripcion ?? 'Sin descripción' !!}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    @endforeach
-
-    <br>
-
-    {{-- TABLA DE FIRMAS --}}
-    <div class="divider"></div>
-    <table class="signature-table">
-        <tr>
-            <th>Firma del Gerente / Subgerente</th>
-            <th>Firma del Supervisor / Técnico</th>
-        </tr>
-        <tr>
-            <td class="signature-cell">
-                @if ($workReport->manager_signature)
-                    <img src="{{ $workReport->manager_signature }}" alt="Firma del Gerente" class="signature-image" />
-                @else
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <span class="no-data">_____________________________________</span>
-                @endif
-                <div class="signature-label">
-                    Gerencia / Subgerencia
-                </div>
-            </td>
-            <td class="signature-cell">
-                @if ($workReport->supervisor_signature)
-                    <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor"
-                        class="signature-image" />
-                @else
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <span class="no-data">_____________________________________</span>
-                @endif
-                <div class="signature-label">
-                    Supervisión / Técnico
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <div>
-        <p class="footer">SAT INDUSTRIALES - Monitor</p>
-    </div>
-
     <style>
         /* Estilo para que las columnas de la tabla de cabecera tengan el mismo ancho y texto centrado */
         .info-table-header-col {
@@ -421,7 +318,7 @@
             display: block;
             margin: 0 auto;
             max-width: 90%;
-            max-height: 450px;
+            max-height: 400px;
             object-fit: contain;
         }
 

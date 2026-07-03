@@ -36,13 +36,10 @@ class WorkReportResource extends Resource
     use Translatable;
     protected static ?string $modelLabel = 'Reporte de Trabajo';
     protected static ?string $pluralModelLabel = 'Reportes de Trabajo';
-
     protected static ?string $model = WorkReport::class;
-
     protected static ?string $navigationGroup = 'Control de operaciones';
-
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
-
+    protected static bool $shouldRegisterNavigation = false;
     public static function form(Form $form): Form
     {
         return $form
@@ -620,37 +617,12 @@ class WorkReportResource extends Resource
                                     ->seconds(false)
                                     ->displayFormat(format: 'H:i')
                                     ->helperText('Selecciona la hora de finalización del trabajo')
-                                    // Usamos afterStateUpdated para validar y limpiar el campo
-                                    ->afterStateUpdated(function ($state, $get, $livewire) {
-                                        $startTime = $get('start_time');
-                                        $endTime = $state;
+                                // Usamos afterStateUpdated para validar y limpiar el campo
 
-                                        // Si no hay hora de inicio, no validamos
-                                        if (!$startTime || !$endTime) {
-                                            return;
-                                        }
-
-                                        $startCarbon = \Carbon\Carbon::parse($startTime);
-                                        $endCarbon = \Carbon\Carbon::parse($endTime);
-
-                                        if ($endCarbon->lessThan($startCarbon)) {
-                                            // Envía una notificación de error
-                                            Notification::make()
-                                                ->title('Error de validación')
-                                                ->body('La hora de finalización no puede ser anterior a la hora de inicio.')
-                                                ->danger()
-                                                ->duration(5000)
-                                                ->send();
-
-                                            // Limpiamos el campo 'end_time'
-                                            $livewire->form->fill(['end_time' => null]);
-                                        }
-                                    }),
                                 // FIN DE INPUT DE HORA DE FINALIZACIÓN
                             ]),
 
                         // FIN DE TAB DE INFORMACIÓN GENERAL
-
 
                         // INICIO TAB DESCRIPCIÓN DEL REPORTE
                         Tabs\Tab::make('Descripción')
@@ -674,7 +646,7 @@ class WorkReportResource extends Resource
                                         'undo',
                                     ]),
                                 Forms\Components\RichEditor::make('suggestions')
-                                    ->label('Sugerencias')
+                                    ->label('Recomendaciones')
                                     ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
                                     ->maxLength(5000)
                                     ->toolbarButtons([
@@ -756,6 +728,27 @@ class WorkReportResource extends Resource
                                     ]),
                             ]),
                         // FIN DL TAB DE LISTA DE PERSONAL
+
+                        // INICIO DE TAB DE CONCLUSIONES
+                        Tabs\Tab::make('Conclusiones')
+                            ->icon('heroicon-o-check-badge')
+                            ->columns(2)
+                            ->schema([
+                                Forms\Components\RichEditor::make('conclusions')
+                                    ->label('Conclusiones')
+                                    ->columnSpanFull()
+                                    ->maxLength(5000)
+                                    ->toolbarButtons([
+                                        'bold',
+                                        'h2',
+                                        'h3',
+                                        'orderedList',
+                                        'bulletList',
+                                        'redo',
+                                        'underline',
+                                        'undo',
+                                    ]),
+                            ]),
 
                         // INICIO DE TAB DE FIRMAS
                         Tabs\Tab::make('Firmas')
@@ -855,41 +848,36 @@ class WorkReportResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
+                // El ActionGroup es el que crea el menú de 3 puntitos
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->icon('heroicon-o-eye')
+                        ->color('info'),
 
-                Tables\Actions\ViewAction::make()
-                    ->icon('heroicon-o-eye')
-                    ->color('info'),
-                Tables\Actions\EditAction::make()
-                    ->icon('heroicon-o-pencil-square')
-                    ->color('primary'),
-                Tables\Actions\DeleteAction::make()
-                    ->icon('heroicon-o-trash')
-                    ->color('danger'),
+                    Tables\Actions\EditAction::make()
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('primary'),
 
-                RelationManagerAction::make('photos-relation-manager')
-                    ->label('Ver fotografías')
-                    ->slideOver(true)
-                    ->relationManager(PhotosRelationManager::make()),
+                    Tables\Actions\DeleteAction::make()
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
 
+                    RelationManagerAction::make('photos-relation-manager')
+                        ->label('Ver fotografías')
+                        ->slideOver(true)
+                        ->relationManager(PhotosRelationManager::make()),
 
-                Tables\Actions\Action::make('generate_report')
-                    ->label('Generar PDF')
-                    ->color('danger')
-                    ->icon('heroicon-o-document')
-                    ->url(fn($action) => route('work-report.pdf', $action->getRecord()->id))
-                    ->openUrlInNewTab()
-                    ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
-                    ->tooltip('Generar reporte PDF del trabajo realizado'),
-
-                Tables\Actions\Action::make('generate_word_report')
-                    ->label('Generar Word')
-                    ->icon('heroicon-o-document-text')
-                    ->color('info')
-                    ->url(fn($action) => route('work-report.word', $action->getRecord()->id))
-                    ->openUrlInNewTab()
-                    ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
-                    ->tooltip('Generar reporte Word del trabajo realizado'),
-
+                    Tables\Actions\Action::make('generate_report')
+                        ->label('Generar PDF')
+                        ->color('danger')
+                        ->icon('heroicon-o-document')
+                        ->url(fn($record) => route('work-report.pdf', $record->id))
+                        ->openUrlInNewTab()
+                        ->visible(fn($record) => $record->photos()->count() > 0)
+                        ->tooltip('Generar reporte PDF'),
+                ])
+                    ->icon('heroicon-m-ellipsis-vertical') // Aquí defines que sea el icono de 3 puntos
+                    ->tooltip('Opciones')
             ])
             ->headerActions([
                 Tables\Actions\Action::make('back_to_project')

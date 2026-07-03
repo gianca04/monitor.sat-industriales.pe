@@ -35,9 +35,18 @@ class SubClient extends Model
     {
         return $this->belongsTo(Client::class);
     }
+    
     public function quotes()
     {
         return $this->hasMany(Quote::class, 'employee_id'); // Relación con la tabla quotes
+    }
+
+    /**
+     * Requests associated with this sub client
+     */
+    public function requests()
+    {
+        return $this->hasMany(Request::class, 'sub_client_id');
     }
 
     /**

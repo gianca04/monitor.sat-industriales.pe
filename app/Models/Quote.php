@@ -119,7 +119,7 @@ class Quote extends Model
         return $this->hasMany(Project::class, 'quote_id');
     }
 
-    public function visits()
+    public function visitas()
     {
         return $this->hasMany(Visit::class, 'quote_id');
     }

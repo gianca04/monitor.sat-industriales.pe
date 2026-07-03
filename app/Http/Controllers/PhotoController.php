@@ -1,134 +1,212 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePhotoRequest;
+use App\Http\Requests\UpdatePhotoRequest;
 use App\Models\Photo;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PhotoController extends Controller
 {
     /**
-     * Mostrar una lista paginada de fotografías.
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * Listar fotos (Opcionalmente filtradas por reporte).
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        // Se incluye la relación "evidence" para optimizar las consultas.
-        $photos = Photo::with('evidence')->paginate(10);
-        return response()->json($photos);
+        $query = Photo::query();
+
+        if ($request->has('work_report_id')) {
+            $query->where('work_report_id', $request->work_report_id);
+        }
+
+        // Paginación estándar de Laravel
+        $photos = $query->latest()->paginate($request->per_page ?? 20);
+
+        // Formatear los datos
+        $data = $photos->map(function ($photo) {
+            return $this->formatPhoto($photo);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Fotos obtenidas exitosamente',
+            'data' => $data,
+            'pagination' => [
+                'total' => $photos->total(),
+                'perPage' => $photos->perPage(),
+                'currentPage' => $photos->currentPage(),
+                'lastPage' => $photos->lastPage(),
+                'from' => $photos->firstItem(),
+                'to' => $photos->lastItem(),
+                'hasMorePages' => $photos->hasMorePages(),
+            ],
+            'meta' => [
+                'apiVersion' => '1.0',
+                'timestamp' => now()->utc()->toIso8601String(),
+            ],
+        ], 200);
     }
 
     /**
-     * Almacenar una nueva fotografía y subir la imagen al servidor.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * Guardar una nueva foto.
      */
-    public function store(Request $request)
+    public function store(StorePhotoRequest $request): JsonResponse
     {
-        // Validación de los datos recibidos, se valida que se trate de un archivo de imagen.
-        $validatedData = $request->validate([
-            'evidence_id' => 'required|exists:evidences,id',
-            'photo'       => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:4076',
-            'descripcion' => 'nullable|string',
-        ]);
+        $data = $request->validated();
 
-        // Se obtiene el archivo de imagen.
-        $file = $request->file('photo');
-        // Se genera un nombre único para la imagen.
-        $filename = time() . '_' . $file->getClientOriginalName();
-        // Se define la ruta de destino dentro de la carpeta public.
-        $destinationPath = public_path('uploads/photos');
-        // Se mueve el archivo a la ubicación definida.
-        $file->move($destinationPath, $filename);
+        // Manejo de la foto principal
+        if ($request->hasFile('photo')) {
+            // Guardamos en disco 'public', carpeta 'photos'
+            $data['photo_path'] = $request->file('photo')->store('photos', 'public');
+        }
 
-        // Se establece la ruta relativa de la imagen para almacenar en la base de datos.
-        $filePath = 'uploads/photos/' . $filename;
+        // Manejo de la foto "antes"
+        if ($request->hasFile('before_work_photo')) {
+            $data['before_work_photo_path'] = $request->file('before_work_photo')->store('photos/before', 'public');
+        }
 
-        // Creación de la fotografía utilizando asignación masiva.
-        $photo = Photo::create([
-            'evidence_id' => $validatedData['evidence_id'],
-            'photo_path'  => $filePath,
-            'descripcion' => $validatedData['descripcion'] ?? null,
-        ]);
+        // Creamos el registro
+        $photo = Photo::create($data);
 
         return response()->json([
+            'success' => true,
             'message' => 'Foto creada correctamente',
-            'data'    => $photo,
+            'data' => $this->formatPhoto($photo),
+            'meta' => [
+                'apiVersion' => '1.0',
+                'timestamp' => now()->utc()->toIso8601String(),
+            ],
         ], 201);
     }
 
     /**
-     * Mostrar una fotografía en específico.
-     *
-     * @param  \App\Models\Photo  $photo
-     * @return \Illuminate\Http\JsonResponse
+     * Mostrar una foto específica.
      */
-    public function show(Photo $photo)
+    public function show(Photo $photo): JsonResponse
     {
-        // Cargamos la relación "evidence" para obtener la información relacionada.
-        $photo->load('evidence');
-        return response()->json($photo);
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto obtenida exitosamente',
+            'data' => $this->formatPhoto($photo),
+            'meta' => [
+                'apiVersion' => '1.0',
+                'timestamp' => now()->utc()->toIso8601String(),
+            ],
+        ], 200);
     }
 
     /**
-     * Actualizar la información de una fotografía, incluyendo la opción de subir una nueva imagen.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Photo  $photo
-     * @return \Illuminate\Http\JsonResponse
+     * Actualizar una foto existente.
+     * 
+     * Este método es VERSÁTIL y permite actualizar cualquier combinación de campos:
+     * - Solo descripción principal
+     * - Solo descripción "before"
+     * - Solo foto principal (elimina la anterior automáticamente)
+     * - Solo foto "before" (elimina la anterior automáticamente)
+     * - Cualquier combinación de los campos anteriores
+     * 
+     * IMPORTANTE: Usar POST con _method=PUT/PATCH cuando se envían archivos
+     * 
+     * @param UpdatePhotoRequest $request - Validación flexible con 'sometimes'
+     * @param Photo $photo - Modelo cargado automáticamente por route model binding
+     * @return JsonResponse
      */
-    public function update(Request $request, Photo $photo)
+    public function update(UpdatePhotoRequest $request, Photo $photo): JsonResponse
     {
-        // Validación flexible: se valida el archivo de imagen si es que se envía.
-        $validatedData = $request->validate([
-            'evidence_id' => 'sometimes|required|exists:evidences,id',
-            'photo'       => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'descripcion' => 'nullable|string',
-        ]);
+        // Obtenemos solo los campos que fueron enviados en la petición
+        $data = $request->validated();
 
-        // Si se envía un nuevo archivo de imagen, se procesa la subida.
+        // MANEJO DE FOTO PRINCIPAL: Solo si se envía un nuevo archivo
         if ($request->hasFile('photo')) {
-            // Opcional: se puede eliminar la imagen antigua del servidor.
-            $oldPath = public_path($photo->photo_path);
-            if (file_exists($oldPath)) {
-                unlink($oldPath);
+            // 1. Eliminar foto anterior del almacenamiento si existe
+            if ($photo->photo_path && Storage::disk('public')->exists($photo->photo_path)) {
+                Storage::disk('public')->delete($photo->photo_path);
             }
-            $file = $request->file('photo');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $destinationPath = public_path('uploads/photos');
-            $file->move($destinationPath, $filename);
-            $validatedData['photo_path'] = 'uploads/photos/' . $filename;
+            // 2. Guardar nueva foto y actualizar la ruta en los datos
+            $data['photo_path'] = $request->file('photo')->store('photos', 'public');
         }
 
-        $photo->update($validatedData);
+        // MANEJO DE FOTO "ANTES DEL TRABAJO": Solo si se envía un nuevo archivo
+        if ($request->hasFile('before_work_photo')) {
+            // 1. Eliminar foto anterior del almacenamiento si existe
+            if ($photo->before_work_photo_path && Storage::disk('public')->exists($photo->before_work_photo_path)) {
+                Storage::disk('public')->delete($photo->before_work_photo_path);
+            }
+            // 2. Guardar nueva foto y actualizar la ruta en los datos
+            $data['before_work_photo_path'] = $request->file('before_work_photo')->store('photos/before', 'public');
+        }
+
+        // Actualizar solo los campos que fueron enviados
+        $photo->update($data);
 
         return response()->json([
+            'success' => true,
             'message' => 'Foto actualizada correctamente',
-            'data'    => $photo,
-        ]);
+            'data' => $this->formatPhoto($photo),
+            'meta' => [
+                'apiVersion' => '1.0',
+                'timestamp' => now()->utc()->toIso8601String(),
+            ],
+        ], 200);
     }
 
     /**
-     * Eliminar una fotografía.
-     *
-     * @param  \App\Models\Photo  $photo
-     * @return \Illuminate\Http\JsonResponse
+     * Eliminar una foto y sus archivos.
      */
-    public function destroy(Photo $photo)
+    public function destroy(Photo $photo): JsonResponse
     {
-        // Opcional: eliminar el archivo físico de la imagen.
-        $filePath = public_path($photo->photo_path);
-        if (file_exists($filePath)) {
-            unlink($filePath);
+        try {
+            // Eliminamos los archivos físicos para no dejar basura en el servidor
+            if ($photo->photo_path && Storage::disk('public')->exists($photo->photo_path)) {
+                Storage::disk('public')->delete($photo->photo_path);
+            }
+
+            if ($photo->before_work_photo_path && Storage::disk('public')->exists($photo->before_work_photo_path)) {
+                Storage::disk('public')->delete($photo->before_work_photo_path);
+            }
+
+            $id = $photo->id;
+            $photo->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto eliminada correctamente',
+                'data' => ['id' => $id],
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->utc()->toIso8601String(),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la foto: ' . $e->getMessage(),
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->utc()->toIso8601String(),
+                ],
+            ], 500);
         }
+    }
 
-        $photo->delete();
-
-        return response()->json([
-            'message' => 'Foto eliminada correctamente'
-        ]);
+    /**
+     * Formatear una foto con estructura estandarizada
+     */
+    private function formatPhoto($photo)
+    {
+        return [
+            'id' => $photo->id,
+            'work_report_id' => $photo->work_report_id,
+            'photo_path' => $photo->photo_path ? url(Storage::url($photo->photo_path)) : null,
+            'descripcion' => $photo->descripcion ?? '',
+            'before_work_photo_path' => $photo->before_work_photo_path ? url(Storage::url($photo->before_work_photo_path)) : null,
+            'before_work_descripcion' => $photo->before_work_descripcion ?? '',
+            'created_at' => $photo->created_at?->toIso8601String(),
+            'updated_at' => $photo->updated_at?->toIso8601String(),
+        ];
     }
 }

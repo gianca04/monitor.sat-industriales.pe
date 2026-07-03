@@ -66,8 +66,9 @@ class Project extends Model
 
     public function attendances()
     {
-        return $this->hasMany(Attendance::class);
+        return $this->hasManyThrough(Attendance::class, Timesheet::class);
     }
+    
     public function timesheets()
     {
         return $this->hasMany(Timesheet::class);

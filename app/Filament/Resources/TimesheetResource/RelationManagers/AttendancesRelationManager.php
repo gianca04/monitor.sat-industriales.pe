@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TimesheetResource\RelationManagers;
 
 use App\Models\Employee;
+use App\Services\HoursCalculator;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Imports\AttendancesImport;
 use App\Exports\AttendanceTemplateExport;
+use App\Models\Attendance;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 
@@ -77,19 +79,14 @@ class AttendancesRelationManager extends RelationManager
                                 },
                             ]),
 
-                        Select::make('status')
+                        /*Select::make('status')
                             ->label('Estado')
-                            ->options([
-                                'attended' => 'Asistió',
-                                'present' => 'Presente',
-                                'late' => 'Llegó Tarde',
-                                'absent' => 'Faltó',
-                                'justified' => 'Justificado'
-                            ])
+
                             ->default('attended')
                             ->native(false)
                             ->reactive()
                             ->prefixIcon('heroicon-o-check-circle'),
+                        */
                     ]),
 
                 Forms\Components\Grid::make(2)
@@ -168,7 +165,7 @@ class AttendancesRelationManager extends RelationManager
                     ->sortable()
                     ->wrap(),
 
-                Tables\Columns\SelectColumn::make('status')
+                /*Tables\Columns\SelectColumn::make('status')
                     ->label('Estado')
                     ->options([
                         'attended' => 'Asistió',
@@ -208,6 +205,8 @@ class AttendancesRelationManager extends RelationManager
                         }
                     }),
 
+                    */
+
                 Tables\Columns\BadgeColumn::make('shift')
                     ->label('Turno')
                     ->colors([
@@ -238,35 +237,12 @@ class AttendancesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('work_duration')
                     ->label('Horas Trabajadas')
                     ->getStateUsing(function ($record) {
-                        if (!$record || !$record->check_in_date || !$record->check_out_date) {
+                        if (!$record) {
                             return null;
                         }
 
-                        $checkIn = Carbon::parse($record->check_in_date);
-                        $checkOut = Carbon::parse($record->check_out_date);
-
-                        // Calcular tiempo total en minutos
-                        $totalMinutes = $checkIn->diffInMinutes($checkOut);
-
-                        // Calcular tiempo de break en minutos
-                        $breakTime = 0;
-                        if ($record->break_date && $record->end_break_date) {
-                            $breakStart = Carbon::parse($record->break_date);
-                            $breakEnd = Carbon::parse($record->end_break_date);
-                            $breakTime = $breakStart->diffInMinutes($breakEnd);
-                        }
-
-                        // Tiempo trabajado = tiempo total - tiempo de break
-                        $workedMinutes = max(0, $totalMinutes - $breakTime);
-
-                        if ($workedMinutes <= 0) {
-                            return null;
-                        }
-
-                        $hours = intval($workedMinutes / 60);
-                        $minutes = $workedMinutes % 60;
-
-                        return "{$hours}h {$minutes}m";
+                        $workedHours = HoursCalculator::calculateWorkedHours($record);
+                        return $workedHours['formatted'];
                     })
                     ->badge()
                     ->color(fn($state) => $state ? 'success' : 'gray')
@@ -276,68 +252,16 @@ class AttendancesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('extra_hours')
                     ->label('Horas Extra')
                     ->getStateUsing(function ($record) {
-                        if (!$record || !$record->check_in_date || !$record->check_out_date || !$record->timesheet) {
+                        if (!$record) {
                             return null;
                         }
 
-                        $checkIn = Carbon::parse($record->check_in_date);
-                        $checkOut = Carbon::parse($record->check_out_date);
-
-                        // Calcular tiempo total trabajado por el empleado
-                        $totalMinutes = $checkIn->diffInMinutes($checkOut);
-
-                        // Calcular tiempo de break del empleado
-                        $breakTime = 0;
-                        if ($record->break_date && $record->end_break_date) {
-                            $breakStart = Carbon::parse($record->break_date);
-                            $breakEnd = Carbon::parse($record->end_break_date);
-                            $breakTime = $breakStart->diffInMinutes($breakEnd);
-                        }
-
-                        // Tiempo trabajado por el empleado
-                        $totalWorkedMinutes = max(0, $totalMinutes - $breakTime);
-
-                        // Obtener horarios del timesheet (horario estándar)
-                        $timesheet = $record->timesheet;
-                        if (!$timesheet->check_in_date || !$timesheet->check_out_date) {
-                            return 'Sin horario base';
-                        }
-
-                        $timesheetCheckIn = Carbon::parse($timesheet->check_in_date);
-                        $timesheetCheckOut = Carbon::parse($timesheet->check_out_date);
-
-                        // Calcular tiempo total del horario estándar
-                        $standardTotalMinutes = $timesheetCheckIn->diffInMinutes($timesheetCheckOut);
-
-                        // Calcular tiempo de break del timesheet
-                        $timesheetBreakTime = 0;
-                        if ($timesheet->break_date && $timesheet->end_break_date) {
-                            $timesheetBreakStart = Carbon::parse($timesheet->break_date);
-                            $timesheetBreakEnd = Carbon::parse($timesheet->end_break_date);
-                            $timesheetBreakTime = $timesheetBreakStart->diffInMinutes($timesheetBreakEnd);
-                        } else {
-                            // Si el timesheet no tiene break configurado, pero los empleados sí,
-                            // asumimos un break estándar de 1 hora (60 minutos)
-                            $timesheetBreakTime = 60;
-                        }
-
-                        // Minutos de trabajo estándar según el timesheet
-                        $standardWorkMinutes = max(0, $standardTotalMinutes - $timesheetBreakTime);
-
-                        // Calcular horas extra
-                        $extraMinutes = max(0, $totalWorkedMinutes - $standardWorkMinutes);
-
-                        if ($extraMinutes > 0) {
-                            $extraHours = intval($extraMinutes / 60);
-                            $extraMinutesRemainder = $extraMinutes % 60;
-                            return "{$extraHours}h {$extraMinutesRemainder}m";
-                        }
-
-                        return '0h 0m';
+                        $extraHours = HoursCalculator::calculateExtraHours($record);
+                        return $extraHours['formatted'];
                     })
                     ->badge()
                     ->color(function ($state) {
-                        if (!$state || $state === '0h 0m' || $state === 'Sin horario base') {
+                        if (!$state || $state === '0h 0m') {
                             return 'gray';
                         }
                         return 'warning'; // Color naranja para horas extra
@@ -402,6 +326,106 @@ class AttendancesRelationManager extends RelationManager
                     ->toggle(),
             ])
             ->headerActions([
+                Tables\Actions\Action::make(name: 'generarAsistencias')
+                    ->label('Generar Asistencias')
+                    ->icon('heroicon-o-user-plus')
+                    ->color('success')
+                    ->form([
+                        Forms\Components\Repeater::make('empleados')
+                            ->label('Empleados para generar asistencias')
+                            ->schema([
+                                Forms\Components\Select::make('employee_id')
+                                    ->label('Empleado')
+                                    ->searchable()
+                                    ->options(function () {
+                                        return Employee::query()
+                                            ->select('id', 'first_name', 'last_name', 'document_number')
+                                            ->get()
+                                            ->mapWithKeys(function ($employee) {
+                                                return [$employee->id => "{$employee->full_name} - {$employee->document_number}"];
+                                            })
+                                            ->toArray();
+                                    })
+                                    ->required()
+                                    ->distinct()
+                                    ->columnSpan(2),
+
+                                Forms\Components\Select::make('status')
+                                    ->label('Estado inicial')
+                                    ->options([
+                                        'attended' => 'Asistió',
+                                        'absent' => 'Faltó',
+                                        'justified' => 'Justificado'
+                                    ])
+                                    ->default('attended')
+                                    ->required(),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(1)
+                            ->addActionLabel('Agregar empleado')
+                            ->reorderable(false)
+                            ->collapsible()
+                            ->itemLabel(
+                                fn(array $state): ?string =>
+                                $state['employee_id'] ? Employee::find($state['employee_id'])?->full_name : 'Nuevo empleado'
+                            ),
+                    ])
+                    ->action(function (array $data, $record) {
+                        $createdCount = 0;
+                        $duplicatedCount = 0;
+
+                        foreach ($data['empleados'] as $empleadoData) {
+                            // Accede al ID del timesheet padre a través de ownerRecord
+                            $timesheetId = $this->ownerRecord->id;
+
+                            // Verificar si ya existe una asistencia para este empleado en este timesheet
+                            $existingAttendance = Attendance::where([
+                                'timesheet_id' => $timesheetId,
+                                'employee_id' => $empleadoData['employee_id']
+                            ])->first();
+
+                            if ($existingAttendance) {
+                                $duplicatedCount++;
+                                continue;
+                            }
+
+                            // Crear la asistencia
+                            $attendanceData = [
+                                'timesheet_id' => $timesheetId,
+                                'employee_id' => $empleadoData['employee_id'],
+                                'status' => $empleadoData['status'],
+                                'shift' => $this->ownerRecord->shift,
+                            ];
+
+                            // Si el estado es 'attended', asignar las fechas del timesheet
+                            if ($empleadoData['status'] === 'attended') {
+                                $attendanceData['check_in_date'] = $this->ownerRecord->check_in_date;
+                                $attendanceData['break_date'] = $this->ownerRecord->break_date;
+                                $attendanceData['end_break_date'] = $this->ownerRecord->end_break_date;
+                                $attendanceData['check_out_date'] = $this->ownerRecord->check_out_date;
+                            }
+
+                            Attendance::create($attendanceData);
+                            $createdCount++;
+                        }
+
+                        // Mostrar notificación con resultados
+                        $message = "Se crearon {$createdCount} asistencias correctamente.";
+                        if ($duplicatedCount > 0) {
+                            $message .= " {$duplicatedCount} empleados ya tenían asistencia registrada.";
+                        }
+
+                        Notification::make()
+                            ->title('Asistencias generadas')
+                            ->body($message)
+                            ->success()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Generar asistencias masivamente')
+                    ->modalDescription('Selecciona los empleados para crear asistencias en este tareo.')
+                    ->modalSubmitActionLabel('Generar asistencias'),
+
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -434,10 +458,12 @@ class AttendancesRelationManager extends RelationManager
                             'end_break_date' => null,
                             'check_out_date' => null,
                         ])),
+                    /*
                     Tables\Actions\BulkAction::make('marcarComoJustificado')
                         ->label('Marcar como Justificado')
                         ->icon('heroicon-o-exclamation-circle')
                         ->action(fn($records) => $records->each->update(['status' => 'justified'])),
+                    */
                     Tables\Actions\BulkAction::make('marcarInicioBreak')
                         ->label('Marcar inicio de break')
                         ->icon('heroicon-o-clock')

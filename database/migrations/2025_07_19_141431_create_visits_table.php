@@ -13,9 +13,6 @@ return new class extends Migration
     {
         Schema::create('visits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('quote_id')
-                ->constrained('quotes')
-                ->onDelete('cascade');
             $table->foreignId('employee_id')
                 ->constrained('employees')
                 ->onDelete('cascade');

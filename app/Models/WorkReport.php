@@ -20,6 +20,7 @@ class WorkReport extends Model
         'suggestions',
         'tools',
         'personnel',
+        'conclusions',
         'materials',
         'start_time',  // Hora de inicio del trabajo
         'end_time',    // Hora de finalizaci¨®n del trabajo

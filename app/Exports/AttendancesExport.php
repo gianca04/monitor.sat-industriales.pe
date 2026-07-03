@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Attendance;
 use App\Models\Timesheet;
+use App\Services\HoursCalculator;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -55,40 +56,11 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
 
     public function map($attendance): array
     {
-        $horasTrabajadas = 'NO CALCULADO';
-        $horasExtra = '0h 0m';
-
-        // Verificar que existan los datos básicos
-        if ($attendance->check_in_date && $attendance->check_out_date) {
-            $checkIn = Carbon::parse($attendance->check_in_date);
-            $checkOut = Carbon::parse($attendance->check_out_date);
-
-            // Calcular tiempo total en minutos
-            $totalMinutes = $checkIn->diffInMinutes($checkOut);
-
-            // Calcular tiempo de break en minutos del empleado
-            $breakTime = 0;
-            if ($attendance->break_date && $attendance->end_break_date) {
-                $breakStart = Carbon::parse($attendance->break_date);
-                $breakEnd = Carbon::parse($attendance->end_break_date);
-                $breakTime = $breakStart->diffInMinutes($breakEnd);
-            }
-
-            // Tiempo trabajado = tiempo total - tiempo de break
-            $workedMinutes = max(0, $totalMinutes - $breakTime);
-            
-            // Convertir a horas y minutos trabajadas
-            if ($workedMinutes > 0) {
-                $hours = intval($workedMinutes / 60);
-                $minutes = $workedMinutes % 60;
-                $horasTrabajadas = "{$hours}h {$minutes}m";
-            } else {
-                $horasTrabajadas = "0h 0m";
-            }
-
-            // Calcular horas extra basado en el horario del timesheet
-            $horasExtra = $this->calculateExtraHours($attendance, $workedMinutes);
-        }
+        // Usar HoursCalculator para obtener todas las horas calculadas
+        $hoursSummary = HoursCalculator::getHoursSummary($attendance);
+        
+        $horasTrabajadas = $hoursSummary['worked_hours']['formatted'] ?? 'NO CALCULADO';
+        $horasExtra = $hoursSummary['extra_hours']['formatted'] ?? '0h 0m';
 
         return [
             $attendance->employee->document_number ?? '',
@@ -164,11 +136,17 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
             $checkOutTime = Carbon::parse($this->timesheet->check_out_date)->format('H:i');
             $horarioEstandar = "{$checkInTime} - {$checkOutTime}";
             
-            // Debug: Agregar información de break del timesheet
-            if ($this->timesheet->break_date && $this->timesheet->end_break_date) {
-                $breakStart = Carbon::parse($this->timesheet->break_date)->format('H:i');
-                $breakEnd = Carbon::parse($this->timesheet->end_break_date)->format('H:i');
-                $horarioEstandar .= " (Break: {$breakStart}-{$breakEnd})";
+            // Información de break del timesheet usando HoursCalculator
+            $breakMinutes = HoursCalculator::calculateTimesheetBreakTime($this->timesheet);
+            if ($breakMinutes > 0) {
+                $breakFormatted = HoursCalculator::formatMinutesToHours($breakMinutes);
+                if ($this->timesheet->break_date && $this->timesheet->end_break_date) {
+                    $breakStart = Carbon::parse($this->timesheet->break_date)->format('H:i');
+                    $breakEnd = Carbon::parse($this->timesheet->end_break_date)->format('H:i');
+                    $horarioEstandar .= " (Break: {$breakStart}-{$breakEnd})";
+                } else {
+                    $horarioEstandar .= " (Break estándar: {$breakFormatted})";
+                }
             }
         }
         $sheet->setCellValue('F2', 'Horario Estándar: ' . ($horarioEstandar ?: 'No definido'));
@@ -244,65 +222,6 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
     public function title(): string
     {
         return 'Asistencias ' . $this->timesheet->check_in_date->format('Y-m-d');
-    }
-
-    /**
-     * Calcula las horas extra trabajadas por un empleado
-     * comparando con el horario establecido en el timesheet
-     */
-    private function calculateExtraHours($attendance, $totalWorkedMinutes)
-    {
-        // Validaciones básicas
-        if (!$attendance->check_in_date || !$attendance->check_out_date || !$this->timesheet) {
-            return '0h 0m';
-        }
-
-        if ($totalWorkedMinutes <= 0) {
-            return '0h 0m';
-        }
-
-        // Obtener horarios del timesheet (horario estándar)
-        $timesheetCheckIn = $this->timesheet->check_in_date ? Carbon::parse($this->timesheet->check_in_date) : null;
-        $timesheetCheckOut = $this->timesheet->check_out_date ? Carbon::parse($this->timesheet->check_out_date) : null;
-
-        if (!$timesheetCheckIn || !$timesheetCheckOut) {
-            return '0h 0m';
-        }
-
-        // Calcular tiempo total del horario estándar
-        $standardTotalMinutes = $timesheetCheckIn->diffInMinutes($timesheetCheckOut);
-
-        // Calcular tiempo de break del timesheet estándar
-        $timesheetBreakTime = 0;
-        if ($this->timesheet->break_date && $this->timesheet->end_break_date) {
-            $timesheetBreakStart = Carbon::parse($this->timesheet->break_date);
-            $timesheetBreakEnd = Carbon::parse($this->timesheet->end_break_date);
-            $timesheetBreakTime = $timesheetBreakStart->diffInMinutes($timesheetBreakEnd);
-        } else {
-            // Si el timesheet no tiene break configurado, pero los empleados sí,
-            // asumimos un break estándar de 1 hora (60 minutos)
-            // Esto es común en muchas empresas
-            $timesheetBreakTime = 60;
-        }
-
-        // Minutos de trabajo estándar según el timesheet (total - break)
-        $standardWorkMinutes = max(0, $standardTotalMinutes - $timesheetBreakTime);
-
-        // Si no hay horario estándar definido, no hay horas extra
-        if ($standardWorkMinutes <= 0) {
-            return '0h 0m';
-        }
-
-        // Calcular horas extra: diferencia entre tiempo trabajado y tiempo estándar
-        $extraMinutes = max(0, $totalWorkedMinutes - $standardWorkMinutes);
-
-        if ($extraMinutes > 0) {
-            $extraHours = intval($extraMinutes / 60);
-            $extraMinutesRemainder = $extraMinutes % 60;
-            return "{$extraHours}h {$extraMinutesRemainder}m";
-        }
-
-        return '0h 0m';
     }
 
     /**

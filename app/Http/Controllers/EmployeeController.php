@@ -26,10 +26,10 @@ class EmployeeController extends Controller
             // Buscar por nombre o número de documento
             if ($request->has('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('first_name', 'like', "%{$search}%")
-                      ->orWhere('last_name', 'like', "%{$search}%")
-                      ->orWhere('document_number', 'like', "%{$search}%");
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('document_number', 'like', "%{$search}%");
                 });
             }
 
@@ -46,6 +46,75 @@ class EmployeeController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Búsqueda rápida de empleados
+     */
+    public function quickSearch(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'query' => 'required|string|min:1|max:100'
+            ]);
+
+            $queryStr = $request->query('query');
+
+            $employees = Employee::with('position')
+                ->where(function ($q) use ($queryStr) {
+                    $q->where('document_number', 'like', "%{$queryStr}%")
+                        ->orWhere('first_name', 'like', "%{$queryStr}%")
+                        ->orWhere('last_name', 'like', "%{$queryStr}%")
+                        ->orWhereHas('position', function ($pq) use ($queryStr) {
+                            $pq->where('name', 'like', "%{$queryStr}%");
+                        });
+                })
+                ->orderBy('first_name')
+                ->orderBy('last_name')
+                ->get()
+                ->map(function ($employee) {
+                    return [
+                        'id' => $employee->id,
+                        'full_name' => $employee->first_name . ' ' . $employee->last_name,
+                        'document_number' => $employee->document_number,
+                        'position' => $employee->position ? $employee->position->name : null,
+                    ];
+                });
+
+            return response()->json([
+                "success" => true,
+                "message" => "Búsqueda rápida completada",
+                "data" => $employees,
+                "meta" => [
+                    "apiVersion" => "1.0",
+                    "timestamp" => now()->toIso8601String()
+                ]
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                "success" => false,
+                "message" => "Datos de validación incorrectos",
+                "data" => null,
+                "errors" => $e->errors(),
+                "meta" => [
+                    "apiVersion" => "1.0",
+                    "timestamp" => now()->toIso8601String()
+                ]
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                "success" => false,
+                "message" => "Error en la búsqueda rápida",
+                "data" => null,
+                "errors" => $e->getMessage(),
+                "meta" => [
+                    "apiVersion" => "1.0",
+                    "timestamp" => now()->toIso8601String()
+                ]
+            ], 500);
+        }
+    }
+
+
 
     /**
      * Obtener un empleado específico
@@ -84,15 +153,15 @@ class EmployeeController extends Controller
             $allEmployees = Employee::orderBy('first_name')->orderBy('last_name')->get();
 
             // Obtener empleados que ya tienen asistencia registrada en este proyecto y fecha
-            $employeesWithAttendance = Employee::whereHas('attendances', function($query) use ($request) {
-                $query->whereHas('timesheet', function($q) use ($request) {
+            $employeesWithAttendance = Employee::whereHas('attendances', function ($query) use ($request) {
+                $query->whereHas('timesheet', function ($q) use ($request) {
                     $q->where('project_id', $request->project_id)
-                      ->whereDate('check_in_date', $request->date);
+                        ->whereDate('check_in_date', $request->date);
                 });
             })->pluck('id');
 
             // Marcar empleados con asistencia ya registrada
-            $employees = $allEmployees->map(function($employee) use ($employeesWithAttendance) {
+            $employees = $allEmployees->map(function ($employee) use ($employeesWithAttendance) {
                 $employee->has_attendance = $employeesWithAttendance->contains($employee->id);
                 return $employee;
             });
@@ -137,10 +206,10 @@ class EmployeeController extends Controller
             // Filtro por nombre completo
             if ($request->filled('name')) {
                 $name = $request->name;
-                $query->where(function($q) use ($name) {
+                $query->where(function ($q) use ($name) {
                     $q->where('first_name', 'like', "%{$name}%")
-                      ->orWhere('last_name', 'like', "%{$name}%")
-                      ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$name}%"]);
+                        ->orWhere('last_name', 'like', "%{$name}%")
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$name}%"]);
                 });
             }
 
@@ -193,14 +262,14 @@ class EmployeeController extends Controller
 
             // Filtro por proyecto específico
             if ($request->filled('project_id')) {
-                $query->whereHas('attendances.timesheet', function($q) use ($request) {
+                $query->whereHas('attendances.timesheet', function ($q) use ($request) {
                     $q->where('project_id', $request->project_id);
                 });
             }
 
             // Filtro por período de asistencias
             if ($request->filled('attendance_period_from') || $request->filled('attendance_period_to')) {
-                $query->whereHas('attendances.timesheet', function($q) use ($request) {
+                $query->whereHas('attendances.timesheet', function ($q) use ($request) {
                     if ($request->filled('attendance_period_from')) {
                         $q->where('check_in_date', '>=', Carbon::parse($request->attendance_period_from)->startOfDay());
                     }
@@ -213,7 +282,7 @@ class EmployeeController extends Controller
             $employees = $query->orderBy('first_name')->orderBy('last_name')->get();
 
             // Agregar estadísticas calculadas
-            $employees = $employees->map(function($employee) use ($request) {
+            $employees = $employees->map(function ($employee) use ($request) {
                 // Agregar información adicional del empleado
                 $employee->full_name = trim($employee->first_name . ' ' . $employee->last_name);
                 $employee->age = null; // Por ahora, dejaremos esto sin calcular
@@ -222,7 +291,7 @@ class EmployeeController extends Controller
                 $attendancesQuery = $employee->attendances();
 
                 if ($request->filled('attendance_period_from') || $request->filled('attendance_period_to')) {
-                    $attendancesQuery->whereHas('timesheet', function($q) use ($request) {
+                    $attendancesQuery->whereHas('timesheet', function ($q) use ($request) {
                         if ($request->filled('attendance_period_from')) {
                             $q->where('check_in_date', '>=', Carbon::parse($request->attendance_period_from)->startOfDay());
                         }
@@ -252,12 +321,21 @@ class EmployeeController extends Controller
                 'message' => 'Búsqueda de empleados completada',
                 'total_found' => $employees->count(),
                 'filters_applied' => $request->only([
-                    'name', 'document_type', 'document_number', 'sex', 'age_min', 'age_max',
-                    'contract_date_from', 'contract_date_to', 'address', 'has_attendances',
-                    'project_id', 'attendance_period_from', 'attendance_period_to'
+                    'name',
+                    'document_type',
+                    'document_number',
+                    'sex',
+                    'age_min',
+                    'age_max',
+                    'contract_date_from',
+                    'contract_date_to',
+                    'address',
+                    'has_attendances',
+                    'project_id',
+                    'attendance_period_from',
+                    'attendance_period_to'
                 ])
             ]);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -296,7 +374,6 @@ class EmployeeController extends Controller
                 'data' => $employee,
                 'message' => 'Empleado creado correctamente'
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -336,7 +413,6 @@ class EmployeeController extends Controller
                 'data' => $employee,
                 'message' => 'Empleado actualizado correctamente'
             ]);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -363,7 +439,6 @@ class EmployeeController extends Controller
                 'success' => true,
                 'message' => 'Empleado eliminado correctamente'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

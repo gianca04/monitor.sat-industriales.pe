@@ -8,6 +8,7 @@ use App\Filament\Resources\ProjectResource\RelationManagers\EmployeesRelationMan
 use App\Filament\Resources\ProjectResource\RelationManagers\TimesheetsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\WorkReportsRelationManager;
 use App\Forms\Components\ClientMainInfo;
+use App\Exports\ProjectAttendancesReportExport;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Client;
 use App\Models\Project;
@@ -27,17 +28,14 @@ use Filament\Forms\Components\Split;
 use FontLib\Table\Type\name;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProjectResource extends Resource
 {
-
     use Translatable;
-
     protected static ?string $pluralModelLabel = 'Proyectos';
     protected static ?string $modelLabel = 'Proyecto';
-
     protected static ?string $model = Project::class;
-
     protected static ?string $navigationGroup = 'Control de operaciones';
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
 
@@ -56,8 +54,7 @@ class ProjectResource extends Resource
     public static function getGlobalSearchEloquentQuery(): Builder
     {
         // Optimiza la consulta, asegurando que solo cargue lo necesario
-        return parent::getGlobalSearchEloquentQuery()
-            ; // Selecciona solo las columnas necesarias del modelo Employee
+        return parent::getGlobalSearchEloquentQuery(); // Selecciona solo las columnas necesarias del modelo Employee
     }
 
     public static function form(Form $form): Form
@@ -111,14 +108,14 @@ class ProjectResource extends Resource
                         Forms\Components\DatePicker::make('start_date')
                             ->label('Fecha de inicio')
                             ->default(now())
-                            ->required()
-                            ->maxDate(fn(callable $get) => $get('end_date')), // Valida contra end_date
+                            ->required(),
+                        //->maxDate(fn(callable $get) => $get('end_date')), // Valida contra end_date
 
                         Forms\Components\DatePicker::make('end_date')
                             ->label('Fecha de finalización')
                             //->default(now()->addDays(30))
-                            ->required()
-                            ->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
+                            ->required(),
+                        //->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
                         // ...existing code...
 
                         Forms\Components\Placeholder::make('status_text')
@@ -187,8 +184,10 @@ class ProjectResource extends Resource
 
                             ->createOptionForm([
                                 ClientMainInfo::make()
+                                
 
                             ])
+                            
                             ->createOptionUsing(function (array $data): int {
                                 $client = Client::create($data);
                                 return $client->id;
@@ -197,7 +196,7 @@ class ProjectResource extends Resource
                                 return $action
                                     ->modalHeading('Crear nuevo cliente')
                                     ->modalButton('Crear cliente')
-                                    ->modalWidth('3xl');
+                                    ->modalWidth('6xl');
                             })
 
                             ->afterStateUpdated(function (callable $get, callable $set) {
@@ -334,7 +333,7 @@ class ProjectResource extends Resource
                     ->columnSpanFull(),
 
                 // Sección: Coordenadas geográficas
-                Forms\Components\Section::make('Coordenadas geográficas')
+                /*Forms\Components\Section::make('Coordenadas geográficas')
                     ->columns(1)
                     ->collapsed()
                     ->description('Ubicación geográfica del proyecto')
@@ -349,6 +348,7 @@ class ProjectResource extends Resource
                                 'location' => ''
                             ]),
                     ]),
+                */
             ]);
     }
 
@@ -473,6 +473,88 @@ class ProjectResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('reporte')
+                    ->label('Reporte')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->form([
+                        Forms\Components\Section::make('Configuración del Reporte')
+                            ->description('Selecciona el rango de fechas para generar el reporte de asistencias')
+                            ->icon('heroicon-o-calendar-days')
+                            ->schema([
+                                Forms\Components\Grid::make(2)
+                                    ->schema([
+                                        Forms\Components\DatePicker::make('start_date')
+                                            ->label('Fecha de inicio')
+                                            ->required()
+                                            ->default(now()->startOfMonth())
+                                            ->maxDate(fn(callable $get) => $get('end_date'))
+                                            ->prefixIcon('heroicon-o-calendar'),
+
+                                        Forms\Components\DatePicker::make('end_date')
+                                            ->label('Fecha de fin')
+                                            ->required()
+                                            ->default(now()->endOfMonth())
+                                            ->minDate(fn(callable $get) => $get('start_date'))
+                                            ->prefixIcon('heroicon-o-calendar'),
+                                    ]),
+
+                                Forms\Components\Placeholder::make('info')
+                                    ->label('Información')
+                                    ->content('Este reporte incluirá todas las asistencias de todos los tareos del proyecto en el rango de fechas seleccionado, ordenadas por fecha y empleado.')
+                                    ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                            ]),
+                    ])
+                    ->action(function (array $data, $record) {
+                        try {
+                            // Validar que existan tareos en el rango de fechas
+                            $startDate = \Carbon\Carbon::parse($data['start_date'])->startOfDay();
+                            $endDate = \Carbon\Carbon::parse($data['end_date'])->endOfDay();
+
+                            $timesheets = $record->timesheets()
+                                ->whereBetween('check_in_date', [$startDate, $endDate])
+                                ->get();
+
+                            if ($timesheets->count() === 0) {
+                                // Mostrar información adicional para debug
+                                $allTimesheets = $record->timesheets()->get();
+                                $debugInfo = $allTimesheets->map(function ($ts) {
+                                    return 'ID:' . $ts->id . ' Fecha:' . \Carbon\Carbon::parse($ts->check_in_date)->format('Y-m-d');
+                                })->join(', ');
+
+                                Notification::make()
+                                    ->title('Sin datos en el rango seleccionado')
+                                    ->body("Rango: {$startDate->format('Y-m-d')} a {$endDate->format('Y-m-d')}. Tareos disponibles: {$debugInfo}")
+                                    ->warning()
+                                    ->duration(10000)
+                                    ->send();
+                                return;
+                            }
+
+                            // Generar el archivo Excel
+                            $filename = 'reporte_asistencias_' . str_replace(' ', '_', $record->name) . '_' .
+                                $startDate->format('Y-m-d') . '_a_' .
+                                $endDate->format('Y-m-d') . '.xlsx';
+
+                            return Excel::download(
+                                new ProjectAttendancesReportExport(
+                                    $record->id,
+                                    $data['start_date'],
+                                    $data['end_date']
+                                ),
+                                $filename
+                            );
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Error al generar reporte')
+                                ->body('Ocurrió un error: ' . $e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->modalHeading('Generar Reporte de Asistencias')
+                    ->modalSubmitActionLabel('Generar Reporte Excel')
+                    ->modalWidth('lg'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -486,9 +568,10 @@ class ProjectResource extends Resource
     {
         return [
             //
-            TimesheetsRelationManager::class,
+            
             WorkReportsRelationManager::class,
-            EmployeesRelationManager::class, // Relación con empleados (supervisores)
+            TimesheetsRelationManager::class,
+            //EmployeesRelationManager::class, // Relación con empleados (supervisores)
         ];
     }
 
