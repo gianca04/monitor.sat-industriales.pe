@@ -95,16 +95,6 @@ class StockResource extends Resource
                     ->required()
                     ->numeric()
                     ->default(0),
-                Forms\Components\TextInput::make('minimum_stock')
-                    ->label('Stock Mínimo')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\TextInput::make('maximum_stock')
-                    ->label('Stock Máximo')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
             ]);
     }
 
@@ -126,14 +116,6 @@ class StockResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('current_stock')
                     ->label('Stock Actual')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('minimum_stock')
-                    ->label('Stock Mínimo')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('maximum_stock')
-                    ->label('Stock Máximo')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')

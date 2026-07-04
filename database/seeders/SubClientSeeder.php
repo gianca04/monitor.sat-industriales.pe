@@ -689,7 +689,7 @@ class SubClientSeeder extends Seeder
             [
                 'id' => 63,
                 'client_id' => 62,
-                'name' => 'ALS - ALMACENES SUDAMERICANOS S.A.',
+                'name' => 'ALS - Almacen SUDAMERICANOS S.A.',
                 'description' => null,
                 'location' => null,
                 'latitude' => null,

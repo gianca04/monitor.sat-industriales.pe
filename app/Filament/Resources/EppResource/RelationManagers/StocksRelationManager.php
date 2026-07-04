@@ -54,6 +54,19 @@ class StocksRelationManager extends RelationManager
                                 ->maxLength(150)
                                 ->placeholder('Ej: Talla M, Caja x 100, Estándar')
                                 ->live(onBlur: true),
+                            Forms\Components\TextInput::make('minimum_stock')
+                                ->label('Stock Mínimo')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0)
+                                ->required(),
+                            Forms\Components\TextInput::make('maximum_stock')
+                                ->label('Stock Máximo')
+                                ->numeric()
+                                ->minValue(0)
+                                ->rules(['gte:minimum_stock'])
+                                ->default(0)
+                                ->required(),
                             Forms\Components\Toggle::make('active')
                                 ->label('Activo')
                                 ->default(true)
@@ -91,7 +104,7 @@ class StocksRelationManager extends RelationManager
                     ->required()
                     ->preload()
                     ->searchable()
-                    ->disabled(fn (Forms\Get $get): bool => ! $get('warehouse_id'))
+                    ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id'))
                     ->createOptionForm(function (Forms\Get $get) {
                         return [
                             Forms\Components\Select::make('warehouse_id')
@@ -125,20 +138,11 @@ class StocksRelationManager extends RelationManager
                     ->label('Stock Actual')
                     ->required()
                     ->numeric()
-                    ->default(0),
-                Forms\Components\TextInput::make('minimum_stock')
-                    ->label('Stock Mínimo')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\TextInput::make('maximum_stock')
-                    ->label('Stock Máximo')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
+                    ->default(0)
+                    ->disabled()
+                    ->dehydrated(false),
             ]);
     }
-
     public function table(Table $table): Table
     {
         return $table
@@ -158,14 +162,6 @@ class StocksRelationManager extends RelationManager
                     ->searchable(),
                 Tables\Columns\TextColumn::make('current_stock')
                     ->label('Stock Actual')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('minimum_stock')
-                    ->label('Stock Mínimo')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('maximum_stock')
-                    ->label('Stock Máximo')
                     ->numeric()
                     ->sortable(),
             ])

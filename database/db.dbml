@@ -32,13 +32,8 @@ Table epps {
   description text
   brand_id integer [not null]
   model varchar(100)
+  photos json
   active boolean [default: true]
-}
-
-Table epp_photos {
-  id integer [pk, increment]
-  epp_id integer [not null]
-  photo_path varchar(255) [not null]
 }
 
 Table certification_epp {
@@ -98,9 +93,34 @@ Table stocks {
 }
 
 
+Table deliveries {
+  id integer [pk, increment]
+  employee_id integer [note: 'Supervisor']
+  project_id integer
+  warehouse_id integer
+  delivered_by integer
+  delivery_date datetime
+  deadline_date datetime
+  observations text
+  status varchar(50) [default: 'pendiente']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table delivery_details {
+  id integer [pk, increment]
+  delivery_id integer
+  epp_variant_id integer
+  quantity integer
+  employee_id integer [note: 'Para qué personal va']
+  project_id integer
+  sub_client_id integer
+  created_at timestamp
+  updated_at timestamp
+}
+
 Ref: subcategories.category_id > categories.id
 Ref: epps.brand_id > brands.id
-Ref: epp_photos.epp_id > epps.id
 Ref: certification_epp.epp_id > epps.id
 Ref: certification_epp.certification_id > certifications.id
 Ref: epp_subcategory.epp_id > epps.id
@@ -110,3 +130,13 @@ Ref: warehouse_locations.warehouse_id > warehouses.id
 Ref: stocks.warehouse_id > warehouses.id
 Ref: stocks.warehouse_location_id > warehouse_locations.id
 Ref: stocks.epp_variant_id > epp_variants.id
+
+Ref: deliveries.employee_id > employees.id
+Ref: deliveries.project_id > projects.id
+Ref: deliveries.warehouse_id > warehouses.id
+Ref: deliveries.delivered_by > employees.id
+Ref: delivery_details.delivery_id > deliveries.id
+Ref: delivery_details.epp_variant_id > epp_variants.id
+Ref: delivery_details.employee_id > employees.id
+Ref: delivery_details.project_id > projects.id
+Ref: delivery_details.sub_client_id > sub_clients.id

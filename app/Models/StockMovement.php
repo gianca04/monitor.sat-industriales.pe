@@ -4,9 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Stock extends Model
+class StockMovement extends Model
 {
-    protected $fillable = ['warehouse_id', 'warehouse_location_id', 'epp_variant_id', 'current_stock'];
+    protected $fillable = [
+        'warehouse_id',
+        'warehouse_location_id',
+        'epp_variant_id',
+        'delivery_detail_id',
+        'quantity',
+        'type',
+        'description',
+    ];
 
     public function warehouse()
     {
@@ -21,5 +29,10 @@ class Stock extends Model
     public function eppVariant()
     {
         return $this->belongsTo(EppVariant::class);
+    }
+
+    public function deliveryDetail()
+    {
+        return $this->belongsTo(DeliveryDetail::class);
     }
 }

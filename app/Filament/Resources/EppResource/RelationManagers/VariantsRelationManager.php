@@ -1,71 +1,63 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\EppResource\RelationManagers;
 
-use App\Filament\Resources\EppVariantResource\Pages;
-use App\Filament\Resources\EppVariantResource\RelationManagers;
-use App\Models\EppVariant;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class EppVariantResource extends Resource
+class VariantsRelationManager extends RelationManager
 {
-    protected static ?string $model = EppVariant::class;
+    protected static string $relationship = 'variants';
 
-    protected static ?string $modelLabel = 'Variante de EPP';
-    protected static ?string $pluralModelLabel = 'Variantes de EPP';
-    protected static ?string $navigationGroup = 'Gestión de inventario';
-    protected static ?string $navigationIcon = 'heroicon-o-variable';
-    protected static bool $shouldRegisterNavigation = false;
+    protected static ?string $modelLabel = 'Variante';
+    protected static ?string $pluralModelLabel = 'Variantes';
+    protected static ?string $title = 'Variantes de EPP';
 
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('epp_id')
-                    ->label('EPP')
-                    ->relationship('epp', 'name')
-                    ->required()
-                    ->preload()
-                    ->searchable(),
                 Forms\Components\TextInput::make('sku')
                     ->label('SKU')
                     ->required()
                     ->maxLength(100)
-                    ->unique(table: 'epp_variants', column: 'sku')
+                    ->unique(table: 'epp_variants', column: 'sku', ignoreRecord: true)
                     ->suffixAction(
                         Forms\Components\Actions\Action::make('generateSku')
                             ->icon('heroicon-m-sparkles')
                             ->action(function (Forms\Set $set, Forms\Get $get) {
                                 $tempVariant = new \App\Models\EppVariant([
-                                    'epp_id' => $get('epp_id'),
+                                    'epp_id' => $this->getOwnerRecord()->id,
                                     'variant_name' => $get('variant_name')
                                 ]);
                                 $set('sku', $tempVariant->generateSku());
                             })
                     ),
                 Forms\Components\TextInput::make('variant_name')
-                    ->label('Nombre de Variante / Descripción')
+                    ->label('Nombre / Descripción')
                     ->maxLength(150)
                     ->placeholder('Ej: Talla M, Caja x 100, Estándar')
                     ->live(onBlur: true),
                 Forms\Components\TextInput::make('minimum_stock')
                     ->label('Stock Mínimo')
                     ->numeric()
-                    ->minValue(1)
+                    ->minValue(0)
                     ->default(0)
                     ->required(),
                 Forms\Components\TextInput::make('maximum_stock')
                     ->label('Stock Máximo')
                     ->numeric()
-                    ->minValue(1)
+                    ->minValue(0)
                     ->rules(['gte:minimum_stock'])
-                    ->default(1)
+                    ->default(0)
                     ->required(),
                 Forms\Components\Toggle::make('active')
                     ->label('Activo')
@@ -74,28 +66,23 @@ class EppVariantResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('variant_name')
             ->columns([
-                Tables\Columns\TextColumn::make('epp.name')
-                    ->label('EPP')
-                    ->sortable()
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('sku')
                     ->label('SKU')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('variant_name')
                     ->label('Nombre / Descripción')
-                    ->searchable(),
-                Tables\Columns\ToggleColumn::make('active')
-                    ->label('Activo')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('current_stock')
                     ->label('Stock')
                     ->badge()
-                    ->color(
-                        fn(\App\Models\EppVariant $record, \App\Services\InventoryService $inventoryService) =>
+                    ->color(fn (\App\Models\EppVariant $record, \App\Services\InventoryService $inventoryService) => 
                         $inventoryService->isBelowMinimum($record) ? 'danger' : 'success'
                     ),
                 Tables\Columns\TextColumn::make('minimum_stock')
@@ -104,43 +91,27 @@ class EppVariantResource extends Resource
                 Tables\Columns\TextColumn::make('maximum_stock')
                     ->label('Máximo')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Fecha de Creación')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Fecha de Actualización')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\ToggleColumn::make('active')
+                    ->label('Activo')
+                    ->sortable(),
             ])
             ->filters([
                 //
             ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make(),
+            ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListEppVariants::route('/'),
-            'create' => Pages\CreateEppVariant::route('/create'),
-            'edit' => Pages\EditEppVariant::route('/{record}/edit'),
-        ];
     }
 }

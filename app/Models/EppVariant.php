@@ -6,7 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class EppVariant extends Model
 {
-    protected $fillable = ['epp_id', 'sku', 'variant_name', 'active'];
+    protected $fillable = ['epp_id', 'sku', 'variant_name', 'active', 'minimum_stock', 'maximum_stock'];
+
+    public function getCurrentStockAttribute(): int
+    {
+        return (int) $this->stocks()->sum('current_stock');
+    }
+
+    public function getIsBelowMinimumAttribute(): bool
+    {
+        return $this->current_stock <= $this->minimum_stock;
+    }
 
     public function generateSku(): string
     {

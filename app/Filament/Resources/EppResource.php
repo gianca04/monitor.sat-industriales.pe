@@ -5,10 +5,13 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\EppResource\Pages;
 use App\Filament\Resources\EppResource\RelationManagers;
 use App\Models\Epp;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -139,6 +142,24 @@ class EppResource extends Resource
                 Tables\Columns\ToggleColumn::make('active')
                     ->label('Activo')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('current_stock')
+                    ->label('Stock')
+                    ->badge()
+                    ->color(
+                        fn(Epp $record, \App\Services\InventoryService $inventoryService) =>
+                        $inventoryService->isBelowMinimum($record) ? 'danger' : 'success'
+                    ),
+                Tables\Columns\IconColumn::make('requires_replenishment')
+                    ->label('Abastecido')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-exclamation-triangle')
+                    ->falseIcon('heroicon-o-check-circle')
+                    ->trueColor('danger')
+                    ->falseColor('success')
+                    ->getStateUsing(
+                        fn(Epp $record, \App\Services\InventoryService $inventoryService) =>
+                        $inventoryService->requiresReplenishment($record)
+                    ),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha de Creación')
                     ->dateTime()
@@ -154,7 +175,11 @@ class EppResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -166,7 +191,9 @@ class EppResource extends Resource
     public static function getRelations(): array
     {
         return [
+            RelationManagers\VariantsRelationManager::class,
             RelationManagers\StocksRelationManager::class,
+            RelationManagers\StockMovementsRelationManager::class,
         ];
     }
 
