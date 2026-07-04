@@ -20,57 +20,70 @@ class DispatchDeliveryDetailAction
     }
 
     /**
-     * Dispatch a specific quantity of EPP variants for a given DeliveryDetail.
+     * Dispatch EPP variants for a given DeliveryDetail from multiple locations.
      *
      * @param DeliveryDetail $detail
-     * @param WarehouseLocation $location
-     * @param int $quantity
+     * @param array $dispatches Array of arrays: [['warehouse_location_id' => X, 'quantity' => Y]]
      * @throws InvalidArgumentException
      */
-    public function execute(DeliveryDetail $detail, WarehouseLocation $location, int $quantity): void
+    public function execute(DeliveryDetail $detail, array $dispatches): void
     {
-        if ($quantity <= 0) {
-            throw new InvalidArgumentException("La cantidad a despachar debe ser mayor a cero.");
+        if (empty($dispatches)) {
+            throw new InvalidArgumentException("Debe especificar al menos una ubicación para despachar.");
         }
 
         // 1. Calculate remaining quantity to fulfill
         $delivered = $detail->delivered_quantity;
         $remaining = $detail->quantity - $delivered;
+        $totalQuantityToDispatch = collect($dispatches)->sum('quantity');
 
-        if ($quantity > $remaining) {
+        if ($totalQuantityToDispatch <= 0) {
+            throw new InvalidArgumentException("La cantidad total a despachar debe ser mayor a cero.");
+        }
+
+        if ($totalQuantityToDispatch > $remaining) {
             throw new InvalidArgumentException("No se puede despachar más de la cantidad pendiente (Pendiente: {$remaining}).");
         }
 
-        // 2. Validate stock availability
-        $available = $this->inventoryService->checkStockAvailability($detail->epp_variant_id, $location->id, $quantity);
+        // 2. Validate stock availability for each dispatch entry
+        foreach ($dispatches as $dispatch) {
+            $locationId = $dispatch['warehouse_location_id'] ?? null;
+            $qty = (int) ($dispatch['quantity'] ?? 0);
 
-        if (!$available) {
-            $stock = $this->inventoryService->getStock($detail->epp_variant_id, $location->id);
-            $currentStock = $stock ? $stock->current_stock : 0;
-            throw new InvalidArgumentException("Stock insuficiente en la ubicación seleccionada. Disponible: {$currentStock}, Requerido: {$quantity}.");
+            if (!$locationId || $qty <= 0) {
+                throw new InvalidArgumentException("Cada distribución debe tener una ubicación válida y cantidad mayor a cero.");
+            }
+
+            $available = $this->inventoryService->checkStockAvailability($detail->epp_variant_id, $locationId, $qty);
+            if (!$available) {
+                $location = WarehouseLocation::findOrFail($locationId);
+                $stock = $this->inventoryService->getStock($detail->epp_variant_id, $locationId);
+                $currentStock = $stock ? $stock->current_stock : 0;
+                throw new InvalidArgumentException("Stock insuficiente en la ubicación {$location->code}. Disponible: {$currentStock}, Requerido: {$qty}.");
+            }
         }
 
         // 3. Execute transactional update
-        DB::transaction(function () use ($detail, $location, $quantity, $delivered, $remaining) {
-            // Find Stock record
-            $stock = $this->inventoryService->getStock($detail->epp_variant_id, $location->id);
-            
-            // Subtract from current stock
-            $stock->decrement('current_stock', $quantity);
+        DB::transaction(function () use ($detail, $dispatches, $delivered, $totalQuantityToDispatch) {
+            $employeeName = $detail->employee ? "{$detail->employee->first_name} {$detail->employee->last_name}" : ($detail->delivery->employee ? "{$detail->delivery->employee->first_name} {$detail->delivery->employee->last_name}" : 'N/A');
+            $subClientName = $detail->subClient?->name ?: ($detail->delivery->subClient?->name ?? 'N/A');
 
-            // Record stock movement
-            StockMovement::create([
-                'warehouse_id' => $location->warehouse_id,
-                'warehouse_location_id' => $location->id,
-                'epp_variant_id' => $detail->epp_variant_id,
-                'delivery_detail_id' => $detail->id,
-                'quantity' => $quantity,
-                'type' => 'dispatch',
-                'description' => "Despacho parcial de {$quantity} unidades para la entrega #{$detail->delivery_id}",
-            ]);
+            foreach ($dispatches as $dispatch) {
+                $locationId = $dispatch['warehouse_location_id'];
+                $qty = (int) $dispatch['quantity'];
+
+                $this->inventoryService->registerMovement(
+                    $detail->epp_variant_id,
+                    $locationId,
+                    $qty,
+                    'dispatch',
+                    "Despacho de {$qty} unds. para Pedido #{$detail->delivery_id}. Colaborador: {$employeeName}. Tienda: {$subClientName}.",
+                    $detail->id
+                );
+            }
 
             // Update DeliveryDetail status
-            $newDeliveredTotal = $delivered + $quantity;
+            $newDeliveredTotal = $delivered + $totalQuantityToDispatch;
             if ($newDeliveredTotal >= $detail->quantity) {
                 $detail->status = DeliveryStatus::DELIVERED;
             } else {

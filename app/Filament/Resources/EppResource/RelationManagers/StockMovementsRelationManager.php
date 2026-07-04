@@ -74,6 +74,10 @@ class StockMovementsRelationManager extends RelationManager
                     ->label('Cantidad')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('user.employee')
+                    ->label('Registrado por')
+                    ->formatStateUsing(fn ($record) => $record->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record->user?->name ?? 'Sistema'))
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('description')
                     ->label('Descripción')
                     ->limit(50)
@@ -97,7 +101,18 @@ class StockMovementsRelationManager extends RelationManager
                             })
                             ->required()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
+                                $variantId = $get('epp_variant_id');
+                                $locationId = $get('warehouse_location_id');
+                                if ($variantId && $locationId) {
+                                    $stock = app(\App\Services\InventoryService::class)->getStock($variantId, $locationId);
+                                    $set('current_stock', $stock ? $stock->current_stock : 0);
+                                } else {
+                                    $set('current_stock', 0);
+                                }
+                            }),
                         Forms\Components\Select::make('warehouse_id')
                             ->label('Almacén')
                             ->options(\App\Models\Warehouse::all()->pluck('name', 'id'))
@@ -117,7 +132,24 @@ class StockMovementsRelationManager extends RelationManager
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id')),
+                            ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id'))
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
+                                $variantId = $get('epp_variant_id');
+                                $locationId = $get('warehouse_location_id');
+                                if ($variantId && $locationId) {
+                                    $stock = app(\App\Services\InventoryService::class)->getStock($variantId, $locationId);
+                                    $set('current_stock', $stock ? $stock->current_stock : 0);
+                                } else {
+                                    $set('current_stock', 0);
+                                }
+                            }),
+                        Forms\Components\TextInput::make('current_stock')
+                            ->label('Stock Actual en Ubicación')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->default(0),
                         Forms\Components\TextInput::make('quantity')
                             ->label('Cantidad')
                             ->required()
@@ -165,7 +197,17 @@ class StockMovementsRelationManager extends RelationManager
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->live(),
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
+                                $variantId = $get('epp_variant_id');
+                                $locationId = $get('warehouse_location_id');
+                                if ($variantId && $locationId) {
+                                    $stock = app(\App\Services\InventoryService::class)->getStock($variantId, $locationId);
+                                    $set('current_stock', $stock ? $stock->current_stock : 0);
+                                } else {
+                                    $set('current_stock', 0);
+                                }
+                            }),
                         Forms\Components\Select::make('warehouse_id')
                             ->label('Almacén (Origen)')
                             ->options(function (Forms\Get $get) {
@@ -196,7 +238,24 @@ class StockMovementsRelationManager extends RelationManager
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id')),
+                            ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id'))
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
+                                $variantId = $get('epp_variant_id');
+                                $locationId = $get('warehouse_location_id');
+                                if ($variantId && $locationId) {
+                                    $stock = app(\App\Services\InventoryService::class)->getStock($variantId, $locationId);
+                                    $set('current_stock', $stock ? $stock->current_stock : 0);
+                                } else {
+                                    $set('current_stock', 0);
+                                }
+                            }),
+                        Forms\Components\TextInput::make('current_stock')
+                            ->label('Stock Actual en Ubicación')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->default(0),
                         Forms\Components\TextInput::make('quantity')
                             ->label('Cantidad')
                             ->required()
@@ -243,7 +302,26 @@ class StockMovementsRelationManager extends RelationManager
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->live(),
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
+                                $variantId = $get('epp_variant_id');
+                                $sourceLocId = $get('source_location_id');
+                                $targetLocId = $get('target_location_id');
+                                
+                                if ($variantId && $sourceLocId) {
+                                    $stock = app(\App\Services\InventoryService::class)->getStock($variantId, $sourceLocId);
+                                    $set('source_stock', $stock ? $stock->current_stock : 0);
+                                } else {
+                                    $set('source_stock', 0);
+                                }
+
+                                if ($variantId && $targetLocId) {
+                                    $stock = app(\App\Services\InventoryService::class)->getStock($variantId, $targetLocId);
+                                    $set('target_stock', $stock ? $stock->current_stock : 0);
+                                } else {
+                                    $set('target_stock', 0);
+                                }
+                            }),
                         Forms\Components\Select::make('source_warehouse_id')
                             ->label('Almacén (Origen)')
                             ->options(function (Forms\Get $get) {
@@ -274,7 +352,24 @@ class StockMovementsRelationManager extends RelationManager
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->disabled(fn(Forms\Get $get): bool => !$get('source_warehouse_id')),
+                            ->disabled(fn(Forms\Get $get): bool => !$get('source_warehouse_id'))
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
+                                $variantId = $get('epp_variant_id');
+                                $locationId = $get('source_location_id');
+                                if ($variantId && $locationId) {
+                                    $stock = app(\App\Services\InventoryService::class)->getStock($variantId, $locationId);
+                                    $set('source_stock', $stock ? $stock->current_stock : 0);
+                                } else {
+                                    $set('source_stock', 0);
+                                }
+                            }),
+                        Forms\Components\TextInput::make('source_stock')
+                            ->label('Stock Disponible en Origen')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->default(0),
                         Forms\Components\Select::make('target_warehouse_id')
                             ->label('Almacén (Destino)')
                             ->options(\App\Models\Warehouse::all()->pluck('name', 'id'))
@@ -295,7 +390,24 @@ class StockMovementsRelationManager extends RelationManager
                             ->searchable()
                             ->preload()
                             ->disabled(fn(Forms\Get $get): bool => !$get('target_warehouse_id'))
-                            ->different('source_location_id'),
+                            ->different('source_location_id')
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
+                                $variantId = $get('epp_variant_id');
+                                $locationId = $get('target_location_id');
+                                if ($variantId && $locationId) {
+                                    $stock = app(\App\Services\InventoryService::class)->getStock($variantId, $locationId);
+                                    $set('target_stock', $stock ? $stock->current_stock : 0);
+                                } else {
+                                    $set('target_stock', 0);
+                                }
+                            }),
+                        Forms\Components\TextInput::make('target_stock')
+                            ->label('Stock Actual en Destino')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->default(0),
                         Forms\Components\TextInput::make('quantity')
                             ->label('Cantidad')
                             ->required()

@@ -70,7 +70,13 @@ class DeliveryResource extends Resource
                             ->relationship(
                                 name: 'deliverer',
                                 titleAttribute: 'first_name',
-                                modifyQueryUsing: fn ($query) => $query->whereHas('user', fn ($q) => $q->whereHas('roles', fn ($r) => $r->where('name', 'SSOMA')))
+                                modifyQueryUsing: function ($query, Forms\Get $get) {
+                                    $query->whereHas('user', fn($q) => $q->whereHas('roles', fn($r) => $r->where('name', 'SSOMA')));
+                                    $currentVal = $get('delivered_by');
+                                    if ($currentVal) {
+                                        $query->orWhere('id', $currentVal);
+                                    }
+                                }
                             )
                             ->getOptionLabelFromRecordUsing(fn($record) => "{$record->first_name} {$record->last_name}")
                             ->searchable()
@@ -79,7 +85,8 @@ class DeliveryResource extends Resource
 
                         Forms\Components\DateTimePicker::make('delivery_date')
                             ->label('Fecha de Entrega')
-                            ->nullable(),
+                            ->nullable()
+                            ->disabled(),
                         Forms\Components\DateTimePicker::make('deadline_date')
                             ->label('Fecha Límite')
                             ->nullable(),
@@ -88,6 +95,7 @@ class DeliveryResource extends Resource
                             ->options(\App\Enums\DeliveryStatus::class)
                             ->required()
                             ->native(false)
+                            ->disabled()
                             ->default(\App\Enums\DeliveryStatus::PENDING),
                         Forms\Components\Textarea::make('observations')
                             ->label('Observaciones')

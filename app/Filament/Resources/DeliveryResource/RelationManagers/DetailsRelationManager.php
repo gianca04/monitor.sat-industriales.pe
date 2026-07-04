@@ -122,7 +122,7 @@ class DetailsRelationManager extends RelationManager
                     })
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('quantity')
-                    ->label('Cantidad')
+                    ->label('Solicitado')
                     ->numeric()
                     ->required()
                     ->minValue(1),
@@ -145,7 +145,9 @@ class DetailsRelationManager extends RelationManager
                     ->options(\App\Enums\DeliveryStatus::class)
                     ->required()
                     ->native(false)
-                    ->default(\App\Enums\DeliveryStatus::PENDING),
+                    ->default(\App\Enums\DeliveryStatus::PENDING)
+                    ->disabled()
+                    ->dehydrated(),
             ]);
     }
 
@@ -162,6 +164,9 @@ class DetailsRelationManager extends RelationManager
                     ->label('Cantidad')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('delivered_quantity')
+                    ->label('Entregado')
+                    ->numeric(),
                 Tables\Columns\TextColumn::make('employee')
                     ->label('Destinatario')
                     ->formatStateUsing(fn($record) => $record->employee ? "{$record->employee->first_name} {$record->employee->last_name}" : '-')
@@ -188,12 +193,122 @@ class DetailsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->url(fn(RelationManager $livewire): string => \App\Filament\Resources\DeliveryDetailResource::getUrl('create', [
-                        'delivery_id' => $livewire->getOwnerRecord()->getKey(),
-                    ])),
+                Tables\Actions\CreateAction::make(),
             ])
             ->actions([
+                Tables\Actions\Action::make('despachar')
+                    ->label('Despachar')
+                    ->icon('heroicon-o-truck')
+                    ->color('success')
+                    ->visible(fn(\App\Models\DeliveryDetail $record): bool => $record->status !== \App\Enums\DeliveryStatus::DELIVERED)
+                    ->mountUsing(function (Forms\ComponentContainer $form, \App\Models\DeliveryDetail $record) {
+                        $form->fill([
+                            'sku' => $record->eppVariant->sku,
+                            'required_quantity' => $record->quantity,
+                            'delivered_quantity' => $record->delivered_quantity,
+                            'remaining_quantity' => $record->quantity - $record->delivered_quantity,
+                        ]);
+                    })
+                    ->form([
+                        Forms\Components\Grid::make(4)
+                            ->schema([
+                                Forms\Components\TextInput::make('sku')
+                                    ->label('SKU')
+                                    ->disabled(),
+                                Forms\Components\TextInput::make('required_quantity')
+                                    ->label('Cantidad requerida')
+                                    ->numeric()
+                                    ->disabled(),
+                                Forms\Components\TextInput::make('delivered_quantity')
+                                    ->label('Cantidad entregada')
+                                    ->numeric()
+                                    ->disabled(),
+                                Forms\Components\TextInput::make('remaining_quantity')
+                                    ->label('Cantidad pendiente')
+                                    ->numeric()
+                                    ->disabled(),
+                            ]),
+                        Forms\Components\Repeater::make('dispatches')
+                            ->label('Distribución de Despacho')
+                            ->schema([
+                                Forms\Components\Select::make('warehouse_id')
+                                    ->label('Almacén')
+                                    ->options(\App\Models\Warehouse::all()->pluck('name', 'id'))
+                                    ->required()
+                                    ->preload()
+                                    ->searchable()
+                                    ->live(),
+                                Forms\Components\Select::make('warehouse_location_id')
+                                    ->label('Ubicación')
+                                    ->options(function (Forms\Get $get, \App\Models\DeliveryDetail $record) {
+                                        $warehouseId = $get('warehouse_id');
+                                        if (!$warehouseId)
+                                            return [];
+
+                                        return \App\Models\Stock::with('warehouseLocation')
+                                            ->where('epp_variant_id', $record->epp_variant_id)
+                                            ->where('warehouse_id', $warehouseId)
+                                            ->where('current_stock', '>', 0)
+                                            ->get()
+                                            ->mapWithKeys(fn($stock) => [
+                                                $stock->warehouse_location_id => "{$stock->warehouseLocation->code} (Disponible: {$stock->current_stock})"
+                                            ]);
+                                    })
+                                    ->required()
+                                    ->searchable()
+                                    ->preload()
+                                    ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id')),
+                                Forms\Components\TextInput::make('quantity')
+                                    ->label('Cantidad')
+                                    ->numeric()
+                                    ->required()
+                                    ->minValue(1)
+                                    ->rules([
+                                        fn(Forms\Get $get, \App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($get, $record) {
+                                            $locationId = $get('warehouse_location_id');
+                                            if (!$locationId)
+                                                return;
+
+                                            $stock = \App\Models\Stock::where('epp_variant_id', $record->epp_variant_id)
+                                                ->where('warehouse_location_id', $locationId)
+                                                ->first();
+
+                                            $available = $stock ? $stock->current_stock : 0;
+                                            if ($value > $available) {
+                                                $fail("La cantidad supera el stock disponible en esta ubicación ({$available}).");
+                                            }
+                                        }
+                                    ]),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(1)
+                            ->required()
+                            ->rules([
+                                fn(\App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+                                    $totalDispatched = collect($value)->sum('quantity');
+                                    $remaining = $record->quantity - $record->delivered_quantity;
+                                    if ($totalDispatched > $remaining) {
+                                        $fail("La cantidad total a despachar ({$totalDispatched}) supera la cantidad pendiente ({$remaining}).");
+                                    }
+                                }
+                            ])
+                    ])
+                    ->action(function (array $data, \App\Models\DeliveryDetail $record) {
+                        try {
+                            app(\App\Actions\DispatchDeliveryDetailAction::class)->execute($record, $data['dispatches']);
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Despacho registrado con éxito')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error al despachar')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
