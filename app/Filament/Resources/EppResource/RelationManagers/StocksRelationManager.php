@@ -168,19 +168,43 @@ class StocksRelationManager extends RelationManager
             ->filters([
                 //
             ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->using(function (array $data): \App\Models\Stock {
-                        return \App\Models\Stock::create($data);
-                    }),
-            ])
-            ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                ])
-            ])
+             ->headerActions([
+                 Tables\Actions\CreateAction::make()
+                     ->before(function (Tables\Actions\CreateAction $action, array $data) {
+                         $inventoryService = app(\App\Services\InventoryService::class);
+                         $exists = $inventoryService->getStock($data['epp_variant_id'], $data['warehouse_location_id']);
+                         if ($exists) {
+                             \Filament\Notifications\Notification::make()
+                                 ->title('Error de validación')
+                                 ->body('Ya existe un registro de stock para esta variante en la ubicación seleccionada.')
+                                 ->danger()
+                                 ->send();
+                             $action->halt();
+                         }
+                     })
+                     ->using(function (array $data): \App\Models\Stock {
+                         return \App\Models\Stock::create($data);
+                     }),
+             ])
+             ->actions([
+                 Tables\Actions\ActionGroup::make([
+                     Tables\Actions\ViewAction::make(),
+                     Tables\Actions\EditAction::make()
+                         ->before(function (Tables\Actions\EditAction $action, array $data, \App\Models\Stock $record) {
+                             $inventoryService = app(\App\Services\InventoryService::class);
+                             $existingStock = $inventoryService->getStock($data['epp_variant_id'], $data['warehouse_location_id']);
+                             if ($existingStock && $existingStock->id !== $record->id) {
+                                 \Filament\Notifications\Notification::make()
+                                     ->title('Error de validación')
+                                     ->body('Ya existe otro registro de stock para esta variante en la ubicación seleccionada.')
+                                     ->danger()
+                                     ->send();
+                                 $action->halt();
+                             }
+                         }),
+                     Tables\Actions\DeleteAction::make(),
+                 ])
+             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

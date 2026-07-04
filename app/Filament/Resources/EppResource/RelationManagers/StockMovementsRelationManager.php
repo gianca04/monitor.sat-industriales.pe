@@ -79,7 +79,7 @@ class StockMovementsRelationManager extends RelationManager
                     ->limit(50)
                     ->searchable(),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('id', 'desc')
             ->filters([
                 //
             ])
