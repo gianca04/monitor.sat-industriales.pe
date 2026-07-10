@@ -4,6 +4,8 @@
 
         @if ($this->activeTab === 'low_stock')
             @livewire(\App\Livewire\LowStockEppVariantsTable::class)
+        @elseif ($this->activeTab === 'movements')
+            @livewire(\App\Livewire\EppStockMovementsTable::class)
         @else
             {{ $this->table }}
         @endif
