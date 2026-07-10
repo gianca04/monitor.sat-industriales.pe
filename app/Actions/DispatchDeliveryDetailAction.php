@@ -86,6 +86,7 @@ class DispatchDeliveryDetailAction
             $newDeliveredTotal = $delivered + $totalQuantityToDispatch;
             if ($newDeliveredTotal >= $detail->quantity) {
                 $detail->status = DeliveryStatus::DELIVERED;
+                $detail->delivered_at = now();
             } else {
                 $detail->status = DeliveryStatus::PARTIAL;
             }

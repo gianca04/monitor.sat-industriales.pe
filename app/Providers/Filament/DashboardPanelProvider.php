@@ -19,6 +19,8 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Support\Facades\FilamentView;
+use Illuminate\Support\HtmlString;
 
 class DashboardPanelProvider extends PanelProvider
 {
@@ -123,5 +125,19 @@ class DashboardPanelProvider extends PanelProvider
             ->favicon(asset('images/favicon.svg'))
             // Eliminar esta línea duplicada: ->databaseNotifications()
         ;
+    }
+
+    public function boot(): void
+    {
+        FilamentView::registerRenderHook(
+            'panels::head.end',
+            fn (): HtmlString => new HtmlString('
+                <style>
+                    html {
+                        font-size: 90% !important;
+                    }
+                </style>
+            '),
+        );
     }
 }

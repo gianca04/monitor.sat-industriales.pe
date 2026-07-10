@@ -13,10 +13,13 @@ class DeliveryDetail extends Model
         'employee_id',
         'sub_client_id',
         'status',
+        'delivered_at',
+        'notes',
     ];
 
     protected $casts = [
         'status' => \App\Enums\DeliveryStatus::class,
+        'delivered_at' => 'datetime',
     ];
 
     public function delivery()

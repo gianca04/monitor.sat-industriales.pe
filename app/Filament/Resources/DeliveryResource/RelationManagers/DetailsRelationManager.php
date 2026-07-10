@@ -148,6 +148,15 @@ class DetailsRelationManager extends RelationManager
                     ->default(\App\Enums\DeliveryStatus::PENDING)
                     ->disabled()
                     ->dehydrated(),
+                Forms\Components\DateTimePicker::make('delivered_at')
+                    ->label('Fecha de Entregado')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->native(false)
+                    ->displayFormat('d/m/Y H:i'),
+                Forms\Components\TextInput::make('notes')
+                    ->label('Notas')
+                    ->maxLength(255),
             ]);
     }
 
@@ -180,9 +189,13 @@ class DetailsRelationManager extends RelationManager
                     ->label('Estado')
                     ->badge()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('delivery.delivery_date')
-                    ->label('Fecha de Atendido')
+                Tables\Columns\TextColumn::make('delivered_at')
+                    ->label('Fecha de Entregado')
                     ->dateTime('d/m/Y H:i')
+                    ->sortable(),
+                Tables\Columns\TextInputColumn::make('notes')
+                    ->label('Notas')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('subClient.name')
                     ->label('Tienda')
@@ -318,6 +331,27 @@ class DetailsRelationManager extends RelationManager
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('exportEppExcel')
+                        ->label('Exportar Entrega EPP (Excel)')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('success')
+                        ->action(function (\Illuminate\Support\Collection $records, RelationManager $livewire) {
+                            try {
+                                $delivery = $livewire->getOwnerRecord();
+                                $dto = \App\DTOs\DeliveryExportData::fromDetailsCollection($records, $delivery);
+                                
+                                $service = app(\App\Services\ExportDeliveryEppService::class);
+                                $filePath = $service->export($dto);
+                                
+                                return response()->download($filePath, 'entrega_epp_' . $delivery->id . '.xlsx')->deleteFileAfterSend(true);
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Error al exportar')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
                 ]),
             ]);
     }

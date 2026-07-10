@@ -375,6 +375,29 @@ class DeliveryDetailResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('exportEppExcel')
+                        ->label('Exportar Entrega EPP (Excel)')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('success')
+                        ->action(function (\Illuminate\Support\Collection $records) {
+                            try {
+                                $firstRecord = $records->first();
+                                $delivery = $firstRecord?->delivery ?? new \App\Models\Delivery();
+                                
+                                $dto = \App\DTOs\DeliveryExportData::fromDetailsCollection($records, $delivery);
+                                
+                                $service = app(\App\Services\ExportDeliveryEppService::class);
+                                $filePath = $service->export($dto);
+                                
+                                return response()->download($filePath, 'entrega_epp_' . ($delivery->id ?? 'detalles') . '.xlsx')->deleteFileAfterSend(true);
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Error al exportar')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
                 ]),
             ]);
     }
