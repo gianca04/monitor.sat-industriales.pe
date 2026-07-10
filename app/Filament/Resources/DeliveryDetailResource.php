@@ -259,7 +259,7 @@ class DeliveryDetailResource extends Resource
                     ->label('Despachar')
                     ->icon('heroicon-o-truck')
                     ->color('success')
-                    ->visible(fn (\App\Models\DeliveryDetail $record): bool => $record->status !== \App\Enums\DeliveryStatus::DELIVERED)
+                    ->visible(fn(\App\Models\DeliveryDetail $record): bool => $record->status !== \App\Enums\DeliveryStatus::DELIVERED)
                     ->mountUsing(function (Forms\ComponentContainer $form, \App\Models\DeliveryDetail $record) {
                         $form->fill([
                             'sku' => $record->eppVariant->sku,
@@ -301,35 +301,37 @@ class DeliveryDetailResource extends Resource
                                     ->label('Ubicación')
                                     ->options(function (Forms\Get $get, \App\Models\DeliveryDetail $record) {
                                         $warehouseId = $get('warehouse_id');
-                                        if (!$warehouseId) return [];
-                                        
+                                        if (!$warehouseId)
+                                            return [];
+
                                         return \App\Models\Stock::with('warehouseLocation')
                                             ->where('epp_variant_id', $record->epp_variant_id)
                                             ->where('warehouse_id', $warehouseId)
                                             ->where('current_stock', '>', 0)
                                             ->get()
-                                            ->mapWithKeys(fn ($stock) => [
+                                            ->mapWithKeys(fn($stock) => [
                                                 $stock->warehouse_location_id => "{$stock->warehouseLocation->code} (Disponible: {$stock->current_stock})"
                                             ]);
                                     })
                                     ->required()
                                     ->searchable()
                                     ->preload()
-                                    ->disabled(fn (Forms\Get $get): bool => !$get('warehouse_id')),
+                                    ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id')),
                                 Forms\Components\TextInput::make('quantity')
                                     ->label('Cantidad')
                                     ->numeric()
                                     ->required()
                                     ->minValue(1)
                                     ->rules([
-                                        fn (Forms\Get $get, \App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($get, $record) {
+                                        fn(Forms\Get $get, \App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($get, $record) {
                                             $locationId = $get('warehouse_location_id');
-                                            if (!$locationId) return;
-                                            
+                                            if (!$locationId)
+                                                return;
+
                                             $stock = \App\Models\Stock::where('epp_variant_id', $record->epp_variant_id)
                                                 ->where('warehouse_location_id', $locationId)
                                                 ->first();
-                                                
+
                                             $available = $stock ? $stock->current_stock : 0;
                                             if ($value > $available) {
                                                 $fail("La cantidad supera el stock disponible en esta ubicación ({$available}).");
@@ -341,7 +343,7 @@ class DeliveryDetailResource extends Resource
                             ->defaultItems(1)
                             ->required()
                             ->rules([
-                                fn (\App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+                                fn(\App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
                                     $totalDispatched = collect($value)->sum('quantity');
                                     $remaining = $record->quantity - $record->delivered_quantity;
                                     if ($totalDispatched > $remaining) {
@@ -353,7 +355,7 @@ class DeliveryDetailResource extends Resource
                     ->action(function (array $data, \App\Models\DeliveryDetail $record) {
                         try {
                             app(\App\Actions\DispatchDeliveryDetailAction::class)->execute($record, $data['dispatches']);
-                            
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Despacho registrado con éxito')
                                 ->success()
@@ -376,19 +378,19 @@ class DeliveryDetailResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('exportEppExcel')
-                        ->label('Exportar Entrega EPP (Excel)')
+                        ->label('Reporte Excel')
                         ->icon('heroicon-o-document-arrow-down')
                         ->color('success')
                         ->action(function (\Illuminate\Support\Collection $records) {
                             try {
                                 $firstRecord = $records->first();
                                 $delivery = $firstRecord?->delivery ?? new \App\Models\Delivery();
-                                
+
                                 $dto = \App\DTOs\DeliveryExportData::fromDetailsCollection($records, $delivery);
-                                
+
                                 $service = app(\App\Services\ExportDeliveryEppService::class);
                                 $filePath = $service->export($dto);
-                                
+
                                 return response()->download($filePath, 'entrega_epp_' . ($delivery->id ?? 'detalles') . '.xlsx')->deleteFileAfterSend(true);
                             } catch (\Exception $e) {
                                 \Filament\Notifications\Notification::make()
