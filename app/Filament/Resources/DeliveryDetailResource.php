@@ -223,7 +223,8 @@ class DeliveryDetailResource extends Resource
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query->whereHas('employee', function (Builder $q) use ($search) {
                             $q->where('first_name', 'like', "%{$search}%")
-                                ->orWhere('last_name', 'like', "%{$search}%");
+                                ->orWhere('last_name', 'like', "%{$search}%")
+                                ->orWhere('document_number', 'like', "%{$search}%");
                         });
                     })
                     ->sortable(),
@@ -252,7 +253,63 @@ class DeliveryDetailResource extends Resource
                 fn(DeliveryDetail $record): string => DeliveryResource::getUrl('edit', ['record' => $record->delivery_id])
             )
             ->filters([
-                //
+                Tables\Filters\Filter::make('buscar_empleado')
+                    ->label('Buscar por Destinatario')
+                    ->form([
+                        Forms\Components\TextInput::make('search')
+                            ->label('Nombre, Apellido o DNI')
+                            ->placeholder('Buscar destinatario...'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['search'],
+                            fn (Builder $query, $search) => $query->whereHas('employee', function (Builder $q) use ($search) {
+                                $q->where('first_name', 'like', "%{$search}%")
+                                    ->orWhere('last_name', 'like', "%{$search}%")
+                                    ->orWhere('document_number', 'like', "%{$search}%");
+                            })
+                        );
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['search']) {
+                            return null;
+                        }
+
+                        return 'Destinatario: ' . $data['search'];
+                    }),
+                Tables\Filters\Filter::make('delivery_date_range')
+                    ->label('Rango de Fechas (Atendido)')
+                    ->form([
+                        Forms\Components\DatePicker::make('delivery_from')
+                            ->label('Atendido Desde'),
+                        Forms\Components\DatePicker::make('delivery_until')
+                            ->label('Atendido Hasta'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['delivery_from'],
+                                fn (Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
+                                    $q->whereDate('delivery_date', '>=', $date);
+                                })
+                            )
+                            ->when(
+                                $data['delivery_until'],
+                                fn (Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
+                                    $q->whereDate('delivery_date', '<=', $date);
+                                })
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['delivery_from'] ?? null) {
+                            $indicators['delivery_from'] = 'Atendido Desde: ' . \Carbon\Carbon::parse($data['delivery_from'])->format('d/m/Y');
+                        }
+                        if ($data['delivery_until'] ?? null) {
+                            $indicators['delivery_until'] = 'Atendido Hasta: ' . \Carbon\Carbon::parse($data['delivery_until'])->format('d/m/Y');
+                        }
+                        return $indicators;
+                    }),
             ])
             ->actions([
                 Tables\Actions\Action::make('despachar')

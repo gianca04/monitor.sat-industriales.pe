@@ -45,9 +45,9 @@ class ProjectController extends Controller
                     });
                 })
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->paginate($request->query('per_page') ?? 15);
 
-            $data = $projects->map(function ($project) {
+            $data = collect($projects->items())->map(function ($project) {
                 return [
                     'id' => $project->id,
                     'name' => $project->name,
@@ -84,6 +84,15 @@ class ProjectController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $data,
+                'pagination' => [
+                    'total' => $projects->total(),
+                    'perPage' => $projects->perPage(),
+                    'currentPage' => $projects->currentPage(),
+                    'lastPage' => $projects->lastPage(),
+                    'from' => $projects->firstItem(),
+                    'to' => $projects->lastItem(),
+                    'hasMorePages' => $projects->hasMorePages(),
+                ],
                 'message' => 'Proyectos obtenidos correctamente'
             ]);
         } catch (\Exception $e) {

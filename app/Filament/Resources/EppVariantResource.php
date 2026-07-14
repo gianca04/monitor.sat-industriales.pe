@@ -57,15 +57,22 @@ class EppVariantResource extends Resource
                 Forms\Components\TextInput::make('minimum_stock')
                     ->label('Stock Mínimo')
                     ->numeric()
-                    ->minValue(1)
+                    ->minValue(0)
                     ->default(0)
                     ->required(),
                 Forms\Components\TextInput::make('maximum_stock')
                     ->label('Stock Máximo')
                     ->numeric()
-                    ->minValue(1)
-                    ->rules(['gte:minimum_stock'])
-                    ->default(1)
+                    ->minValue(0)
+                    ->rules([
+                        fn (Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                            $minStock = $get('minimum_stock');
+                            if ($minStock !== null && $value !== '' && (float) $value < (float) $minStock) {
+                                $fail("El stock máximo debe ser mayor o igual al stock mínimo ({$minStock}).");
+                            }
+                        },
+                    ])
+                    ->default(0)
                     ->required(),
                 Forms\Components\Toggle::make('active')
                     ->label('Activo')

@@ -15,7 +15,16 @@ class ExportDeliveryEppService
 
     public function __construct()
     {
-        $this->templatePath = base_path('format/F-SST-SAT-016_FORMATO_DE_ENTREGA_DE_EPPS_NUEVO.xlsx');
+        $resourcePath = resource_path('format/F-SST-SAT-016_FORMATO_DE_ENTREGA_DE_EPPS_NUEVO.xlsx');
+        $basePath = base_path('format/F-SST-SAT-016_FORMATO_DE_ENTREGA_DE_EPPS_NUEVO.xlsx');
+
+        if (file_exists($resourcePath)) {
+            $this->templatePath = $resourcePath;
+        } elseif (file_exists($basePath)) {
+            $this->templatePath = $basePath;
+        } else {
+            throw new \Exception("Plantilla Excel no encontrada. Buscado en: {$resourcePath} y {$basePath}");
+        }
     }
 
     /**
