@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EppVariant extends Model
 {
-    protected $fillable = ['epp_id', 'sku', 'variant_name', 'active', 'minimum_stock', 'maximum_stock'];
+    protected $fillable = ['epp_id', 'sku', 'variant_name', 'unit_cost', 'active', 'minimum_stock', 'maximum_stock'];
 
     public function getCurrentStockAttribute(): int
     {

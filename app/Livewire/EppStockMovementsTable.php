@@ -60,7 +60,8 @@ class EppStockMovementsTable extends Component implements HasForms, HasTable
                 TextColumn::make('warehouseLocation.code')
                     ->label('Ubicación')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('quantity')
                     ->label('Cantidad')
                     ->numeric()
@@ -68,11 +69,14 @@ class EppStockMovementsTable extends Component implements HasForms, HasTable
                 TextColumn::make('user.employee')
                     ->label('Registrado por')
                     ->formatStateUsing(fn ($record) => $record->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record->user?->name ?? 'Sistema'))
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('description')
                     ->label('Descripción')
                     ->limit(50)
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->tooltip(fn ($state) => $state),
                 TextColumn::make('created_at')
                     ->label('Fecha')
                     ->dateTime('d/m/Y H:i')
@@ -83,8 +87,51 @@ class EppStockMovementsTable extends Component implements HasForms, HasTable
                 //
             ])
             ->actions([
-                //
+                Tables\Actions\ViewAction::make()
+                    ->form([
+                        \Filament\Forms\Components\Grid::make(2)
+                            ->schema([
+                                \Filament\Forms\Components\Placeholder::make('epp_name')
+                                    ->label('EPP')
+                                    ->content(fn ($record) => $record?->eppVariant?->epp?->name),
+                                \Filament\Forms\Components\Placeholder::make('sku')
+                                    ->label('SKU')
+                                    ->content(fn ($record) => $record?->eppVariant?->sku),
+                                \Filament\Forms\Components\Placeholder::make('type')
+                                    ->label('Tipo')
+                                    ->content(fn ($record) => match ($record?->type) {
+                                        'input' => 'Ingreso',
+                                        'transfer_in' => 'Ingreso por traslado',
+                                        'loss' => 'Merma / Ajuste',
+                                        'adjustment_out' => 'Merma / Ajuste',
+                                        'transfer_out' => 'Salida por traslado',
+                                        'output' => 'Salida',
+                                        'dispatch' => 'Despacho',
+                                        default => $record?->type ? ucfirst($record->type) : null,
+                                    }),
+                                \Filament\Forms\Components\Placeholder::make('quantity')
+                                    ->label('Cantidad')
+                                    ->content(fn ($record) => $record?->quantity),
+                                \Filament\Forms\Components\Placeholder::make('warehouse')
+                                    ->label('Almacén')
+                                    ->content(fn ($record) => $record?->warehouse?->name),
+                                \Filament\Forms\Components\Placeholder::make('location')
+                                    ->label('Ubicación')
+                                    ->content(fn ($record) => $record?->warehouseLocation?->code),
+                                \Filament\Forms\Components\Placeholder::make('user')
+                                    ->label('Registrado por')
+                                    ->content(fn ($record) => $record?->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record?->user?->name ?? 'Sistema')),
+                                \Filament\Forms\Components\Placeholder::make('created_at')
+                                    ->label('Fecha')
+                                    ->content(fn ($record) => $record?->created_at?->format('d/m/Y H:i')),
+                                \Filament\Forms\Components\Placeholder::make('description')
+                                    ->label('Descripción')
+                                    ->content(fn ($record) => $record?->description)
+                                    ->columnSpanFull(),
+                            ])
+                    ])
             ])
+            ->recordAction(Tables\Actions\ViewAction::class)
             ->bulkActions([
                 //
             ]);

@@ -22,6 +22,7 @@ class BulkStockEntryAction
                 $variantId = $entry['epp_variant_id'] ?? null;
                 $locationId = $entry['warehouse_location_id'] ?? null;
                 $quantity = $entry['quantity'] ?? 0;
+                $unitCost = isset($entry['unit_cost']) ? (float) $entry['unit_cost'] : null;
                 $description = $entry['description'] ?? 'Ingreso masivo de stock';
 
                 if (!$variantId || !$locationId) {
@@ -30,6 +31,14 @@ class BulkStockEntryAction
 
                 if ($quantity <= 0) {
                     throw new InvalidArgumentException("La cantidad para cada entrada de stock debe ser mayor a cero.");
+                }
+
+                // Get variant to resolve or update unit cost
+                $variant = \App\Models\EppVariant::findOrFail($variantId);
+                if ($unitCost !== null && $unitCost >= 0) {
+                    $variant->update(['unit_cost' => $unitCost]);
+                } else {
+                    $unitCost = (float) $variant->unit_cost;
                 }
 
                 // Get the warehouse location to resolve warehouse_id
@@ -58,6 +67,7 @@ class BulkStockEntryAction
                     'warehouse_location_id' => $locationId,
                     'epp_variant_id' => $variantId,
                     'quantity' => $quantity,
+                    'unit_cost' => $unitCost,
                     'type' => 'input',
                     'description' => $description,
                 ]);

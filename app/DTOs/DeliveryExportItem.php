@@ -9,6 +9,7 @@ class DeliveryExportItem
         public string $type,
         public int $quantity,
         public ?\Carbon\Carbon $deliveredAt,
-        public ?string $notes
+        public ?string $notes,
+        public ?string $signature = null
     ) {}
 }

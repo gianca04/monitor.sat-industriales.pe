@@ -55,7 +55,8 @@ class InventoryService
         int $quantity,
         string $type,
         ?string $description = null,
-        ?int $deliveryDetailId = null
+        ?int $deliveryDetailId = null,
+        ?float $unitCost = null
     ): \App\Models\StockMovement {
         $location = \App\Models\WarehouseLocation::findOrFail($warehouseLocationId);
         
@@ -80,12 +81,24 @@ class InventoryService
             $stock->increment('current_stock', $quantity);
         }
 
+        if ($unitCost === null) {
+            $variant = \App\Models\EppVariant::find($eppVariantId);
+            $unitCost = (float) ($variant?->unit_cost ?? 0);
+        }
+
+        if ($deliveryDetailId) {
+            \App\Models\DeliveryDetail::where('id', $deliveryDetailId)
+                ->whereNull('unit_cost')
+                ->update(['unit_cost' => $unitCost]);
+        }
+
         return \App\Models\StockMovement::create([
             'warehouse_id' => $location->warehouse_id,
             'warehouse_location_id' => $warehouseLocationId,
             'epp_variant_id' => $eppVariantId,
             'delivery_detail_id' => $deliveryDetailId,
             'quantity' => $quantity,
+            'unit_cost' => $unitCost,
             'type' => $type,
             'description' => $description,
         ]);

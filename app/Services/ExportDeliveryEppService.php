@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\DTOs\DeliveryExportData;
 use App\Models\Delivery;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class ExportDeliveryEppService
 {
@@ -18,11 +20,24 @@ class ExportDeliveryEppService
         $resourcePath = resource_path('format/F-SST-SAT-016_FORMATO_DE_ENTREGA_DE_EPPS_NUEVO.xlsx');
         $basePath = base_path('format/F-SST-SAT-016_FORMATO_DE_ENTREGA_DE_EPPS_NUEVO.xlsx');
 
+        Log::info('ExportDeliveryEppService: Iniciando verificación de plantilla.', [
+            'resource_path' => $resourcePath,
+            'resource_exists' => file_exists($resourcePath),
+            'base_path' => $basePath,
+            'base_exists' => file_exists($basePath)
+        ]);
+
         if (file_exists($resourcePath)) {
             $this->templatePath = $resourcePath;
+            Log::info('ExportDeliveryEppService: Plantilla seleccionada en resources.', ['path' => $resourcePath]);
         } elseif (file_exists($basePath)) {
             $this->templatePath = $basePath;
+            Log::info('ExportDeliveryEppService: Plantilla seleccionada en base_path.', ['path' => $basePath]);
         } else {
+            Log::error('ExportDeliveryEppService: Plantilla no encontrada en ninguna de las rutas.', [
+                'resource_path' => $resourcePath,
+                'base_path' => $basePath
+            ]);
             throw new \Exception("Plantilla Excel no encontrada. Buscado en: {$resourcePath} y {$basePath}");
         }
     }
@@ -86,6 +101,11 @@ class ExportDeliveryEppService
             $sheet->setCellValue("N{$currentRow}", ' ');
             $sheet->setCellValue("O{$currentRow}", $item->notes);
             $sheet->setCellValue("P{$currentRow}", ' ');
+
+            if (!empty($item->signature)) {
+                $sheet->getRowDimension($currentRow)->setRowHeight(35);
+                $this->insertSignatureImage($sheet, $item->signature, "P{$currentRow}");
+            }
         }
 
         // Crear directorio temporal si no existe
@@ -129,6 +149,48 @@ class ExportDeliveryEppService
             $fromCell = $sheet->getCell($col . $fromRow);
             $toCell = $sheet->getCell($col . $toRow);
             $toCell->setXfIndex($fromCell->getXfIndex());
+        }
+    }
+
+    /**
+     * Inserta la imagen de la firma en la celda correspondiente
+     *
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet
+     * @param string $signatureData
+     * @param string $cellCoordinates
+     * @return void
+     */
+    private function insertSignatureImage($sheet, string $signatureData, string $cellCoordinates): void
+    {
+        if (empty($signatureData)) {
+            return;
+        }
+
+        $tempImgPath = null;
+
+        if (preg_match('/^data:image\/(\w+);base64,/', $signatureData, $type)) {
+            $data = substr($signatureData, strpos($signatureData, ',') + 1);
+            $decodedData = base64_decode($data);
+            if ($decodedData === false) {
+                return;
+            }
+            $ext = strtolower($type[1] ?? 'png');
+            $tempImgPath = sys_get_temp_dir() . '/sig_' . uniqid() . '.' . $ext;
+            file_put_contents($tempImgPath, $decodedData);
+        } elseif (file_exists($signatureData)) {
+            $tempImgPath = $signatureData;
+        }
+
+        if ($tempImgPath && file_exists($tempImgPath)) {
+            $drawing = new Drawing();
+            $drawing->setName('Firma');
+            $drawing->setDescription('Firma de conformidad');
+            $drawing->setPath($tempImgPath);
+            $drawing->setCoordinates($cellCoordinates);
+            $drawing->setHeight(30);
+            $drawing->setOffsetX(10);
+            $drawing->setOffsetY(2);
+            $drawing->setWorksheet($sheet);
         }
     }
 }

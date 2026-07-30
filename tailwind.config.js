@@ -8,6 +8,7 @@ export default {
         './resources/**/*.blade.php',
         './resources/**/*.js',
         './vendor/guava/filament-modal-relation-managers/resources/**/*.blade.php',
+        './vendor/saade/filament-autograph/resources/views/**/*.blade.php',
         './resources/**/*.vue',
     ],
     theme: {

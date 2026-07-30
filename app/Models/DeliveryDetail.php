@@ -10,16 +10,20 @@ class DeliveryDetail extends Model
         'delivery_id',
         'epp_variant_id',
         'quantity',
+        'unit_cost',
         'employee_id',
         'sub_client_id',
         'status',
         'delivered_at',
         'notes',
+        'signature',
+        'signed_at',
     ];
 
     protected $casts = [
         'status' => \App\Enums\DeliveryStatus::class,
         'delivered_at' => 'datetime',
+        'signed_at' => 'datetime',
     ];
 
     public function delivery()
@@ -52,6 +56,11 @@ class DeliveryDetail extends Model
         return (int) $this->stockMovements()
             ->where('type', 'dispatch')
             ->sum('quantity');
+    }
+
+    public function getIsSignedAttribute(): bool
+    {
+        return !is_null($this->signed_at);
     }
 }
 

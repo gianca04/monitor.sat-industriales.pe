@@ -80,7 +80,8 @@ class DeliveryExportData
                 type: $typeString ?: 'N/A',
                 quantity: $detail->quantity,
                 deliveredAt: $detail->delivered_at,
-                notes: $detail->notes
+                notes: $detail->notes,
+                signature: $detail->signature
             );
         }
 
@@ -146,7 +147,8 @@ class DeliveryExportData
                 type: $typeString ?: 'N/A',
                 quantity: $detail->quantity,
                 deliveredAt: $detail->delivered_at,
-                notes: $detail->notes
+                notes: $detail->notes,
+                signature: $detail->signature
             );
         }
 

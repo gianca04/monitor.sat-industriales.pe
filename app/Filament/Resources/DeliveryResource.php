@@ -117,6 +117,12 @@ class DeliveryResource extends Resource
                     ->formatStateUsing(fn($record) => "{$record->employee?->first_name} {$record->employee?->last_name}")
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('employee.daily_payment')
+                    ->label('Pago')
+                    ->badge()
+                    ->formatStateUsing(fn($record) => $record->employee ? ($record->employee->daily_payment ? 'Diario' : 'Planilla') : '-')
+                    ->color(fn($record) => $record->employee ? ($record->employee->daily_payment ? 'warning' : 'info') : 'gray')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('subClient.name')
                     ->label('Tienda')
                     ->searchable()

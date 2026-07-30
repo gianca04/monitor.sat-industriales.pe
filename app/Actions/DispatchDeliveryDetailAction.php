@@ -26,7 +26,7 @@ class DispatchDeliveryDetailAction
      * @param array $dispatches Array of arrays: [['warehouse_location_id' => X, 'quantity' => Y]]
      * @throws InvalidArgumentException
      */
-    public function execute(DeliveryDetail $detail, array $dispatches): void
+    public function execute(DeliveryDetail $detail, array $dispatches, ?string $signature = null): void
     {
         if (empty($dispatches)) {
             throw new InvalidArgumentException("Debe especificar al menos una ubicación para despachar.");
@@ -64,7 +64,7 @@ class DispatchDeliveryDetailAction
         }
 
         // 3. Execute transactional update
-        DB::transaction(function () use ($detail, $dispatches, $delivered, $totalQuantityToDispatch) {
+        DB::transaction(function () use ($detail, $dispatches, $delivered, $totalQuantityToDispatch, $signature) {
             $employeeName = $detail->employee ? "{$detail->employee->first_name} {$detail->employee->last_name}" : ($detail->delivery->employee ? "{$detail->delivery->employee->first_name} {$detail->delivery->employee->last_name}" : 'N/A');
             $subClientName = $detail->subClient?->name ?: ($detail->delivery->subClient?->name ?? 'N/A');
 
@@ -82,7 +82,7 @@ class DispatchDeliveryDetailAction
                 );
             }
 
-            // Update DeliveryDetail status
+            // Update DeliveryDetail status and signature
             $newDeliveredTotal = $delivered + $totalQuantityToDispatch;
             if ($newDeliveredTotal >= $detail->quantity) {
                 $detail->status = DeliveryStatus::DELIVERED;
@@ -90,6 +90,12 @@ class DispatchDeliveryDetailAction
             } else {
                 $detail->status = DeliveryStatus::PARTIAL;
             }
+
+            if ($signature) {
+                $detail->signature = $signature;
+                $detail->signed_at = now();
+            }
+
             $detail->save();
 
             // Update parent Delivery status

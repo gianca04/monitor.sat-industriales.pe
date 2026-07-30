@@ -8,6 +8,7 @@ use App\Models\Epp;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Forms;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -29,94 +30,116 @@ class EppResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('Nombre')
-                    ->required()
-                    ->maxLength(150),
-                Forms\Components\Select::make('brand_id')
-                    ->label('Marca')
-                    ->relationship('brand', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Nombre de la Marca')
-                            ->required()
-                            ->maxLength(100),
-                    ]),
-                Forms\Components\TextInput::make('model')
-                    ->label('Modelo')
-                    ->maxLength(100),
-                Forms\Components\Select::make('category_id')
-                    ->label('Categoría')
-                    ->searchable()
-                    ->options(\App\Models\Category::all()->pluck('name', 'id'))
-                    ->live()
-                    ->afterStateHydrated(function (Forms\Components\Select $component, ?\App\Models\Epp $record) {
-                        if ($record) {
-                            $firstSub = $record->subcategories()->first();
-                            if ($firstSub) {
-                                $component->state($firstSub->category_id);
-                            }
-                        }
-                    })
-                    ->dehydrated(false)
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Nombre de la Categoría')
-                            ->required()
-                            ->maxLength(100),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Descripción'),
-                    ])
-                    ->createOptionUsing(function (array $data): int {
-                        return \App\Models\Category::create($data)->id;
-                    }),
-                Forms\Components\Select::make('subcategories')
-                    ->label('Subcategorías')
-                    ->searchable()
-                    ->multiple()
-                    ->relationship('subcategories', 'name', modifyQueryUsing: function (Builder $query, Forms\Get $get) {
-                        $categoryId = $get('category_id');
-                        if ($categoryId) {
-                            $query->where('category_id', $categoryId);
-                        }
-                    })
-                    ->preload()
-                    ->required()
-                    ->createOptionForm(function (Forms\Get $get) {
-                        return [
-                            Forms\Components\Select::make('category_id')
-                                ->label('Categoría')
-                                ->relationship('category', 'name')
-                                ->default($get('category_id'))
-                                ->required()
-                                ->preload()
-                                ->searchable(),
-                            Forms\Components\TextInput::make('name')
-                                ->label('Nombre de la Subcategoría')
-                                ->required()
-                                ->maxLength(100),
-                        ];
-                    }),
-                Forms\Components\Select::make('certifications')
-                    ->label('Certificaciones')
-                    ->multiple()
-                    ->relationship('certifications', 'code')
-                    ->preload(),
-                Forms\Components\Toggle::make('active')
-                    ->label('Activo')
-                    ->default(true)
-                    ->required(),
-                Forms\Components\Textarea::make('description')
-                    ->label('Descripción')
-                    ->columnSpanFull(),
+                Grid::make(['default' => 1, 'lg' => 12])
+                    ->schema([
+                        // Columna Izquierda: Galería de Fotos y Estado (4 columnas)
+                        Forms\Components\Group::make()
+                            ->columnSpan(['lg' => 4])
+                            ->schema([
+                                Forms\Components\FileUpload::make('photos')
+                                    ->label('Fotos')
+                                    ->multiple()
+                                    ->image()
+                                    ->panelLayout('grid')
+                                    ->reorderable()
+                                    ->openable()
+                                    ->directory('epp-photos'),
+                                Forms\Components\Toggle::make('active')
+                                    ->label('Producto Activo')
+                                    ->default(true)
+                                    ->required(),
+                            ]),
 
-                Forms\Components\FileUpload::make('photos')
-                    ->label('Fotos')
-                    ->multiple()
-                    ->image()
-                    ->directory('epp-photos'),
+                        // Columna Derecha: Campos de Información (8 columnas)
+                        Forms\Components\Group::make()
+                            ->columnSpan(['lg' => 8])
+                            ->schema([
+                                Grid::make(2)->schema([
+                                    Forms\Components\TextInput::make('name')
+                                        ->label('Nombre')
+                                        ->required()
+                                        ->maxLength(150),
+                                    Forms\Components\TextInput::make('model')
+                                        ->label('Modelo')
+                                        ->maxLength(100),
+                                ]),
+                                Grid::make(2)->schema([
+                                    Forms\Components\Select::make('brand_id')
+                                        ->label('Marca')
+                                        ->relationship('brand', 'name')
+                                        ->searchable()
+                                        ->preload()
+                                        ->createOptionForm([
+                                            Forms\Components\TextInput::make('name')
+                                                ->label('Nombre de la Marca')
+                                                ->required()
+                                                ->maxLength(100),
+                                        ]),
+                                    Forms\Components\Select::make('category_id')
+                                        ->label('Categoría')
+                                        ->searchable()
+                                        ->options(\App\Models\Category::all()->pluck('name', 'id'))
+                                        ->live()
+                                        ->afterStateHydrated(function (Forms\Components\Select $component, ?\App\Models\Epp $record) {
+                                            if ($record) {
+                                                $firstSub = $record->subcategories()->first();
+                                                if ($firstSub) {
+                                                    $component->state($firstSub->category_id);
+                                                }
+                                            }
+                                        })
+                                        ->dehydrated(false)
+                                        ->createOptionForm([
+                                            Forms\Components\TextInput::make('name')
+                                                ->label('Nombre de la Categoría')
+                                                ->required()
+                                                ->maxLength(100),
+                                            Forms\Components\Textarea::make('description')
+                                                ->label('Descripción'),
+                                        ])
+                                        ->createOptionUsing(function (array $data): int {
+                                            return \App\Models\Category::create($data)->id;
+                                        }),
+                                ]),
+                                Grid::make(2)->schema([
+                                    Forms\Components\Select::make('subcategories')
+                                        ->label('Subcategorías')
+                                        ->searchable()
+                                        ->multiple()
+                                        ->relationship('subcategories', 'name', modifyQueryUsing: function (Builder $query, Forms\Get $get) {
+                                            $categoryId = $get('category_id');
+                                            if ($categoryId) {
+                                                $query->where('category_id', $categoryId);
+                                            }
+                                        })
+                                        ->preload()
+                                        ->required()
+                                        ->createOptionForm(function (Forms\Get $get) {
+                                            return [
+                                                Forms\Components\Select::make('category_id')
+                                                    ->label('Categoría')
+                                                    ->relationship('category', 'name')
+                                                    ->default($get('category_id'))
+                                                    ->required()
+                                                    ->preload()
+                                                    ->searchable(),
+                                                Forms\Components\TextInput::make('name')
+                                                    ->label('Nombre de la Subcategoría')
+                                                    ->required()
+                                                    ->maxLength(100),
+                                            ];
+                                        }),
+                                    Forms\Components\Select::make('certifications')
+                                        ->label('Certificaciones')
+                                        ->multiple()
+                                        ->relationship('certifications', 'code')
+                                        ->preload(),
+                                ]),
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Descripción')
+                                    ->rows(3),
+                            ]),
+                    ]),
             ]);
     }
 

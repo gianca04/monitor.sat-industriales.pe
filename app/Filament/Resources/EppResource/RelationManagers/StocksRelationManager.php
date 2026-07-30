@@ -33,6 +33,11 @@ class StocksRelationManager extends RelationManager
                     ->preload()
                     ->createOptionForm(function (RelationManager $livewire) {
                         return [
+                            Forms\Components\TextInput::make('variant_name')
+                                ->label('Nombre de Variante / Descripción')
+                                ->maxLength(150)
+                                ->placeholder('Ej: Talla M, Caja x 100, Estándar')
+                                ->live(),
                             Forms\Components\TextInput::make('sku')
                                 ->label('SKU')
                                 ->required()
@@ -41,6 +46,7 @@ class StocksRelationManager extends RelationManager
                                 ->suffixAction(
                                     Forms\Components\Actions\Action::make('generateSku')
                                         ->icon('heroicon-m-sparkles')
+                                        ->disabled(fn (Forms\Get $get): bool => empty(trim($get('variant_name') ?? '')))
                                         ->action(function (Forms\Set $set, Forms\Get $get, RelationManager $livewire) {
                                             $tempVariant = new \App\Models\EppVariant([
                                                 'epp_id' => $livewire->getOwnerRecord()->id,
@@ -49,11 +55,6 @@ class StocksRelationManager extends RelationManager
                                             $set('sku', $tempVariant->generateSku());
                                         })
                                 ),
-                            Forms\Components\TextInput::make('variant_name')
-                                ->label('Nombre de Variante / Descripción')
-                                ->maxLength(150)
-                                ->placeholder('Ej: Talla M, Caja x 100, Estándar')
-                                ->live(onBlur: true),
                             Forms\Components\TextInput::make('minimum_stock')
                                 ->label('Stock Mínimo')
                                 ->numeric()
@@ -65,7 +66,7 @@ class StocksRelationManager extends RelationManager
                                 ->numeric()
                                 ->minValue(0)
                                 ->rules([
-                                    fn (Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                    fn(Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
                                         $minStock = $get('minimum_stock');
                                         if ($minStock !== null && $value !== '' && (float) $value < (float) $minStock) {
                                             $fail("El stock máximo debe ser mayor o igual al stock mínimo ({$minStock}).");
@@ -175,43 +176,43 @@ class StocksRelationManager extends RelationManager
             ->filters([
                 //
             ])
-             ->headerActions([
-                 Tables\Actions\CreateAction::make()
-                     ->before(function (Tables\Actions\CreateAction $action, array $data) {
-                         $inventoryService = app(\App\Services\InventoryService::class);
-                         $exists = $inventoryService->getStock($data['epp_variant_id'], $data['warehouse_location_id']);
-                         if ($exists) {
-                             \Filament\Notifications\Notification::make()
-                                 ->title('Error de validación')
-                                 ->body('Ya existe un registro de stock para esta variante en la ubicación seleccionada.')
-                                 ->danger()
-                                 ->send();
-                             $action->halt();
-                         }
-                     })
-                     ->using(function (array $data): \App\Models\Stock {
-                         return \App\Models\Stock::create($data);
-                     }),
-             ])
-             ->actions([
-                 Tables\Actions\ActionGroup::make([
-                     Tables\Actions\ViewAction::make(),
-                     Tables\Actions\EditAction::make()
-                         ->before(function (Tables\Actions\EditAction $action, array $data, \App\Models\Stock $record) {
-                             $inventoryService = app(\App\Services\InventoryService::class);
-                             $existingStock = $inventoryService->getStock($data['epp_variant_id'], $data['warehouse_location_id']);
-                             if ($existingStock && $existingStock->id !== $record->id) {
-                                 \Filament\Notifications\Notification::make()
-                                     ->title('Error de validación')
-                                     ->body('Ya existe otro registro de stock para esta variante en la ubicación seleccionada.')
-                                     ->danger()
-                                     ->send();
-                                 $action->halt();
-                             }
-                         }),
-                     Tables\Actions\DeleteAction::make(),
-                 ])
-             ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->before(function (Tables\Actions\CreateAction $action, array $data) {
+                        $inventoryService = app(\App\Services\InventoryService::class);
+                        $exists = $inventoryService->getStock($data['epp_variant_id'], $data['warehouse_location_id']);
+                        if ($exists) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error de validación')
+                                ->body('Ya existe un registro de stock para esta variante en la ubicación seleccionada.')
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    })
+                    ->using(function (array $data): \App\Models\Stock {
+                        return \App\Models\Stock::create($data);
+                    }),
+            ])
+            ->actions([
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->before(function (Tables\Actions\EditAction $action, array $data, \App\Models\Stock $record) {
+                            $inventoryService = app(\App\Services\InventoryService::class);
+                            $existingStock = $inventoryService->getStock($data['epp_variant_id'], $data['warehouse_location_id']);
+                            if ($existingStock && $existingStock->id !== $record->id) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Error de validación')
+                                    ->body('Ya existe otro registro de stock para esta variante en la ubicación seleccionada.')
+                                    ->danger()
+                                    ->send();
+                                $action->halt();
+                            }
+                        }),
+                    Tables\Actions\DeleteAction::make(),
+                ])
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

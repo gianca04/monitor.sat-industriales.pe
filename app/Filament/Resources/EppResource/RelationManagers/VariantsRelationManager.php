@@ -25,6 +25,11 @@ class VariantsRelationManager extends RelationManager
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('variant_name')
+                    ->label('Nombre / Descripción')
+                    ->maxLength(150)
+                    ->placeholder('Ej: Talla M, Caja x 100, Estándar')
+                    ->live(),
                 Forms\Components\TextInput::make('sku')
                     ->label('SKU')
                     ->required()
@@ -33,6 +38,7 @@ class VariantsRelationManager extends RelationManager
                     ->suffixAction(
                         Forms\Components\Actions\Action::make('generateSku')
                             ->icon('heroicon-m-sparkles')
+                            ->disabled(fn (Forms\Get $get): bool => empty(trim($get('variant_name') ?? '')))
                             ->action(function (Forms\Set $set, Forms\Get $get) {
                                 $tempVariant = new \App\Models\EppVariant([
                                     'epp_id' => $this->getOwnerRecord()->id,
@@ -41,11 +47,12 @@ class VariantsRelationManager extends RelationManager
                                 $set('sku', $tempVariant->generateSku());
                             })
                     ),
-                Forms\Components\TextInput::make('variant_name')
-                    ->label('Nombre / Descripción')
-                    ->maxLength(150)
-                    ->placeholder('Ej: Talla M, Caja x 100, Estándar')
-                    ->live(onBlur: true),
+                Forms\Components\TextInput::make('unit_cost')
+                    ->label('Costo Referencial (S/)')
+                    ->numeric()
+                    ->prefix('S/')
+                    ->minValue(0)
+                    ->default(0),
                 Forms\Components\TextInput::make('minimum_stock')
                     ->label('Stock Mínimo')
                     ->numeric()
@@ -57,7 +64,7 @@ class VariantsRelationManager extends RelationManager
                     ->numeric()
                     ->minValue(0)
                     ->rules([
-                        fn (Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                        fn(Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
                             $minStock = $get('minimum_stock');
                             if ($minStock !== null && $value !== '' && (float) $value < (float) $minStock) {
                                 $fail("El stock máximo debe ser mayor o igual al stock mínimo ({$minStock}).");
@@ -86,10 +93,15 @@ class VariantsRelationManager extends RelationManager
                     ->label('Nombre / Descripción')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('unit_cost')
+                    ->label('Costo Ref.')
+                    ->money('PEN')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('current_stock')
                     ->label('Stock')
                     ->badge()
-                    ->color(fn (\App\Models\EppVariant $record, \App\Services\InventoryService $inventoryService) => 
+                    ->color(
+                        fn(\App\Models\EppVariant $record, \App\Services\InventoryService $inventoryService) =>
                         $inventoryService->isBelowMinimum($record) ? 'danger' : 'success'
                     ),
                 Tables\Columns\TextColumn::make('minimum_stock')

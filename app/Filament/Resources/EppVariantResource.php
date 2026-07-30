@@ -33,6 +33,11 @@ class EppVariantResource extends Resource
                     ->required()
                     ->preload()
                     ->searchable(),
+                Forms\Components\TextInput::make('variant_name')
+                    ->label('Nombre de Variante / Descripción')
+                    ->maxLength(150)
+                    ->placeholder('Ej: Talla M, Caja x 100, Estándar')
+                    ->live(),
                 Forms\Components\TextInput::make('sku')
                     ->label('SKU')
                     ->required()
@@ -41,6 +46,7 @@ class EppVariantResource extends Resource
                     ->suffixAction(
                         Forms\Components\Actions\Action::make('generateSku')
                             ->icon('heroicon-m-sparkles')
+                            ->disabled(fn (Forms\Get $get): bool => empty(trim($get('variant_name') ?? '')))
                             ->action(function (Forms\Set $set, Forms\Get $get) {
                                 $tempVariant = new \App\Models\EppVariant([
                                     'epp_id' => $get('epp_id'),
@@ -49,11 +55,13 @@ class EppVariantResource extends Resource
                                 $set('sku', $tempVariant->generateSku());
                             })
                     ),
-                Forms\Components\TextInput::make('variant_name')
-                    ->label('Nombre de Variante / Descripción')
-                    ->maxLength(150)
-                    ->placeholder('Ej: Talla M, Caja x 100, Estándar')
-                    ->live(onBlur: true),
+
+                Forms\Components\TextInput::make('unit_cost')
+                    ->label('Costo Referencial (S/)')
+                    ->numeric()
+                    ->prefix('S/')
+                    ->minValue(0)
+                    ->default(0),
                 Forms\Components\TextInput::make('minimum_stock')
                     ->label('Stock Mínimo')
                     ->numeric()
@@ -65,7 +73,7 @@ class EppVariantResource extends Resource
                     ->numeric()
                     ->minValue(0)
                     ->rules([
-                        fn (Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                        fn(Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
                             $minStock = $get('minimum_stock');
                             if ($minStock !== null && $value !== '' && (float) $value < (float) $minStock) {
                                 $fail("El stock máximo debe ser mayor o igual al stock mínimo ({$minStock}).");
@@ -95,6 +103,10 @@ class EppVariantResource extends Resource
                 Tables\Columns\TextColumn::make('variant_name')
                     ->label('Nombre / Descripción')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('unit_cost')
+                    ->label('Costo Ref.')
+                    ->money('PEN')
+                    ->sortable(),
                 Tables\Columns\ToggleColumn::make('active')
                     ->label('Activo')
                     ->sortable(),

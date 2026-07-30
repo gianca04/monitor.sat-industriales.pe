@@ -24,7 +24,48 @@ class StockMovementsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                // Movimientos son inmutables
+                Forms\Components\DateTimePicker::make('created_at')
+                    ->label('Fecha')
+                    ->disabled(),
+                Forms\Components\TextInput::make('eppVariant.sku')
+                    ->label('SKU')
+                    ->disabled(),
+                Forms\Components\TextInput::make('type')
+                    ->label('Tipo')
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'input' => 'Ingreso',
+                        'transfer_in' => 'Ingreso por traslado',
+                        'loss' => 'Merma / Ajuste',
+                        'adjustment_out' => 'Merma / Ajuste',
+                        'transfer_out' => 'Salida por traslado',
+                        'output' => 'Salida',
+                        'dispatch' => 'Despacho',
+                        default => ucfirst($state),
+                    })
+                    ->disabled(),
+                Forms\Components\TextInput::make('warehouse.name')
+                    ->label('Almacén')
+                    ->disabled(),
+                Forms\Components\TextInput::make('warehouseLocation.code')
+                    ->label('Ubicación')
+                    ->disabled(),
+                Forms\Components\TextInput::make('quantity')
+                    ->label('Cantidad')
+                    ->numeric()
+                    ->disabled(),
+                Forms\Components\TextInput::make('unit_cost')
+                    ->label('Costo Unitario')
+                    ->numeric()
+                    ->prefix('S/')
+                    ->disabled(),
+                Forms\Components\TextInput::make('user.name')
+                    ->label('Registrado por')
+                    ->formatStateUsing(fn($record) => $record?->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record?->user?->name ?? 'Sistema'))
+                    ->disabled(),
+                Forms\Components\Textarea::make('description')
+                    ->label('Descripción')
+                    ->columnSpanFull()
+                    ->disabled(),
             ]);
     }
 
@@ -36,11 +77,13 @@ class StockMovementsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('eppVariant.sku')
                     ->label('SKU')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('type')
                     ->label('Tipo')
                     ->badge()
@@ -51,6 +94,7 @@ class StockMovementsRelationManager extends RelationManager
                         'adjustment_out' => 'danger',
                         'transfer_out' => 'danger',
                         'output' => 'warning',
+                        'dispatch' => 'warning',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn(string $state): string => match ($state) {
@@ -60,27 +104,39 @@ class StockMovementsRelationManager extends RelationManager
                         'adjustment_out' => 'Merma / Ajuste',
                         'transfer_out' => 'Salida por traslado',
                         'output' => 'Salida',
+                        'dispatch' => 'Despacho',
                         default => ucfirst($state),
-                    }),
+                    })
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('warehouse.name')
                     ->label('Almacén')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('warehouseLocation.code')
                     ->label('Ubicación')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('quantity')
                     ->label('Cantidad')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('unit_cost')
+                    ->label('Costo Unit.')
+                    ->money('PEN')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('user.employee')
                     ->label('Registrado por')
-                    ->formatStateUsing(fn ($record) => $record->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record->user?->name ?? 'Sistema'))
-                    ->sortable(),
+                    ->formatStateUsing(fn($record) => $record->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record->user?->name ?? 'Sistema'))
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('description')
                     ->label('Descripción')
                     ->limit(50)
+                    ->toggledHiddenByDefault(true)
                     ->searchable(),
             ])
             ->defaultSort('id', 'desc')
@@ -155,11 +211,16 @@ class StockMovementsRelationManager extends RelationManager
                             ->required()
                             ->numeric()
                             ->minValue(1),
+                        Forms\Components\TextInput::make('unit_cost')
+                            ->label('Costo Unitario (S/)')
+                            ->numeric()
+                            ->prefix('S/')
+                            ->minValue(0),
                         Forms\Components\Textarea::make('description')
                             ->label('Descripción')
                             ->required(),
                     ])
-                    ->action(function (array $data) {
+                    ->action(function (array $data, \Livewire\Component $livewire) {
                         $action = app(\App\Actions\BulkStockEntryAction::class);
                         try {
                             $action->execute([
@@ -167,6 +228,7 @@ class StockMovementsRelationManager extends RelationManager
                                     'epp_variant_id' => $data['epp_variant_id'],
                                     'warehouse_location_id' => $data['warehouse_location_id'],
                                     'quantity' => $data['quantity'],
+                                    'unit_cost' => $data['unit_cost'] ?? null,
                                     'description' => $data['description'],
                                 ]
                             ]);
@@ -174,6 +236,8 @@ class StockMovementsRelationManager extends RelationManager
                                 ->title('Ingreso registrado con éxito')
                                 ->success()
                                 ->send();
+
+                            $livewire->redirect(\App\Filament\Resources\EppResource::getUrl('index'));
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Error al registrar ingreso')
@@ -307,7 +371,7 @@ class StockMovementsRelationManager extends RelationManager
                                 $variantId = $get('epp_variant_id');
                                 $sourceLocId = $get('source_location_id');
                                 $targetLocId = $get('target_location_id');
-                                
+
                                 if ($variantId && $sourceLocId) {
                                     $stock = app(\App\Services\InventoryService::class)->getStock($variantId, $sourceLocId);
                                     $set('source_stock', $stock ? $stock->current_stock : 0);
@@ -440,8 +504,9 @@ class StockMovementsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                // Movimientos inmutables
+                Tables\Actions\ViewAction::make(),
             ])
+            ->recordAction(Tables\Actions\ViewAction::class)
             ->bulkActions([
                 // Movimientos inmutables
             ]);

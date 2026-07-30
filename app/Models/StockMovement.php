@@ -13,6 +13,7 @@ class StockMovement extends Model
         'delivery_detail_id',
         'user_id',
         'quantity',
+        'unit_cost',
         'type',
         'description',
     ];
@@ -51,5 +52,10 @@ class StockMovement extends Model
     public function deliveryDetail()
     {
         return $this->belongsTo(DeliveryDetail::class);
+    }
+
+    public static function firstCreated()
+    {
+        return static::oldest('created_at')->first();
     }
 }

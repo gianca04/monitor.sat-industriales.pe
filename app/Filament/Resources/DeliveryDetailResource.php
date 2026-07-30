@@ -14,6 +14,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class DeliveryDetailResource extends Resource
 {
@@ -160,6 +161,11 @@ class DeliveryDetailResource extends Resource
                             ->numeric()
                             ->required()
                             ->minValue(1),
+                        Forms\Components\TextInput::make('unit_cost')
+                            ->label('Costo Unitario (S/)')
+                            ->numeric()
+                            ->prefix('S/')
+                            ->default(fn(Forms\Get $get) => $get('epp_variant_id') ? \App\Models\EppVariant::find($get('epp_variant_id'))?->unit_cost : 0),
                         Forms\Components\Select::make('employee_id')
                             ->label('Destinatario (Personal)')
                             ->relationship('employee', 'first_name')
@@ -181,6 +187,22 @@ class DeliveryDetailResource extends Resource
                             ->default(\App\Enums\DeliveryStatus::PENDING)
                             ->disabled()
                             ->dehydrated(),
+                        Forms\Components\Placeholder::make('signature_preview')
+                            ->label('Firma de Conformidad')
+                            ->content(function (?\App\Models\DeliveryDetail $record) {
+                                if (!$record || !$record->signature) {
+                                    return 'Sin firma registrada';
+                                }
+                                $signedAt = $record->signed_at ? ' (Firmado el ' . $record->signed_at->format('d/m/Y H:i') . ')' : '';
+                                return new \Illuminate\Support\HtmlString(
+                                    '<div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; display: inline-block;">' .
+                                    '<img src="' . $record->signature . '" style="max-height: 120px; width: auto;" />' .
+                                    '<div style="font-size: 0.75rem; color: #6b7280; margin-top: 4px;">' . $signedAt . '</div>' .
+                                    '</div>'
+                                );
+                            })
+                            ->visible(fn(?\App\Models\DeliveryDetail $record) => !empty($record?->signature))
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
             ]);
@@ -212,6 +234,11 @@ class DeliveryDetailResource extends Resource
                     ->toggleable()
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('unit_cost')
+                    ->label('Costo Unit.')
+                    ->money('PEN')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('delivered_quantity')
                     ->label('Entregado')
                     ->toggleable()
@@ -228,9 +255,11 @@ class DeliveryDetailResource extends Resource
                         });
                     })
                     ->sortable(),
-                Tables\Columns\IconColumn::make('employee.daily_payment')
-                    ->label('Pago Diario')
-                    ->boolean()
+                Tables\Columns\TextColumn::make('employee.daily_payment')
+                    ->label('Pago')
+                    ->badge()
+                    ->formatStateUsing(fn($record) => $record->employee ? ($record->employee->daily_payment ? 'Diario' : 'Planilla') : '-')
+                    ->color(fn($record) => $record->employee ? ($record->employee->daily_payment ? 'warning' : 'info') : 'gray')
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
@@ -248,6 +277,17 @@ class DeliveryDetailResource extends Resource
                     ->toggleable()
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('signed_at')
+                    ->label('Fecha de Firma')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable()
+                    ->toggledHiddenByDefault(true),
+                Tables\Columns\IconColumn::make('is_signed')
+                    ->label('Firmado')
+                    ->boolean()
+                    ->sortable(query: fn(Builder $query, string $direction) => $query->orderByRaw("signed_at IS NOT NULL {$direction}"))
+                    ->toggleable(),
             ])
             ->recordUrl(
                 fn(DeliveryDetail $record): string => DeliveryResource::getUrl('edit', ['record' => $record->delivery_id])
@@ -263,7 +303,7 @@ class DeliveryDetailResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['search'],
-                            fn (Builder $query, $search) => $query->whereHas('employee', function (Builder $q) use ($search) {
+                            fn(Builder $query, $search) => $query->whereHas('employee', function (Builder $q) use ($search) {
                                 $q->where('first_name', 'like', "%{$search}%")
                                     ->orWhere('last_name', 'like', "%{$search}%")
                                     ->orWhere('document_number', 'like', "%{$search}%");
@@ -271,7 +311,7 @@ class DeliveryDetailResource extends Resource
                         );
                     })
                     ->indicateUsing(function (array $data): ?string {
-                        if (! $data['search']) {
+                        if (!$data['search']) {
                             return null;
                         }
 
@@ -289,13 +329,13 @@ class DeliveryDetailResource extends Resource
                         return $query
                             ->when(
                                 $data['delivery_from'],
-                                fn (Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
+                                fn(Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
                                     $q->whereDate('delivery_date', '>=', $date);
                                 })
                             )
                             ->when(
                                 $data['delivery_until'],
-                                fn (Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
+                                fn(Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
                                     $q->whereDate('delivery_date', '<=', $date);
                                 })
                             );
@@ -316,6 +356,7 @@ class DeliveryDetailResource extends Resource
                     ->label('Despachar')
                     ->icon('heroicon-o-truck')
                     ->color('success')
+                    ->modalWidth('4xl')
                     ->visible(fn(\App\Models\DeliveryDetail $record): bool => $record->status !== \App\Enums\DeliveryStatus::DELIVERED)
                     ->mountUsing(function (Forms\ComponentContainer $form, \App\Models\DeliveryDetail $record) {
                         $form->fill([
@@ -330,6 +371,7 @@ class DeliveryDetailResource extends Resource
                             ->schema([
                                 Forms\Components\TextInput::make('sku')
                                     ->label('SKU')
+                                    ->columnSpanFull()
                                     ->disabled(),
                                 Forms\Components\TextInput::make('required_quantity')
                                     ->label('Cantidad requerida')
@@ -407,11 +449,17 @@ class DeliveryDetailResource extends Resource
                                         $fail("La cantidad total a despachar ({$totalDispatched}) supera la cantidad pendiente ({$remaining}).");
                                     }
                                 }
-                            ])
+                            ]),
+                        SignaturePad::make('signature')
+                            ->label('Firma de Conformidad')
+                            ->confirmable()
+                            ->backgroundColor('rgba(0,0,0,0)')
+                            ->penColor('#000')
+                            ->penColorOnDark('#fff'),
                     ])
                     ->action(function (array $data, \App\Models\DeliveryDetail $record) {
                         try {
-                            app(\App\Actions\DispatchDeliveryDetailAction::class)->execute($record, $data['dispatches']);
+                            app(\App\Actions\DispatchDeliveryDetailAction::class)->execute($record, $data['dispatches'], $data['signature'] ?? null);
 
                             \Filament\Notifications\Notification::make()
                                 ->title('Despacho registrado con éxito')
@@ -425,10 +473,38 @@ class DeliveryDetailResource extends Resource
                                 ->send();
                         }
                     }),
+
                 ActionGroup::make([
                     Tables\Actions\EditAction::make()
                         ->url(fn($record) => DeliveryResource::getUrl('edit', ['record' => $record->delivery_id])),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('firmar')
+                        ->label('Firmar')
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('warning')
+                        ->visible(fn(\App\Models\DeliveryDetail $record): bool => ($record->status === \App\Enums\DeliveryStatus::DELIVERED || $record->status === \App\Enums\DeliveryStatus::PARTIAL) && !$record->is_signed)
+                        ->form([
+                            SignaturePad::make('signature')
+                                ->label('Firma de Conformidad')
+                                ->confirmable()
+                                ->required()
+                                ->backgroundColor('rgba(0,0,0,0)')
+                                ->penColor('#000')
+                                ->penColorOnDark('#fff'),
+                        ])
+                        ->action(function (array $data, \App\Models\DeliveryDetail $record) {
+                            if (!empty($data['signature'])) {
+                                $record->update([
+                                    'signature' => $data['signature'],
+                                    'signed_at' => now(),
+                                ]);
+
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Firma registrada con éxito')
+                                    ->success()
+                                    ->send();
+                            }
+                        }),
                 ])
             ])
             ->bulkActions([
