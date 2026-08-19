@@ -264,6 +264,22 @@
         </table>
         @endif
 
+        {{-- CONCLUSIONES --}}
+        @if($workReport->conclusions)
+        <table class="basic-info-text">
+            <thead>
+                <tr>
+                    <th>Conclusiones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{!! $workReport->conclusions !!}</td>
+                </tr>
+            </tbody>
+        </table>
+        @endif
+
         {{-- EVIDENCIAS FOTOGRAFICAS DEL REPORTE --}}
         @if($workReport->photos->count() > 0)
             @foreach ($workReport->photos as $photoIndex => $photo)

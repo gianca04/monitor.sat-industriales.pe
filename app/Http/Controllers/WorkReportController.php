@@ -65,10 +65,9 @@ class WorkReportController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('report_date', '<=', $request->date_to);
         }
-
-        // 4. Ordenamiento (Default: Más recientes primero)
-        $query->orderBy('report_date', 'desc')
-            ->orderBy('created_at', 'desc');
+        // 4. Ordenamiento (Default: Más recientes por creación primero)
+        $query->orderBy('created_at', 'desc')
+            ->orderBy('report_date', 'desc');
 
 
         // Paginación
@@ -266,8 +265,8 @@ class WorkReportController extends Controller
             'photos'
         ])
             ->where('project_id', $projectId)
-            ->orderBy('report_date', 'desc')
             ->orderBy('created_at', 'desc')
+            ->orderBy('report_date', 'desc')
             ->get();
 
         if ($workReports->isEmpty()) {
@@ -313,8 +312,8 @@ class WorkReportController extends Controller
             'photos'
         ])
             ->where('employee_id', $employeeId)
-            ->orderBy('report_date', 'desc')
             ->orderBy('created_at', 'desc')
+            ->orderBy('report_date', 'desc')
             ->get();
 
         if ($workReports->isEmpty()) {
@@ -359,6 +358,7 @@ class WorkReportController extends Controller
             'supervisor_signature' => $report->supervisor_signature ? url(Storage::url($report->supervisor_signature)) : null,
             'manager_signature' => $report->manager_signature ? url(Storage::url($report->manager_signature)) : null,
             'suggestions' => $report->suggestions ?? '',
+            'conclusions' => $report->conclusions ?? '',
             'tools' => $report->tools ?? '',
             'personnel' => $report->personnel ?? '',
             'materials' => $report->materials ?? '',

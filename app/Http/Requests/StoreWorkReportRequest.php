@@ -33,6 +33,7 @@ class StoreWorkReportRequest extends FormRequest
             'personnel' => 'nullable|string',
             'materials' => 'nullable|string',
             'suggestions' => 'nullable|string',
+            'conclusions' => 'nullable|string',
             'supervisor_signature' => 'nullable|string', // Base64 string
             'manager_signature' => 'nullable|string',
         ];

@@ -205,6 +205,20 @@
             </tr>
         </tbody>
     </table>
+
+    {{-- TABLA DE CONCLUSIONES --}}
+    <table class="basic-info-text">
+        <thead>
+            <tr>
+                <th>Conclusiones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{!! $workReport->conclusions ?? 'N/A' !!}</td>
+            </tr>
+        </tbody>
+    </table>
     <style>
         /* Estilo para que las columnas de la tabla de cabecera tengan el mismo ancho y texto centrado */
         .info-table-header-col {

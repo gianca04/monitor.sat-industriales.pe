@@ -18,7 +18,7 @@ class StorePhotoRequest extends FormRequest
             'descripcion' => ['nullable', 'string', 'max:1000'],
             
             // Validaciones para la foto principal
-            'photo' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:10240'], // Max 10MB
+            'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:10240'], // Max 10MB
             
             // Validaciones para la foto "antes del trabajo"
             'before_work_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:10240'],

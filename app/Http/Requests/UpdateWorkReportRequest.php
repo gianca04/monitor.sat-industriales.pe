@@ -33,6 +33,7 @@ class UpdateWorkReportRequest extends FormRequest
             'personnel' => 'nullable|string',
             'materials' => 'nullable|string',
             'suggestions' => 'nullable|string',
+            'conclusions' => 'nullable|string',
             'supervisor_signature' => 'nullable|string',
             'manager_signature' => 'nullable|string',
         ];

@@ -20,7 +20,7 @@ use App\Models\SubClient;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 Route::get('/status', function () {
     return response()->json(['status' => 'OK', 'message' => 'El sistema está funcionando correctamente']);
 });
@@ -39,7 +39,7 @@ Route::get('/status', function () {
 // });
 
 // Rutas protegidas con autenticación
-Route::middleware(['auth:sanctum', 'CheckTokenExpiration'])->group(function () {
+Route::middleware(['auth:sanctum', 'CheckTokenExpiration', 'throttle:api'])->group(function () {
 
     // Autenticación
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -118,7 +118,8 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration'])->group(function () {
     Route::apiResource('photos', PhotoController::class);
     Route::apiResource('positions', PositionController::class);
 
-    // Ruta para generar reporte PDF de trabajo
+    // Ruta para generar reporte PDF de trabajo (con límite específico)
     Route::get('/work-report/{workReport}/pdf', [WorkReportPdfController::class, 'generateReport'])
+        ->middleware('throttle:pdf_generation')
         ->name('api.work-report.pdf');
 });

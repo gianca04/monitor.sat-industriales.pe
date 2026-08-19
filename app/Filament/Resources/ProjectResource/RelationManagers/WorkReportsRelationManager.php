@@ -451,6 +451,27 @@ class WorkReportsRelationManager extends RelationManager
                             ]),
                         // FIN DL TAB DE LISTA DE PERSONAL
 
+                        // INICIO DE TAB DE CONCLUSIONES
+                        Tabs\Tab::make('Conclusiones')
+                            ->icon('heroicon-o-check-badge')
+                            ->columns(2)
+                            ->schema([
+                                Forms\Components\RichEditor::make('conclusions')
+                                    ->label('Conclusiones')
+                                    ->columnSpanFull()
+                                    ->maxLength(5000)
+                                    ->toolbarButtons([
+                                        'bold',
+                                        'h2',
+                                        'h3',
+                                        'orderedList',
+                                        'bulletList',
+                                        'redo',
+                                        'underline',
+                                        'undo',
+                                    ]),
+                            ]),
+
                         // INICIO DE TAB DE FIRMAS
                         Tabs\Tab::make('Firmas')
                             ->icon('heroicon-o-pencil-square')
