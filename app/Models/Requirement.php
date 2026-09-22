@@ -13,6 +13,7 @@ class Requirement extends Model
 
     protected $fillable = [
         'sub_client_id',
+        'activity_name',
         'created_by',
     ];
 

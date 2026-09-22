@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('requirements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sub_client_id')->constrained('sub_clients')->cascadeOnDelete();
+            $table->string('activity_name')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

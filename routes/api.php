@@ -1,22 +1,23 @@
 <?php
 
-use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\TimesheetController;
-use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ClientDataController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDataController;
-use App\Http\Controllers\ClientDataController;
-use App\Http\Controllers\SubClientDataController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\PositionController;
-use App\Http\Controllers\EvidenceController;
-use App\Http\Controllers\WorkReportPdfController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RequirementController;
+use App\Http\Controllers\RequirementListController;
+use App\Http\Controllers\SubcategoryController;
+use App\Http\Controllers\SubClientDataController;
+use App\Http\Controllers\TimesheetController;
+use App\Http\Controllers\UnitController;
 use App\Http\Controllers\WorkReportController;
-use App\Http\Controllers\QuoteController;
-use App\Http\Controllers\QuoteController as ControllersQuoteController;
-use App\Models\SubClient;
+use App\Http\Controllers\WorkReportPdfController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
@@ -44,7 +45,6 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration', 'throttle:api'])->gro
     // Autenticación
     Route::post('/logout', [AuthController::class, 'logout']);
 
-
     // Proyectos
     Route::prefix('projects')->group(function () {
         // Endpoint principal para proyectos vigentes y búsqueda por nombre, cliente y subcliente
@@ -70,7 +70,6 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration', 'throttle:api'])->gro
         Route::put('/{id}', [EmployeeController::class, 'update']);
         Route::delete('/{id}', [EmployeeController::class, 'destroy']);
     });
-
 
     // Clientes
     Route::prefix('clients')->group(function () {
@@ -118,8 +117,22 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration', 'throttle:api'])->gro
     Route::apiResource('photos', PhotoController::class);
     Route::apiResource('positions', PositionController::class);
 
+    // Inventario y Requerimientos (temporalmente comentados bajo autenticación para pruebas)
+    // Route::apiResource('units', UnitController::class);
+    // Route::apiResource('items', ItemController::class);
+    // Route::apiResource('requirements', RequirementController::class);
+    // Route::apiResource('requirements.items', RequirementListController::class);
+
     // Ruta para generar reporte PDF de trabajo (con límite específico)
     Route::get('/work-report/{workReport}/pdf', [WorkReportPdfController::class, 'generateReport'])
         ->middleware('throttle:pdf_generation')
         ->name('api.work-report.pdf');
 });
+
+// Rutas temporales sin autenticación para pruebas
+Route::apiResource('units', UnitController::class);
+Route::apiResource('items', ItemController::class);
+Route::apiResource('categories', CategoryController::class)->only(['index', 'store']);
+Route::apiResource('subcategories', SubcategoryController::class)->only(['index', 'store']);
+Route::apiResource('requirements', RequirementController::class);
+Route::apiResource('requirements.items', RequirementListController::class);
