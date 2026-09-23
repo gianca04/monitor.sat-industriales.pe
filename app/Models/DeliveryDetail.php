@@ -60,7 +60,6 @@ class DeliveryDetail extends Model
 
     public function getIsSignedAttribute(): bool
     {
-        return !is_null($this->signed_at);
+        return ! is_null($this->signed_at);
     }
 }
-

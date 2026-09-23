@@ -4,11 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Timesheet;
-use App\Models\Employee;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
@@ -40,12 +38,12 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $attendances,
-                'message' => 'Asistencias obtenidas correctamente'
+                'message' => 'Asistencias obtenidas correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las asistencias: ' . $e->getMessage()
+                'message' => 'Error al obtener las asistencias: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -76,7 +74,7 @@ class AttendanceController extends Controller
             if ($existingAttendance) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ya existe una asistencia registrada para este empleado en este timesheet'
+                    'message' => 'Ya existe una asistencia registrada para este empleado en este timesheet',
                 ], 400);
             }
 
@@ -86,7 +84,7 @@ class AttendanceController extends Controller
             // Si no se proporciona información de horarios y el estado es 'present',
             // usar los horarios del timesheet
             $attendanceData = $request->all();
-            if ($request->status === 'present' && !$request->check_in_date) {
+            if ($request->status === 'present' && ! $request->check_in_date) {
                 $attendanceData['check_in_date'] = $timesheet->check_in_date;
                 $attendanceData['break_date'] = $timesheet->break_date;
                 $attendanceData['end_break_date'] = $timesheet->end_break_date;
@@ -99,19 +97,19 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $attendance,
-                'message' => 'Asistencia registrada correctamente'
+                'message' => 'Asistencia registrada correctamente',
             ], 201);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al registrar la asistencia: ' . $e->getMessage()
+                'message' => 'Error al registrar la asistencia: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -128,12 +126,12 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $attendance,
-                'message' => 'Asistencia obtenida correctamente'
+                'message' => 'Asistencia obtenida correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Asistencia no encontrada'
+                'message' => 'Asistencia no encontrada',
             ], 404);
         }
     }
@@ -162,19 +160,19 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $attendance,
-                'message' => 'Asistencia actualizada correctamente'
+                'message' => 'Asistencia actualizada correctamente',
             ]);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar la asistencia: ' . $e->getMessage()
+                'message' => 'Error al actualizar la asistencia: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -190,12 +188,12 @@ class AttendanceController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Asistencia eliminada correctamente'
+                'message' => 'Asistencia eliminada correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar la asistencia: ' . $e->getMessage()
+                'message' => 'Error al eliminar la asistencia: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -213,12 +211,12 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $attendance,
-                'message' => 'Asistencia restaurada correctamente'
+                'message' => 'Asistencia restaurada correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al restaurar la asistencia: ' . $e->getMessage()
+                'message' => 'Error al restaurar la asistencia: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -251,6 +249,7 @@ class AttendanceController extends Controller
 
                     if ($existingAttendance) {
                         $errors[] = "El empleado con ID {$attendanceData['employee_id']} ya tiene asistencia registrada";
+
                         continue;
                     }
 
@@ -269,7 +268,7 @@ class AttendanceController extends Controller
                     $createdAttendances[] = $attendance;
 
                 } catch (\Exception $e) {
-                    $errors[] = "Error al crear asistencia para empleado {$attendanceData['employee_id']}: " . $e->getMessage();
+                    $errors[] = "Error al crear asistencia para empleado {$attendanceData['employee_id']}: ".$e->getMessage();
                 }
             }
 
@@ -277,19 +276,19 @@ class AttendanceController extends Controller
                 'success' => count($createdAttendances) > 0,
                 'data' => $createdAttendances,
                 'errors' => $errors,
-                'message' => count($createdAttendances) . ' asistencias creadas correctamente'
+                'message' => count($createdAttendances).' asistencias creadas correctamente',
             ], count($createdAttendances) > 0 ? 201 : 400);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al registrar las asistencias: ' . $e->getMessage()
+                'message' => 'Error al registrar las asistencias: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -314,12 +313,12 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $stats,
-                'message' => 'Estadísticas obtenidas correctamente'
+                'message' => 'Estadísticas obtenidas correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las estadísticas: ' . $e->getMessage()
+                'message' => 'Error al obtener las estadísticas: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -341,7 +340,7 @@ class AttendanceController extends Controller
                 'specific_date' => 'nullable|date',
                 'employee_name' => 'nullable|string',
                 'project_name' => 'nullable|string',
-                'has_observation' => 'nullable|boolean'
+                'has_observation' => 'nullable|boolean',
             ]);
 
             $query = Attendance::with(['employee', 'timesheet.project.quote.client']);
@@ -353,7 +352,7 @@ class AttendanceController extends Controller
 
             // Filtro por proyecto específico
             if ($request->filled('project_id')) {
-                $query->whereHas('timesheet', function($q) use ($request) {
+                $query->whereHas('timesheet', function ($q) use ($request) {
                     $q->where('project_id', $request->project_id);
                 });
             }
@@ -375,44 +374,44 @@ class AttendanceController extends Controller
 
             // Filtro por rango de fechas
             if ($request->filled('date_from') && $request->filled('date_to')) {
-                $query->whereHas('timesheet', function($q) use ($request) {
+                $query->whereHas('timesheet', function ($q) use ($request) {
                     $q->whereBetween('check_in_date', [
                         \Carbon\Carbon::parse($request->date_from)->startOfDay(),
-                        \Carbon\Carbon::parse($request->date_to)->endOfDay()
+                        \Carbon\Carbon::parse($request->date_to)->endOfDay(),
                     ]);
                 });
             } elseif ($request->filled('date_from')) {
-                $query->whereHas('timesheet', function($q) use ($request) {
+                $query->whereHas('timesheet', function ($q) use ($request) {
                     $q->where('check_in_date', '>=', \Carbon\Carbon::parse($request->date_from)->startOfDay());
                 });
             } elseif ($request->filled('date_to')) {
-                $query->whereHas('timesheet', function($q) use ($request) {
+                $query->whereHas('timesheet', function ($q) use ($request) {
                     $q->where('check_in_date', '<=', \Carbon\Carbon::parse($request->date_to)->endOfDay());
                 });
             }
 
             // Filtro por fecha específica
             if ($request->filled('specific_date')) {
-                $query->whereHas('timesheet', function($q) use ($request) {
+                $query->whereHas('timesheet', function ($q) use ($request) {
                     $q->whereDate('check_in_date', \Carbon\Carbon::parse($request->specific_date));
                 });
             }
 
             // Filtro por nombre del empleado
             if ($request->filled('employee_name')) {
-                $query->whereHas('employee', function($q) use ($request) {
-                    $q->where(function($qq) use ($request) {
-                        $qq->where('first_name', 'like', '%' . $request->employee_name . '%')
-                           ->orWhere('last_name', 'like', '%' . $request->employee_name . '%')
-                           ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $request->employee_name . '%']);
+                $query->whereHas('employee', function ($q) use ($request) {
+                    $q->where(function ($qq) use ($request) {
+                        $qq->where('first_name', 'like', '%'.$request->employee_name.'%')
+                            ->orWhere('last_name', 'like', '%'.$request->employee_name.'%')
+                            ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%'.$request->employee_name.'%']);
                     });
                 });
             }
 
             // Filtro por nombre del proyecto
             if ($request->filled('project_name')) {
-                $query->whereHas('timesheet.project', function($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->project_name . '%');
+                $query->whereHas('timesheet.project', function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->project_name.'%');
                 });
             }
 
@@ -442,8 +441,8 @@ class AttendanceController extends Controller
                 'with_observations' => $attendances->whereNotNull('observation')->count(),
                 'date_range' => [
                     'earliest' => $attendances->min('timesheet.check_in_date'),
-                    'latest' => $attendances->max('timesheet.check_in_date')
-                ]
+                    'latest' => $attendances->max('timesheet.check_in_date'),
+                ],
             ];
 
             return response()->json([
@@ -455,20 +454,20 @@ class AttendanceController extends Controller
                 'filters_applied' => $request->only([
                     'timesheet_id', 'project_id', 'employee_id', 'status', 'shift',
                     'date_from', 'date_to', 'specific_date', 'employee_name',
-                    'project_name', 'has_observation'
-                ])
+                    'project_name', 'has_observation',
+                ]),
             ]);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error en la búsqueda: ' . $e->getMessage()
+                'message' => 'Error en la búsqueda: '.$e->getMessage(),
             ], 500);
         }
     }

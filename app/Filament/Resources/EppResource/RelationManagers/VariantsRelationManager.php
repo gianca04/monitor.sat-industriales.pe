@@ -6,19 +6,20 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Table;
 
 class VariantsRelationManager extends RelationManager
 {
     protected static string $relationship = 'variants';
 
     protected static ?string $modelLabel = 'Variante';
+
     protected static ?string $pluralModelLabel = 'Variantes';
+
     protected static ?string $title = 'Variantes de EPP';
 
     public function form(Form $form): Form
@@ -42,7 +43,7 @@ class VariantsRelationManager extends RelationManager
                             ->action(function (Forms\Set $set, Forms\Get $get) {
                                 $tempVariant = new \App\Models\EppVariant([
                                     'epp_id' => $this->getOwnerRecord()->id,
-                                    'variant_name' => $get('variant_name')
+                                    'variant_name' => $get('variant_name'),
                                 ]);
                                 $set('sku', $tempVariant->generateSku());
                             })
@@ -64,7 +65,7 @@ class VariantsRelationManager extends RelationManager
                     ->numeric()
                     ->minValue(0)
                     ->rules([
-                        fn(Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                        fn (Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
                             $minStock = $get('minimum_stock');
                             if ($minStock !== null && $value !== '' && (float) $value < (float) $minStock) {
                                 $fail("El stock máximo debe ser mayor o igual al stock mínimo ({$minStock}).");
@@ -101,8 +102,7 @@ class VariantsRelationManager extends RelationManager
                     ->label('Stock')
                     ->badge()
                     ->color(
-                        fn(\App\Models\EppVariant $record, \App\Services\InventoryService $inventoryService) =>
-                        $inventoryService->isBelowMinimum($record) ? 'danger' : 'success'
+                        fn (\App\Models\EppVariant $record, \App\Services\InventoryService $inventoryService) => $inventoryService->isBelowMinimum($record) ? 'danger' : 'success'
                     ),
                 Tables\Columns\TextColumn::make('minimum_stock')
                     ->label('Mínimo')

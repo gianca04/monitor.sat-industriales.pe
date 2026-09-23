@@ -3,23 +3,23 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CertificationResource\Pages;
-use App\Filament\Resources\CertificationResource\RelationManagers;
 use App\Models\Certification;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CertificationResource extends Resource
 {
     protected static ?string $model = Certification::class;
 
     protected static ?string $modelLabel = 'Certificación';
+
     protected static ?string $pluralModelLabel = 'Certificaciones';
+
     protected static ?string $navigationGroup = 'Gestión de inventario';
+
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
     public static function form(Form $form): Form

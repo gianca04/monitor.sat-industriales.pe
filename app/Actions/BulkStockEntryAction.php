@@ -13,7 +13,7 @@ class BulkStockEntryAction
     /**
      * Process bulk stock entries.
      *
-     * @param array $entries Array of arrays: [['epp_variant_id' => X, 'warehouse_location_id' => Y, 'quantity' => Z, 'description' => '...']]
+     * @param  array  $entries  Array of arrays: [['epp_variant_id' => X, 'warehouse_location_id' => Y, 'quantity' => Z, 'description' => '...']]
      */
     public function execute(array $entries): void
     {
@@ -25,12 +25,12 @@ class BulkStockEntryAction
                 $unitCost = isset($entry['unit_cost']) ? (float) $entry['unit_cost'] : null;
                 $description = $entry['description'] ?? 'Ingreso masivo de stock';
 
-                if (!$variantId || !$locationId) {
+                if (! $variantId || ! $locationId) {
                     throw new InvalidArgumentException("Cada entrada debe especificar 'epp_variant_id' y 'warehouse_location_id'.");
                 }
 
                 if ($quantity <= 0) {
-                    throw new InvalidArgumentException("La cantidad para cada entrada de stock debe ser mayor a cero.");
+                    throw new InvalidArgumentException('La cantidad para cada entrada de stock debe ser mayor a cero.');
                 }
 
                 // Get variant to resolve or update unit cost

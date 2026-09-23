@@ -19,7 +19,7 @@ class PositionController extends Controller
 
         // Búsqueda por nombre
         if ($request->filled('search')) {
-            $searchTerm = '%' . $request->search . '%';
+            $searchTerm = '%'.$request->search.'%';
             $query->where('name', 'like', $searchTerm);
         }
 

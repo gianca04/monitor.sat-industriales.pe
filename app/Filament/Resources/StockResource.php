@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\StockResource\Pages;
-use App\Filament\Resources\StockResource\RelationManagers;
 use App\Models\Stock;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -11,16 +10,19 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class StockResource extends Resource
 {
     protected static ?string $model = Stock::class;
 
     protected static ?string $modelLabel = 'Stock / Inventario';
+
     protected static ?string $pluralModelLabel = 'Stocks / Inventarios';
+
     protected static ?string $navigationGroup = 'Gestión de inventario';
+
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-bar';
+
     protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form

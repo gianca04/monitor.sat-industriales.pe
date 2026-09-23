@@ -2,41 +2,43 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\ProjectAttendancesReportExport;
 use App\Filament\Resources\ProjectResource\Pages;
-use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Filament\Resources\ProjectResource\RelationManagers\EmployeesRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\TimesheetsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\WorkReportsRelationManager;
 use App\Forms\Components\ClientMainInfo;
-use App\Exports\ProjectAttendancesReportExport;
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\Quote;
 use App\Models\SubClient;
-use App\Models\WorkReport;
 use Filament\Forms;
+use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Split;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Actions\Action as FormAction;
-use Filament\Forms\Components\Split;
 use FontLib\Table\Type\name;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProjectResource extends Resource
 {
     use Translatable;
+
     protected static ?string $pluralModelLabel = 'Proyectos';
+
     protected static ?string $modelLabel = 'Proyecto';
+
     protected static ?string $model = Project::class;
+
     protected static ?string $navigationGroup = 'Control de operaciones';
+
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
 
     // BUSQUEDA GLOBAL DE PROYECTOS
@@ -51,6 +53,7 @@ class ProjectResource extends Resource
             'Nombre' => $record->name,
         ];
     }
+
     public static function getGlobalSearchEloquentQuery(): Builder
     {
         // Optimiza la consulta, asegurando que solo cargue lo necesario
@@ -109,16 +112,16 @@ class ProjectResource extends Resource
                             ->label('Fecha de inicio')
                             ->default(now())
                             ->required(),
-                        //->maxDate(fn(callable $get) => $get('end_date')), // Valida contra end_date
+                        // ->maxDate(fn(callable $get) => $get('end_date')), // Valida contra end_date
 
                         Forms\Components\DatePicker::make('end_date')
                             ->label('Fecha de finalización'),
-                        //->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
+                        // ->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
 
                         Forms\Components\Placeholder::make('status_text')
                             ->label('Estado del proyecto:')
                             ->extraAttributes(['class' => 'text-2xl font-bold text-primary-600'])
-                            ->content(fn($record) => $record?->status_text ?? 'Sin definir'),
+                            ->content(fn ($record) => $record?->status_text ?? 'Sin definir'),
                     ]),
 
                 Split::make([
@@ -137,14 +140,14 @@ class ProjectResource extends Resource
                                         })
                                         ->get()
                                         ->mapWithKeys(function ($client) {
-                                            return [$client->id => $client->business_name . ' - ' . $client->document_number];
+                                            return [$client->id => $client->business_name.' - '.$client->document_number];
                                         })
                                         ->toArray();
                                 }
                             )
                             ->searchable() // Activa la búsqueda asincrónica
                             ->reactive() // Hace el campo reactivo
-                            ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('sub_client_id', null))
                             ->helperText('Selecciona el cliente para esta cotización.') // Ayuda para el campo de cliente
 
                             // Botón para ver información del cliente
@@ -155,22 +158,25 @@ class ProjectResource extends Resource
                                     ->color('info')
                                     ->action(function (callable $get) {
                                         $clientId = $get('client_id');
-                                        if (!$clientId) {
+                                        if (! $clientId) {
                                             Notification::make()
                                                 ->title('Selecciona un cliente primero')
                                                 ->warning()
                                                 ->send();
+
                                             return;
                                         }
                                     })
                                     ->modalContent(function (callable $get) {
                                         $clientId = $get('client_id');
-                                        if (!$clientId)
+                                        if (! $clientId) {
                                             return null;
+                                        }
 
                                         $client = Client::with('subClients')->find($clientId);
-                                        if (!$client)
+                                        if (! $client) {
                                             return null;
+                                        }
 
                                         return view('filament.components.client-info-modal', compact('client'));
                                     })
@@ -178,17 +184,17 @@ class ProjectResource extends Resource
                                     ->modalSubmitAction(false)
                                     ->modalCancelActionLabel('Cerrar')
                                     ->modalWidth('2xl')
-                                    ->visible(fn(callable $get) => !empty($get('client_id')))
+                                    ->visible(fn (callable $get) => ! empty($get('client_id')))
                             )
 
                             ->createOptionForm([
-                                ClientMainInfo::make()
-
+                                ClientMainInfo::make(),
 
                             ])
 
                             ->createOptionUsing(function (array $data): int {
                                 $client = Client::create($data);
+
                                 return $client->id;
                             })
                             ->createOptionAction(function (FormAction $action) {
@@ -227,6 +233,7 @@ class ProjectResource extends Resource
                             ->options(
                                 function (callable $get) {
                                     $clientId = $get('client_id');
+
                                     return SubClient::where('client_id', $clientId)
                                         ->get()
                                         ->mapWithKeys(function ($subClient) {
@@ -237,7 +244,7 @@ class ProjectResource extends Resource
                             )
                             ->reactive()
                             ->searchable()
-                            ->disabled(fn($get) => !$get('client_id')) // Deshabilita si no hay cliente seleccionado
+                            ->disabled(fn ($get) => ! $get('client_id')) // Deshabilita si no hay cliente seleccionado
                             ->helperText('Selecciona el Sede para esta cotización.') // Ayuda para el campo 'Sede'
 
                             // Cuando se carga un registro existente, seleccionar automáticamente el cliente
@@ -258,22 +265,25 @@ class ProjectResource extends Resource
                                     ->color('info')
                                     ->action(function (callable $get) {
                                         $subClientId = $get('sub_client_id');
-                                        if (!$subClientId) {
+                                        if (! $subClientId) {
                                             Notification::make()
                                                 ->title('Selecciona una sede primero')
                                                 ->warning()
                                                 ->send();
+
                                             return;
                                         }
                                     })
                                     ->modalContent(function (callable $get) {
                                         $subClientId = $get('sub_client_id');
-                                        if (!$subClientId)
+                                        if (! $subClientId) {
                                             return null;
+                                        }
 
                                         $subClient = SubClient::with('client')->find($subClientId);
-                                        if (!$subClient)
+                                        if (! $subClient) {
                                             return null;
+                                        }
 
                                         return view('filament.components.sub-client-info-modal', compact('subClient'));
                                     })
@@ -281,7 +291,7 @@ class ProjectResource extends Resource
                                     ->modalSubmitAction(false)
                                     ->modalCancelActionLabel('Cerrar')
                                     ->modalWidth('2xl')
-                                    ->visible(fn(callable $get) => !empty($get('sub_client_id')))
+                                    ->visible(fn (callable $get) => ! empty($get('sub_client_id')))
                             )
 
                             ->createOptionForm([
@@ -307,6 +317,7 @@ class ProjectResource extends Resource
                             ->createOptionUsing(function (array $data, callable $get): int {
                                 $data['client_id'] = $get('client_id');
                                 $subClient = SubClient::create($data);
+
                                 return $subClient->id;
                             })
                             ->createOptionAction(function (FormAction $action) {
@@ -353,7 +364,6 @@ class ProjectResource extends Resource
             ]);
     }
 
-
     public static function table(Table $table): Table
     {
         return $table
@@ -378,14 +388,13 @@ class ProjectResource extends Resource
 
                 Tables\Columns\BadgeColumn::make('status_text')
                     ->label('Estado del proyecto')
-                    ->formatStateUsing(fn($state, $record) => $record?->status_text ?? 'Sin definir')
+                    ->formatStateUsing(fn ($state, $record) => $record?->status_text ?? 'Sin definir')
                     ->colors([
-                        'gray' => fn($state) => $state === 'Sin definir',
-                        'primary' => fn($state) => $state === 'No iniciado',
-                        'warning' => fn($state) => $state === 'En proceso',
-                        'success' => fn($state) => $state === 'Culminado',
+                        'gray' => fn ($state) => $state === 'Sin definir',
+                        'primary' => fn ($state) => $state === 'No iniciado',
+                        'warning' => fn ($state) => $state === 'En proceso',
+                        'success' => fn ($state) => $state === 'Culminado',
                     ]),
-
 
                 /*Tables\Columns\TextColumn::make('quote.correlative')
                     ->label('Correlativo de Cotización')
@@ -441,9 +450,10 @@ class ProjectResource extends Resource
                         'Sin definir' => 'Sin definir',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!isset($data['value'])) {
+                        if (! isset($data['value'])) {
                             return $query;
                         }
+
                         return $query->whereRaw("(
                             CASE
                                 WHEN start_date IS NOT NULL AND ? < DATE(start_date) THEN 'No iniciado'
@@ -465,11 +475,11 @@ class ProjectResource extends Resource
                         return $query
                             ->when(
                                 $data['start_date'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('start_date', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('start_date', '>=', $date),
                             )
                             ->when(
                                 $data['end_date'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('end_date', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('end_date', '<=', $date),
                             );
                     }),
             ])
@@ -490,14 +500,14 @@ class ProjectResource extends Resource
                                             ->label('Fecha de inicio')
                                             ->required()
                                             ->default(now()->startOfMonth())
-                                            ->maxDate(fn(callable $get) => $get('end_date'))
+                                            ->maxDate(fn (callable $get) => $get('end_date'))
                                             ->prefixIcon('heroicon-o-calendar'),
 
                                         Forms\Components\DatePicker::make('end_date')
                                             ->label('Fecha de fin')
                                             ->required()
                                             ->default(now()->endOfMonth())
-                                            ->minDate(fn(callable $get) => $get('start_date'))
+                                            ->minDate(fn (callable $get) => $get('start_date'))
                                             ->prefixIcon('heroicon-o-calendar'),
                                     ]),
 
@@ -521,7 +531,7 @@ class ProjectResource extends Resource
                                 // Mostrar información adicional para debug
                                 $allTimesheets = $record->timesheets()->get();
                                 $debugInfo = $allTimesheets->map(function ($ts) {
-                                    return 'ID:' . $ts->id . ' Fecha:' . \Carbon\Carbon::parse($ts->check_in_date)->format('Y-m-d');
+                                    return 'ID:'.$ts->id.' Fecha:'.\Carbon\Carbon::parse($ts->check_in_date)->format('Y-m-d');
                                 })->join(', ');
 
                                 Notification::make()
@@ -530,13 +540,14 @@ class ProjectResource extends Resource
                                     ->warning()
                                     ->duration(10000)
                                     ->send();
+
                                 return;
                             }
 
                             // Generar el archivo Excel
-                            $filename = 'reporte_asistencias_' . str_replace(' ', '_', $record->name) . '_' .
-                                $startDate->format('Y-m-d') . '_a_' .
-                                $endDate->format('Y-m-d') . '.xlsx';
+                            $filename = 'reporte_asistencias_'.str_replace(' ', '_', $record->name).'_'.
+                                $startDate->format('Y-m-d').'_a_'.
+                                $endDate->format('Y-m-d').'.xlsx';
 
                             return Excel::download(
                                 new ProjectAttendancesReportExport(
@@ -549,7 +560,7 @@ class ProjectResource extends Resource
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Error al generar reporte')
-                                ->body('Ocurrió un error: ' . $e->getMessage())
+                                ->body('Ocurrió un error: '.$e->getMessage())
                                 ->danger()
                                 ->send();
                         }
@@ -569,11 +580,11 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-                //
+            //
 
             WorkReportsRelationManager::class,
             TimesheetsRelationManager::class,
-            //EmployeesRelationManager::class, // Relación con empleados (supervisores)
+            // EmployeesRelationManager::class, // Relación con empleados (supervisores)
         ];
     }
 

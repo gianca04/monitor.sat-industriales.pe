@@ -6,23 +6,22 @@ use App\Filament\Resources\VisitResource\RelationManagers\VisitPhotosRelationMan
 use App\Models\Employee;
 use Filament\Forms;
 use Filament\Forms\Components\Tabs;
-use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
 use Illuminate\Support\Facades\Auth;
 use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class VisitsRelationManager extends RelationManager
 {
-
     protected static ?string $recordTitleAttribute = 'name';
+
     protected static string $relationship = 'Visitas';
+
     protected static ?string $pluralModelLabel = 'Visitas tecnicas';
 
     protected static ?string $navigationGroup = 'Control de operaciones';
@@ -43,7 +42,7 @@ class VisitsRelationManager extends RelationManager
 
                                 // INICIO DE SELECT DE EMPLEADO
                                 Forms\Components\Select::make('employee_id')
-                                    ->default(fn() => Auth::user()?->employee_id)->required()
+                                    ->default(fn () => Auth::user()?->employee_id)->required()
                                     ->columns(2)
                                     ->reactive()
                                     ->prefixIcon('heroicon-m-user')
@@ -76,20 +75,25 @@ class VisitsRelationManager extends RelationManager
                                             ->color('info')
                                             ->action(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId) {
+                                                if (! $employeeId) {
                                                     Notification::make()
                                                         ->title('Selecciona un supervisor primero')
                                                         ->warning()
                                                         ->send();
+
                                                     return;
                                                 }
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId) return null;
+                                                if (! $employeeId) {
+                                                    return null;
+                                                }
 
                                                 $employee = Employee::with('user')->find($employeeId);
-                                                if (!$employee) return null;
+                                                if (! $employee) {
+                                                    return null;
+                                                }
 
                                                 return view('filament.components.employee-info-modal', compact('employee'));
                                             })
@@ -97,7 +101,7 @@ class VisitsRelationManager extends RelationManager
                                             ->modalSubmitAction(false)
                                             ->modalCancelActionLabel('Cerrar')
                                             ->modalWidth('2xl')
-                                            ->visible(fn(callable $get) => !empty($get('employee_id')))
+                                            ->visible(fn (callable $get) => ! empty($get('employee_id')))
                                     )
                                     ->afterStateHydrated(function (callable $get, callable $set) {
                                         $employeeId = $get('employee_id');
@@ -160,7 +164,7 @@ class VisitsRelationManager extends RelationManager
                                         $endTime = $state;
 
                                         // Si no hay hora de inicio, no validamos
-                                        if (!$startTime || !$endTime) {
+                                        if (! $startTime || ! $endTime) {
                                             return;
                                         }
 
@@ -298,7 +302,7 @@ class VisitsRelationManager extends RelationManager
                                     ->confirmable(),
                             ]),
                         // FIN DE TAB DE FIRMAS
-                    ])->columnSpanFull()
+                    ])->columnSpanFull(),
             ]);
     }
 
@@ -320,7 +324,7 @@ class VisitsRelationManager extends RelationManager
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->label('Responsable')
-                    ->formatStateUsing(fn($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
+                    ->formatStateUsing(fn ($record) => $record->employee->first_name.' '.$record->employee->last_name)
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(),
 

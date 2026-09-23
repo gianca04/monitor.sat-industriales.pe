@@ -12,9 +12,6 @@ class RequestConsolidatedService
 {
     /**
      * Genera un PDF consolidado con todas las visitas de un request
-     *
-     * @param int $requestId
-     * @return \Barryvdh\DomPDF\PDF
      */
     public function generateConsolidatedPdf(int $requestId): \Barryvdh\DomPDF\PDF
     {
@@ -30,7 +27,7 @@ class RequestConsolidatedService
         Log::info('Generando PDF consolidado de request', [
             'request_id' => $requestId,
             'visits_count' => $visits->count(),
-            'total_photos' => $allPhotos->count()
+            'total_photos' => $allPhotos->count(),
         ]);
 
         // Generar el PDF usando la vista consolidada
@@ -38,7 +35,7 @@ class RequestConsolidatedService
             'request' => $request,
             'visits' => $visits,
             'allPhotos' => $allPhotos,
-            'generatedAt' => now()
+            'generatedAt' => now(),
         ]);
 
         // Configuración del PDF igual que en otros servicios
@@ -56,8 +53,8 @@ class RequestConsolidatedService
             'chroot' => [
                 public_path('storage'),
                 public_path('images'),
-                storage_path('app/public')
-            ]
+                storage_path('app/public'),
+            ],
         ]);
 
         return $pdf;
@@ -65,9 +62,6 @@ class RequestConsolidatedService
 
     /**
      * Obtiene el request con todas sus relaciones necesarias
-     *
-     * @param int $requestId
-     * @return Request
      */
     public function getRequestWithRelations(int $requestId): Request
     {
@@ -76,15 +70,12 @@ class RequestConsolidatedService
             'cotizador',
             'supervisor',
             'visits.employee',
-            'visits.visitPhotos'
+            'visits.visitPhotos',
         ])->findOrFail($requestId);
     }
 
     /**
      * Obtiene todas las visitas del request ordenadas por fecha
-     *
-     * @param int $requestId
-     * @return Collection
      */
     public function getRequestVisits(int $requestId): Collection
     {
@@ -98,9 +89,6 @@ class RequestConsolidatedService
 
     /**
      * Obtiene todas las fotos de todas las visitas
-     *
-     * @param Collection $visits
-     * @return SupportCollection
      */
     private function getAllPhotosFromVisits(Collection $visits): SupportCollection
     {
@@ -109,9 +97,6 @@ class RequestConsolidatedService
 
     /**
      * Genera el nombre del archivo para el PDF consolidado
-     *
-     * @param Request $request
-     * @return string
      */
     public function generateConsolidatedFilename(Request $request): string
     {
@@ -128,9 +113,6 @@ class RequestConsolidatedService
 
     /**
      * Limpia el nombre del archivo de caracteres especiales
-     *
-     * @param string $filename
-     * @return string
      */
     private function sanitizeFilename(string $filename): string
     {
@@ -138,15 +120,13 @@ class RequestConsolidatedService
         $filename = preg_replace('/[^a-zA-Z0-9\-_.]/', '-', $filename);
         // Eliminar múltiples guiones seguidos
         $filename = preg_replace('/-+/', '-', $filename);
+
         // Eliminar guiones al inicio y final
         return trim($filename, '-');
     }
 
     /**
      * Obtiene estadísticas del reporte consolidado
-     *
-     * @param int $requestId
-     * @return array
      */
     public function getConsolidatedStatistics(int $requestId): array
     {
@@ -159,15 +139,17 @@ class RequestConsolidatedService
 
         $dateRange = [
             'start' => $visits->min('report_date'),
-            'end' => $visits->max('report_date')
+            'end' => $visits->max('report_date'),
         ];
 
         $totalWorkingHours = $visits->sum(function ($visit) {
             if ($visit->start_time && $visit->end_time) {
                 $start = \Carbon\Carbon::parse($visit->start_time);
                 $end = \Carbon\Carbon::parse($visit->end_time);
+
                 return $end->diffInHours($start);
             }
+
             return 0;
         });
 
@@ -181,7 +163,7 @@ class RequestConsolidatedService
             'total_working_hours' => $totalWorkingHours,
             'employees_involved' => $visits->pluck('employee.full_name')->unique()->values()->toArray(),
             'visit_date' => $request->visit_date,
-            'status' => $request->status
+            'status' => $request->status,
         ];
     }
 }

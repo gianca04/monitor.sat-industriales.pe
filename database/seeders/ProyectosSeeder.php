@@ -82,6 +82,6 @@ class ProyectosSeeder extends Seeder
                 ];
             }
         }
-        DB::table('projects')->upsert($proyectos, ['name','start_date','end_date'], ['name','start_date','end_date']);
+        DB::table('projects')->upsert($proyectos, ['name', 'start_date', 'end_date'], ['name', 'start_date', 'end_date']);
     }
 }

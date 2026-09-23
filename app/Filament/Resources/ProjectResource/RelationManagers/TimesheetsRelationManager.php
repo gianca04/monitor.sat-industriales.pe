@@ -10,12 +10,11 @@ use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 
 class TimesheetsRelationManager extends RelationManager
@@ -58,11 +57,12 @@ class TimesheetsRelationManager extends RelationManager
                                     ->unique('id')
                                     ->mapWithKeys(function ($project) {
                                         $label = "{$project->name}";
+
                                         return [$project->id => $label];
                                     })
                                     ->toArray();
                             })
-                            ->default(fn() => session('project_id'))
+                            ->default(fn () => session('project_id'))
                             ->reactive()
                             ->afterStateHydrated(function ($state, callable $set) {
                                 if ($state) {
@@ -111,10 +111,9 @@ class TimesheetsRelationManager extends RelationManager
                             ])
                             ->required(),
 
-
                         Forms\Components\Select::make('employee_id')
                             ->required()
-                            ->default(fn(callable $get) => Auth::user()?->employee_id)
+                            ->default(fn (callable $get) => Auth::user()?->employee_id)
                             ->columns(2)
                             ->prefixIcon('heroicon-m-user')
                             ->label('Responsable del Tareo') // Título para el campo 'Empleado'
@@ -145,7 +144,7 @@ class TimesheetsRelationManager extends RelationManager
                             ->seconds(false)
                             ->default(now())
                             ->weekStartsOnMonday()
-                            ->maxDate(fn(callable $get) => $get('check_out_date'))
+                            ->maxDate(fn (callable $get) => $get('check_out_date'))
                             ->reactive()
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 // Validar si ya existe un tareo para este proyecto en la fecha seleccionada
@@ -201,24 +200,24 @@ class TimesheetsRelationManager extends RelationManager
                         DateTimePicker::make('break_date')
                             ->label('Inicio del descanso')
                             ->seconds(false)
-                            ->default(fn(callable $get) => Carbon::parse($get('check_in_date'))->addHours(4)) // Parse check_in_date as Carbon and add 3 hours
+                            ->default(fn (callable $get) => Carbon::parse($get('check_in_date'))->addHours(4)) // Parse check_in_date as Carbon and add 3 hours
                             ->prefixIcon('heroicon-o-pause')
-                            ->minDate(fn(callable $get) => Carbon::parse($get('check_in_date'))), // Parse check_in_date as Carbon
+                            ->minDate(fn (callable $get) => Carbon::parse($get('check_in_date'))), // Parse check_in_date as Carbon
 
                         DateTimePicker::make('end_break_date')
                             ->label('Fin del descanso')
                             ->seconds(false)
-                            ->default(fn(callable $get) => Carbon::parse($get('break_date'))->addHours(1)) // Parse check_in_date as Carbon and add 3 hours
-                            ->minDate(fn(callable $get) => Carbon::parse($get('break_date'))) // Parse check_in_date as Carbon
+                            ->default(fn (callable $get) => Carbon::parse($get('break_date'))->addHours(1)) // Parse check_in_date as Carbon and add 3 hours
+                            ->minDate(fn (callable $get) => Carbon::parse($get('break_date'))) // Parse check_in_date as Carbon
                             ->required()
                             ->prefixIcon('heroicon-o-play'),
 
                         DateTimePicker::make('check_out_date')
                             ->label('Fecha de salida')
                             ->seconds(false)
-                            ->default(fn(callable $get) => Carbon::parse($get('check_out_date'))->addHours(9))
+                            ->default(fn (callable $get) => Carbon::parse($get('check_out_date'))->addHours(9))
                             ->weekStartsOnMonday()
-                            ->minDate(fn(callable $get) => $get('check_in_date'))
+                            ->minDate(fn (callable $get) => $get('check_in_date'))
                             ->required()
                             ->prefixIcon('heroicon-o-arrow-right-start-on-rectangle')
                             ->reactive(),
@@ -228,6 +227,7 @@ class TimesheetsRelationManager extends RelationManager
 
             ]);
     }
+
     public static function validateUniqueTimesheetForProjectDate($projectId, $checkInDate, $excludeId = null)
     {
         $query = Timesheet::where('project_id', $projectId)
@@ -252,7 +252,7 @@ class TimesheetsRelationManager extends RelationManager
                     ->sortable()
                     ->weight('bold')
                     ->description(function ($record) {
-                        if (!$record || !$record->project_id || !$record->check_in_date) {
+                        if (! $record || ! $record->project_id || ! $record->check_in_date) {
                             return '';
                         }
 
@@ -264,7 +264,7 @@ class TimesheetsRelationManager extends RelationManager
                         return $sameDay > 0 ? 'Conflicto detectado' : 'Único del día';
                     })
                     ->color(function ($record) {
-                        if (!$record || !$record->project_id || !$record->check_in_date) {
+                        if (! $record || ! $record->project_id || ! $record->check_in_date) {
                             return 'gray';
                         }
 
@@ -272,6 +272,7 @@ class TimesheetsRelationManager extends RelationManager
                             ->whereDate('check_in_date', Carbon::parse($record->check_in_date)->toDateString())
                             ->where('id', '!=', $record->id)
                             ->count();
+
                         return $sameDay > 0 ? 'danger' : 'success';
                     }),
 
@@ -285,7 +286,7 @@ class TimesheetsRelationManager extends RelationManager
                         'heroicon-o-sun' => 'day',
                         'heroicon-o-moon' => 'night',
                     ])
-                    ->formatStateUsing(fn(?string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'day' => 'Día',
                         'night' => 'Noche',
                         null => 'No definido',
@@ -303,7 +304,7 @@ class TimesheetsRelationManager extends RelationManager
                     ->badge()
                     ->icon('heroicon-o-check-circle')
 
-                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'attended')->count())
+                    ->getStateUsing(fn ($record) => $record->attendances()->where('status', 'attended')->count())
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('absent_count')
@@ -312,7 +313,7 @@ class TimesheetsRelationManager extends RelationManager
                     ->color('danger')
                     ->icon('heroicon-o-x-circle')
 
-                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'absent')->count())
+                    ->getStateUsing(fn ($record) => $record->attendances()->where('status', 'absent')->count())
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('justified_count')
@@ -321,21 +322,21 @@ class TimesheetsRelationManager extends RelationManager
                     ->color('warning')
                     ->icon('heroicon-o-exclamation-circle')
 
-                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'justified')->count())
+                    ->getStateUsing(fn ($record) => $record->attendances()->where('status', 'justified')->count())
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('attendances_total')
                     ->label('Total')
                     ->badge()
                     ->color('primary')
-                    ->getStateUsing(fn($record) => $record->attendances()->count())
+                    ->getStateUsing(fn ($record) => $record->attendances()->count())
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('schedule_info')
                     ->label('Horario')
                     ->icon('heroicon-o-clock')
                     ->getStateUsing(function ($record) {
-                        if (!$record) {
+                        if (! $record) {
                             return '--:-- - --:--';
                         }
 
@@ -380,11 +381,11 @@ class TimesheetsRelationManager extends RelationManager
                         return $query
                             ->when(
                                 $data['from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('check_in_date', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('check_in_date', '>=', $date),
                             )
                             ->when(
                                 $data['until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('check_in_date', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('check_in_date', '<=', $date),
                             );
                     }),
             ])

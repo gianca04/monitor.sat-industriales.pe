@@ -2,29 +2,30 @@
 
 namespace App\Exports;
 
+use App\Models\Attendance;
 use App\Models\Project;
 use App\Models\Timesheet;
-use App\Models\Attendance;
 use App\Services\HoursCalculator;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ProjectAttendancesReportExport implements FromCollection, WithHeadings, WithMapping, WithColumnWidths, WithStyles, WithTitle
+class ProjectAttendancesReportExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     protected $project;
+
     protected $startDate;
+
     protected $endDate;
+
     protected $attendances;
 
     public function __construct($projectId, $startDate, $endDate)
@@ -32,7 +33,7 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
         $this->project = Project::with(['subClient.client'])->find($projectId);
         $this->startDate = Carbon::parse($startDate);
         $this->endDate = Carbon::parse($endDate);
-        
+
         // Obtener todas las asistencias del proyecto en el rango de fechas
         $this->attendances = $this->getProjectAttendances();
     }
@@ -60,7 +61,7 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
             'Fecha Salida',
             'Horas Trabajadas',
             'Horas Extra',
-            'Observación'
+            'Observación',
         ];
     }
 
@@ -68,14 +69,14 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
     {
         // Usar HoursCalculator para obtener todas las horas calculadas
         $hoursSummary = HoursCalculator::getHoursSummary($attendance);
-        
+
         $horasTrabajadas = $hoursSummary['worked_hours']['formatted'] ?? 'NO CALCULADO';
         $horasExtra = $hoursSummary['extra_hours']['formatted'] ?? '0h 0m';
 
         // Información del supervisor del timesheet
         $supervisor = '';
         if ($attendance->timesheet && $attendance->timesheet->employee) {
-            $supervisor = $attendance->timesheet->employee->first_name . ' ' . $attendance->timesheet->employee->last_name;
+            $supervisor = $attendance->timesheet->employee->first_name.' '.$attendance->timesheet->employee->last_name;
         }
 
         return [
@@ -86,9 +87,9 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
             // Documento del empleado
             $attendance->employee->document_number ?? '',
             // Nombre completo del empleado
-            $attendance->employee->first_name . ' ' . $attendance->employee->last_name,
+            $attendance->employee->first_name.' '.$attendance->employee->last_name,
             // Estado de asistencia
-            match($attendance->status) {
+            match ($attendance->status) {
                 'attended' => 'Asistió',
                 'absent' => 'Faltó',
                 'justified' => 'Justificado',
@@ -97,7 +98,7 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
                 default => ucfirst($attendance->status ?? 'Sin definir')
             },
             // Turno
-            match($attendance->shift) {
+            match ($attendance->shift) {
                 'day' => 'Día',
                 'night' => 'Noche',
                 default => ucfirst($attendance->shift ?? 'No definido')
@@ -115,7 +116,7 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
             // Horas extra
             $horasExtra,
             // Observación
-            $attendance->observation ?? ''
+            $attendance->observation ?? '',
         ];
     }
 
@@ -158,26 +159,26 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
         ]);
 
         // Información del proyecto
-        $sheet->setCellValue('A2', 'Proyecto: ' . $this->project->name);
-        $sheet->setCellValue('A3', 'Cliente: ' . ($this->project->subClient?->client?->business_name ?? 'Sin cliente'));
-        $sheet->setCellValue('A4', 'Subcliente: ' . ($this->project->subClient?->name ?? 'Sin subcliente'));
-        $sheet->setCellValue('A5', 'Período: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
-        $sheet->setCellValue('A6', 'Generado: ' . now()->format('d/m/Y H:i'));
+        $sheet->setCellValue('A2', 'Proyecto: '.$this->project->name);
+        $sheet->setCellValue('A3', 'Cliente: '.($this->project->subClient?->client?->business_name ?? 'Sin cliente'));
+        $sheet->setCellValue('A4', 'Subcliente: '.($this->project->subClient?->name ?? 'Sin subcliente'));
+        $sheet->setCellValue('A5', 'Período: '.$this->startDate->format('d/m/Y').' - '.$this->endDate->format('d/m/Y'));
+        $sheet->setCellValue('A6', 'Generado: '.now()->format('d/m/Y H:i'));
 
         // Información estadística
         $totalAsistencias = $this->attendances->count();
         $totalAsistieron = $this->attendances->where('status', 'attended')->count();
         $totalFaltaron = $this->attendances->where('status', 'absent')->count();
-        
-        $sheet->setCellValue('G2', 'Total Registros: ' . $totalAsistencias);
-        $sheet->setCellValue('G3', 'Asistieron: ' . $totalAsistieron);
-        $sheet->setCellValue('G4', 'Faltaron: ' . $totalFaltaron);
-        $sheet->setCellValue('G5', '% Asistencia: ' . ($totalAsistencias > 0 ? round(($totalAsistieron / $totalAsistencias) * 100, 2) : 0) . '%');
+
+        $sheet->setCellValue('G2', 'Total Registros: '.$totalAsistencias);
+        $sheet->setCellValue('G3', 'Asistieron: '.$totalAsistieron);
+        $sheet->setCellValue('G4', 'Faltaron: '.$totalFaltaron);
+        $sheet->setCellValue('G5', '% Asistencia: '.($totalAsistencias > 0 ? round(($totalAsistieron / $totalAsistencias) * 100, 2) : 0).'%');
 
         $sheet->getStyle('A2:A6')->applyFromArray([
             'font' => ['bold' => true],
         ]);
-        
+
         $sheet->getStyle('G2:G5')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => '0066CC']],
         ]);
@@ -235,7 +236,7 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
 
             // Resaltar horas extra en color diferente
             $this->highlightExtraHours($sheet, $dataStartRow, $lastRow);
-            
+
             // Resaltar diferentes fechas de tareo
             $this->highlightDifferentDates($sheet, $dataStartRow, $lastRow);
         }
@@ -245,7 +246,7 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
 
     public function title(): string
     {
-        return 'Reporte ' . $this->startDate->format('Y-m-d') . ' a ' . $this->endDate->format('Y-m-d');
+        return 'Reporte '.$this->startDate->format('Y-m-d').' a '.$this->endDate->format('Y-m-d');
     }
 
     /**
@@ -256,21 +257,22 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
         return Attendance::with(['employee', 'timesheet.employee', 'timesheet.project'])
             ->whereHas('timesheet', function ($query) {
                 $query->where('project_id', $this->project->id)
-                      ->whereBetween('check_in_date', [
-                          $this->startDate->startOfDay(),
-                          $this->endDate->endOfDay()
-                      ]);
+                    ->whereBetween('check_in_date', [
+                        $this->startDate->startOfDay(),
+                        $this->endDate->endOfDay(),
+                    ]);
             })
             ->get()
             ->sortBy(function ($attendance) {
                 // Ordenar por fecha del tareo y nombre del empleado
-                $timesheetDate = $attendance->timesheet 
-                    ? Carbon::parse($attendance->timesheet->check_in_date)->format('Y-m-d H:i') 
+                $timesheetDate = $attendance->timesheet
+                    ? Carbon::parse($attendance->timesheet->check_in_date)->format('Y-m-d H:i')
                     : '9999-12-31 23:59';
-                $employeeName = $attendance->employee 
-                    ? $attendance->employee->first_name . ' ' . $attendance->employee->last_name 
+                $employeeName = $attendance->employee
+                    ? $attendance->employee->first_name.' '.$attendance->employee->last_name
                     : 'ZZZ';
-                return $timesheetDate . '_' . $employeeName;
+
+                return $timesheetDate.'_'.$employeeName;
             })
             ->values(); // Reindexar la colección
     }
@@ -282,7 +284,7 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
     {
         for ($row = $startRow; $row <= $endRow; $row++) {
             $extraHoursValue = $sheet->getCell("L{$row}")->getValue();
-            
+
             // Si hay horas extra (no es '0h 0m' ni está vacío)
             if ($extraHoursValue && $extraHoursValue !== '0h 0m' && $extraHoursValue !== '') {
                 $sheet->getStyle("L{$row}")->applyFromArray([
@@ -310,7 +312,7 @@ class ProjectAttendancesReportExport implements FromCollection, WithHeadings, Wi
 
         for ($row = $startRow; $row <= $endRow; $row++) {
             $dateValue = $sheet->getCell("A{$row}")->getValue();
-            
+
             // Si cambia la fecha, cambiar el color
             if ($currentDate !== $dateValue) {
                 $currentDate = $dateValue;

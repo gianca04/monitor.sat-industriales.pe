@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WorkOrder extends Model
 {
@@ -15,14 +15,20 @@ class WorkOrder extends Model
 
     // Task types
     public const TASK_OPEX = 'OPEX';
+
     public const TASK_CAPEX = 'CAPEX';
+
     public const TASK_TYPES = [self::TASK_OPEX, self::TASK_CAPEX];
 
     // Fracttal statuses
     public const FRACTTAL_NO_OT = 'No OT';
+
     public const FRACTTAL_IN_PROGRESS = 'In Progress';
+
     public const FRACTTAL_UNDER_REVIEW = 'Under Review';
+
     public const FRACTTAL_FINISHED = 'Finished';
+
     public const FRACTTAL_STATUSES = [
         self::FRACTTAL_NO_OT,
         self::FRACTTAL_IN_PROGRESS,
@@ -32,10 +38,15 @@ class WorkOrder extends Model
 
     // Work order workflow statuses
     public const STATUS_QUOTED = 'Quoted';
+
     public const STATUS_APPROVED = 'Approved';
+
     public const STATUS_IN_PROGRESS = 'In Progress';
+
     public const STATUS_FINISHED = 'Finished';
+
     public const STATUS_INVOICED = 'Invoiced';
+
     public const WORK_ORDER_STATUSES = [
         self::STATUS_QUOTED,
         self::STATUS_APPROVED,
@@ -67,13 +78,12 @@ class WorkOrder extends Model
     // Relations
     /**
      * Belongs to Request
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function request(): BelongsTo
     {
         return $this->belongsTo(Request::class);
     }
+
     public static function getStatusOptions(): array
     {
         return [
@@ -84,6 +94,7 @@ class WorkOrder extends Model
             self::STATUS_INVOICED => 'Facturado',
         ];
     }
+
     public static function getTasksOptions(): array
     {
         return [
@@ -91,6 +102,7 @@ class WorkOrder extends Model
             self::TASK_CAPEX => 'CAPEX',
         ];
     }
+
     public static function getFracttalStatusOptions(): array
     {
         return [
@@ -100,6 +112,7 @@ class WorkOrder extends Model
             self::FRACTTAL_FINISHED => 'Finalizado',
         ];
     }
+
     /* Scopes */
     public function scopeByStatus($query, string $status)
     {
@@ -129,11 +142,12 @@ class WorkOrder extends Model
 
     public function markAs(string $status): bool
     {
-        if (!in_array($status, self::WORK_ORDER_STATUSES, true)) {
+        if (! in_array($status, self::WORK_ORDER_STATUSES, true)) {
             return false;
         }
 
         $this->work_order_status = $status;
+
         return $this->save();
     }
 }

@@ -8,14 +8,15 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class StocksRelationManager extends RelationManager
 {
     protected static string $relationship = 'stocks';
 
     protected static ?string $modelLabel = 'Stock';
+
     protected static ?string $pluralModelLabel = 'Stock';
+
     protected static ?string $title = 'Control de Stock';
 
     public function form(Form $form): Form
@@ -50,7 +51,7 @@ class StocksRelationManager extends RelationManager
                                         ->action(function (Forms\Set $set, Forms\Get $get, RelationManager $livewire) {
                                             $tempVariant = new \App\Models\EppVariant([
                                                 'epp_id' => $livewire->getOwnerRecord()->id,
-                                                'variant_name' => $get('variant_name')
+                                                'variant_name' => $get('variant_name'),
                                             ]);
                                             $set('sku', $tempVariant->generateSku());
                                         })
@@ -66,7 +67,7 @@ class StocksRelationManager extends RelationManager
                                 ->numeric()
                                 ->minValue(0)
                                 ->rules([
-                                    fn(Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                    fn (Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
                                         $minStock = $get('minimum_stock');
                                         if ($minStock !== null && $value !== '' && (float) $value < (float) $minStock) {
                                             $fail("El stock máximo debe ser mayor o igual al stock mínimo ({$minStock}).");
@@ -83,6 +84,7 @@ class StocksRelationManager extends RelationManager
                     })
                     ->createOptionUsing(function (array $data, RelationManager $livewire): int {
                         $data['epp_id'] = $livewire->getOwnerRecord()->id;
+
                         return \App\Models\EppVariant::create($data)->id;
                     }),
                 Forms\Components\Select::make('warehouse_id')
@@ -112,7 +114,7 @@ class StocksRelationManager extends RelationManager
                     ->required()
                     ->preload()
                     ->searchable()
-                    ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id'))
+                    ->disabled(fn (Forms\Get $get): bool => ! $get('warehouse_id'))
                     ->createOptionForm(function (Forms\Get $get) {
                         return [
                             Forms\Components\Select::make('warehouse_id')
@@ -151,6 +153,7 @@ class StocksRelationManager extends RelationManager
                     ->dehydrated(false),
             ]);
     }
+
     public function table(Table $table): Table
     {
         return $table
@@ -211,7 +214,7 @@ class StocksRelationManager extends RelationManager
                             }
                         }),
                     Tables\Actions\DeleteAction::make(),
-                ])
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

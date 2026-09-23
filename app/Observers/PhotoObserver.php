@@ -10,7 +10,6 @@ class PhotoObserver
     /**
      * Handle the Photo "deleted" event.
      *
-     * @param  \App\Models\Photo  $photo
      * @return void
      */
     public function deleted(Photo $photo)

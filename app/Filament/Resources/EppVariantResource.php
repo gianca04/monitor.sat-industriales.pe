@@ -3,24 +3,25 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EppVariantResource\Pages;
-use App\Filament\Resources\EppVariantResource\RelationManagers;
 use App\Models\EppVariant;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EppVariantResource extends Resource
 {
     protected static ?string $model = EppVariant::class;
 
     protected static ?string $modelLabel = 'Variante de EPP';
+
     protected static ?string $pluralModelLabel = 'Variantes de EPP';
+
     protected static ?string $navigationGroup = 'Gestión de inventario';
+
     protected static ?string $navigationIcon = 'heroicon-o-variable';
+
     protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
@@ -50,7 +51,7 @@ class EppVariantResource extends Resource
                             ->action(function (Forms\Set $set, Forms\Get $get) {
                                 $tempVariant = new \App\Models\EppVariant([
                                     'epp_id' => $get('epp_id'),
-                                    'variant_name' => $get('variant_name')
+                                    'variant_name' => $get('variant_name'),
                                 ]);
                                 $set('sku', $tempVariant->generateSku());
                             })
@@ -73,7 +74,7 @@ class EppVariantResource extends Resource
                     ->numeric()
                     ->minValue(0)
                     ->rules([
-                        fn(Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                        fn (Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
                             $minStock = $get('minimum_stock');
                             if ($minStock !== null && $value !== '' && (float) $value < (float) $minStock) {
                                 $fail("El stock máximo debe ser mayor o igual al stock mínimo ({$minStock}).");
@@ -114,8 +115,7 @@ class EppVariantResource extends Resource
                     ->label('Stock')
                     ->badge()
                     ->color(
-                        fn(\App\Models\EppVariant $record, \App\Services\InventoryService $inventoryService) =>
-                        $inventoryService->isBelowMinimum($record) ? 'danger' : 'success'
+                        fn (\App\Models\EppVariant $record, \App\Services\InventoryService $inventoryService) => $inventoryService->isBelowMinimum($record) ? 'danger' : 'success'
                     ),
                 Tables\Columns\TextColumn::make('minimum_stock')
                     ->label('Mínimo')

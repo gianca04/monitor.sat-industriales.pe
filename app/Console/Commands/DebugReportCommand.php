@@ -2,11 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Project;
-use App\Models\Timesheet;
 use App\Models\Attendance;
+use App\Models\Project;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class DebugReportCommand extends Command
 {
@@ -35,31 +34,31 @@ class DebugReportCommand extends Command
         // Obtener todos los proyectos
         $projects = Project::with(['timesheets.attendances.employee'])->get();
 
-        $this->info("Total de proyectos: " . $projects->count());
+        $this->info('Total de proyectos: '.$projects->count());
         $this->newLine();
 
         foreach ($projects as $project) {
-            $this->info("PROYECTO: " . $project->name . " (ID: " . $project->id . ")");
-            $this->line("  - Timesheets: " . $project->timesheets->count());
-            
+            $this->info('PROYECTO: '.$project->name.' (ID: '.$project->id.')');
+            $this->line('  - Timesheets: '.$project->timesheets->count());
+
             $totalAttendances = 0;
             foreach ($project->timesheets as $timesheet) {
                 $attendanceCount = $timesheet->attendances->count();
                 $totalAttendances += $attendanceCount;
-                
+
                 if ($attendanceCount > 0) {
-                    $this->line("    - Timesheet " . $timesheet->id . " (" . 
-                             Carbon::parse($timesheet->check_in_date)->format('Y-m-d') . 
-                             "): " . $attendanceCount . " asistencias");
+                    $this->line('    - Timesheet '.$timesheet->id.' ('.
+                             Carbon::parse($timesheet->check_in_date)->format('Y-m-d').
+                             '): '.$attendanceCount.' asistencias');
                 }
             }
-            
-            $this->line("  - Total asistencias: " . $totalAttendances);
-            
+
+            $this->line('  - Total asistencias: '.$totalAttendances);
+
             // Probar la relación hasManyThrough
             $attendancesThroughRelation = $project->attendances()->count();
-            $this->line("  - Asistencias via relación: " . $attendancesThroughRelation);
-            
+            $this->line('  - Asistencias via relación: '.$attendancesThroughRelation);
+
             $this->newLine();
         }
 
@@ -70,30 +69,30 @@ class DebugReportCommand extends Command
             $project = $projects->first();
             $startDate = Carbon::now()->startOfMonth();
             $endDate = Carbon::now()->endOfMonth();
-            
-            $this->info("Probando proyecto: " . $project->name);
-            $this->info("Rango de fechas: " . $startDate->format('Y-m-d') . " a " . $endDate->format('Y-m-d'));
-            
+
+            $this->info('Probando proyecto: '.$project->name);
+            $this->info('Rango de fechas: '.$startDate->format('Y-m-d').' a '.$endDate->format('Y-m-d'));
+
             $attendances = Attendance::with(['employee', 'timesheet.employee', 'timesheet.project'])
                 ->whereHas('timesheet', function ($query) use ($project, $startDate, $endDate) {
                     $query->where('project_id', $project->id)
-                          ->whereBetween('check_in_date', [
-                              $startDate->startOfDay(),
-                              $endDate->endOfDay()
-                          ]);
+                        ->whereBetween('check_in_date', [
+                            $startDate->startOfDay(),
+                            $endDate->endOfDay(),
+                        ]);
                 })
                 ->get();
-            
-            $this->info("Asistencias encontradas: " . $attendances->count());
-            
+
+            $this->info('Asistencias encontradas: '.$attendances->count());
+
             if ($attendances->count() > 0) {
                 $this->newLine();
-                $this->info("Primeras 3 asistencias:");
+                $this->info('Primeras 3 asistencias:');
                 foreach ($attendances->take(3) as $attendance) {
-                    $this->line("  - " . ($attendance->employee->first_name ?? 'Sin nombre') . " " . 
-                             ($attendance->employee->last_name ?? '') . 
-                             " (" . ($attendance->status ?? 'Sin estado') . ") - " .
-                             "Timesheet: " . ($attendance->timesheet->id ?? 'Sin timesheet'));
+                    $this->line('  - '.($attendance->employee->first_name ?? 'Sin nombre').' '.
+                             ($attendance->employee->last_name ?? '').
+                             ' ('.($attendance->status ?? 'Sin estado').') - '.
+                             'Timesheet: '.($attendance->timesheet->id ?? 'Sin timesheet'));
                 }
             }
         }

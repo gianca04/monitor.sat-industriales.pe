@@ -12,16 +12,15 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Colors\Color;
-use Filament\Widgets;
+use Filament\Support\Enums\MaxWidth;
+use Filament\Support\Facades\FilamentView;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Support\Facades\FilamentView;
-use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\HtmlString;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class DashboardPanelProvider extends PanelProvider
 {
@@ -40,7 +39,7 @@ class DashboardPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            
+
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s') // Actualizar cada 30 segundos
             ->middleware([
@@ -57,7 +56,7 @@ class DashboardPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
                 SpatieLaravelTranslatablePlugin::make()
-                    ->defaultLocales(['es'])
+                    ->defaultLocales(['es']),
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -124,9 +123,8 @@ class DashboardPanelProvider extends PanelProvider
             // Logo de SAT Industriales
             ->brandLogo(asset('images/logo.svg'))
             ->brandLogoHeight('2rem')
-            ->favicon(asset('images/favicon.svg'))
-            // Eliminar esta línea duplicada: ->databaseNotifications()
-        ;
+            ->favicon(asset('images/favicon.svg'));
+        // Eliminar esta línea duplicada: ->databaseNotifications()
     }
 
     public function boot(): void

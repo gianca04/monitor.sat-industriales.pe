@@ -7,8 +7,8 @@ use App\Filament\Resources\TimesheetResource\Widgets\TimesheetStatsWidget;
 use App\Models\Timesheet;
 use Carbon\Carbon;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 
 class EditTimesheet extends EditRecord
@@ -69,6 +69,7 @@ class EditTimesheet extends EditRecord
         }
 
         $record->update($data);
+
         return $record;
     }
 

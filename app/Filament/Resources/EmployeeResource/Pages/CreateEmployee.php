@@ -4,7 +4,6 @@ namespace App\Filament\Resources\EmployeeResource\Pages;
 
 use App\Filament\Resources\EmployeeResource;
 use App\Models\User;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +16,7 @@ class CreateEmployee extends CreateRecord
     {
         // Si el toggle 'is_active' del usuario no está marcado,
         // nos aseguramos de que 'user_id' sea null y no intentamos crear un usuario.
-        if (!($data['user']['is_active'] ?? false)) {
+        if (! ($data['user']['is_active'] ?? false)) {
             $data['user_id'] = null;
             unset($data['user']); // Eliminamos los datos del subformulario 'user' si no se va a crear
         }

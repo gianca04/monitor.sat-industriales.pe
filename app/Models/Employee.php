@@ -35,10 +35,12 @@ class Employee extends Model
         'active' => 'boolean',
         'daily_payment' => 'boolean',
     ];
+
     public function position()
     {
         return $this->belongsTo(Position::class);
     }
+
     public function getTitleAttribute()
     {
         return $this->full_name;
@@ -82,7 +84,7 @@ class Employee extends Model
 
     public function getFullNameAttribute()
     {
-        return $this->first_name . ' ' . $this->last_name . ' - ' . $this->document_number;
+        return $this->first_name.' '.$this->last_name.' - '.$this->document_number;
     }
 
     // Relación muchos a muchos usando la tabla pivote y el modelo EmployeeProject
@@ -97,6 +99,7 @@ class Employee extends Model
         return $this->belongsToMany(Project::class, 'employee_project')
             ->withTimestamps();
     }
+
     // Scope para empleados activos
     public function scopeActive($query)
     {

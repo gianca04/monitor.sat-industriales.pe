@@ -4,11 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
-
 
 class Photo extends Model
 {
@@ -19,7 +15,7 @@ class Photo extends Model
         'photo_path',
         'descripcion',
         'before_work_photo_path', // Nueva columna para la foto antes del trabajo
-        'before_work_descripcion' // Nueva columna para la descripción antes del trabajo
+        'before_work_descripcion', // Nueva columna para la descripción antes del trabajo
     ];
 
     protected static function boot()

@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Request extends Model
 {
     use HasFactory;
-
-
     use HasFactory;
 
     protected $table = 'requests';
@@ -40,7 +38,6 @@ class Request extends Model
         'submission_date' => 'date',
         'budget' => 'decimal:2',
     ];
-
 
     /**
      * Devuelve un array de los 'reference' de los requests con status 'attended'.
@@ -97,6 +94,7 @@ class Request extends Model
             }
         });
     }
+
     /**
      * Relationship with SubClient
      */

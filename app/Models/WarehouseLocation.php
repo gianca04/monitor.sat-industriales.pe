@@ -26,9 +26,9 @@ class WarehouseLocation extends Model
     public function generateCode(): string
     {
         $parts = [];
-        
+
         foreach (['area', 'rack', 'shelf', 'section', 'bin'] as $field) {
-            if (!empty($this->$field)) {
+            if (! empty($this->$field)) {
                 $parts[] = strtoupper(trim($this->$field));
             }
         }

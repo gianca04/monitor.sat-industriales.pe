@@ -35,7 +35,7 @@ class SubClient extends Model
     {
         return $this->belongsTo(Client::class);
     }
-    
+
     public function quotes()
     {
         return $this->hasMany(Quote::class, 'employee_id'); // Relación con la tabla quotes
@@ -54,7 +54,10 @@ class SubClient extends Model
      */
     public function getLocationLatitudeAttribute()
     {
-        if (!$this->location || !is_array($this->location)) return null;
+        if (! $this->location || ! is_array($this->location)) {
+            return null;
+        }
+
         return $this->location['latitude'] ?? null;
     }
 
@@ -63,13 +66,19 @@ class SubClient extends Model
      */
     public function getLocationLongitudeAttribute()
     {
-        if (!$this->location || !is_array($this->location)) return null;
+        if (! $this->location || ! is_array($this->location)) {
+            return null;
+        }
+
         return $this->location['longitude'] ?? null;
     }
 
     public function getLocationAddressAttribute()
     {
-        if (!$this->location || !is_array($this->location)) return null;
+        if (! $this->location || ! is_array($this->location)) {
+            return null;
+        }
+
         return $this->location['location'] ?? null;
     }
 

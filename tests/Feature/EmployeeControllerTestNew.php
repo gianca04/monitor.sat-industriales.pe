@@ -44,9 +44,9 @@ class EmployeeControllerTestNew extends TestCase
                         'date_contract',
                         'sex',
                         'created_at',
-                        'updated_at'
-                    ]
-                ]
+                        'updated_at',
+                    ],
+                ],
             ]);
     }
 
@@ -70,11 +70,11 @@ class EmployeeControllerTestNew extends TestCase
     {
         $employee1 = Employee::factory()->create([
             'first_name' => 'Juan',
-            'last_name' => 'Pérez'
+            'last_name' => 'Pérez',
         ]);
         $employee2 = Employee::factory()->create([
             'first_name' => 'María',
-            'last_name' => 'García'
+            'last_name' => 'García',
         ]);
 
         $response = $this->getJson('/api/employees?search=Juan');
@@ -135,8 +135,8 @@ class EmployeeControllerTestNew extends TestCase
                     'date_contract',
                     'sex',
                     'created_at',
-                    'updated_at'
-                ]
+                    'updated_at',
+                ],
             ]);
     }
 
@@ -169,7 +169,7 @@ class EmployeeControllerTestNew extends TestCase
         $this->assertDatabaseHas('employees', [
             'first_name' => 'Juan',
             'last_name' => 'Pérez',
-            'document_number' => '12345678'
+            'document_number' => '12345678',
         ]);
     }
 
@@ -183,7 +183,7 @@ class EmployeeControllerTestNew extends TestCase
                 'first_name',
                 'last_name',
                 'document_type',
-                'document_number'
+                'document_number',
             ]);
     }
 
@@ -236,7 +236,7 @@ class EmployeeControllerTestNew extends TestCase
 
         $updateData = [
             'first_name' => 'Juan Carlos',
-            'last_name' => 'García'
+            'last_name' => 'García',
         ];
 
         $response = $this->putJson("/api/employees/{$employee->id}", $updateData);
@@ -246,7 +246,7 @@ class EmployeeControllerTestNew extends TestCase
         $this->assertDatabaseHas('employees', [
             'id' => $employee->id,
             'first_name' => 'Juan Carlos',
-            'last_name' => 'García'
+            'last_name' => 'García',
         ]);
     }
 
@@ -268,13 +268,13 @@ class EmployeeControllerTestNew extends TestCase
         $employee1 = Employee::factory()->create([
             'first_name' => 'Juan',
             'last_name' => 'Pérez',
-            'document_type' => 'DNI'
+            'document_type' => 'DNI',
         ]);
 
         $employee2 = Employee::factory()->create([
             'first_name' => 'María',
             'last_name' => 'García',
-            'document_type' => 'PASAPORTE'
+            'document_type' => 'PASAPORTE',
         ]);
 
         $response = $this->getJson('/api/employees/search?first_name=Juan&document_type=DNI');

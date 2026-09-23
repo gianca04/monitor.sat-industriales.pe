@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class EmployeeController extends Controller
 {
@@ -37,12 +37,12 @@ class EmployeeController extends Controller
 
             return response()->json([
                 'data' => $employees,
-                'message' => 'Empleados obtenidos correctamente'
+                'message' => 'Empleados obtenidos correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener los empleados: ' . $e->getMessage()
+                'message' => 'Error al obtener los empleados: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -54,7 +54,7 @@ class EmployeeController extends Controller
     {
         try {
             $request->validate([
-                'query' => 'required|string|min:1|max:100'
+                'query' => 'required|string|min:1|max:100',
             ]);
 
             $queryStr = $request->query('query');
@@ -74,47 +74,45 @@ class EmployeeController extends Controller
                 ->map(function ($employee) {
                     return [
                         'id' => $employee->id,
-                        'full_name' => $employee->first_name . ' ' . $employee->last_name,
+                        'full_name' => $employee->first_name.' '.$employee->last_name,
                         'document_number' => $employee->document_number,
                         'position' => $employee->position ? $employee->position->name : null,
                     ];
                 });
 
             return response()->json([
-                "success" => true,
-                "message" => "Búsqueda rápida completada",
-                "data" => $employees,
-                "meta" => [
-                    "apiVersion" => "1.0",
-                    "timestamp" => now()->toIso8601String()
-                ]
+                'success' => true,
+                'message' => 'Búsqueda rápida completada',
+                'data' => $employees,
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->toIso8601String(),
+                ],
             ]);
         } catch (ValidationException $e) {
             return response()->json([
-                "success" => false,
-                "message" => "Datos de validación incorrectos",
-                "data" => null,
-                "errors" => $e->errors(),
-                "meta" => [
-                    "apiVersion" => "1.0",
-                    "timestamp" => now()->toIso8601String()
-                ]
+                'success' => false,
+                'message' => 'Datos de validación incorrectos',
+                'data' => null,
+                'errors' => $e->errors(),
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->toIso8601String(),
+                ],
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                "success" => false,
-                "message" => "Error en la búsqueda rápida",
-                "data" => null,
-                "errors" => $e->getMessage(),
-                "meta" => [
-                    "apiVersion" => "1.0",
-                    "timestamp" => now()->toIso8601String()
-                ]
+                'success' => false,
+                'message' => 'Error en la búsqueda rápida',
+                'data' => null,
+                'errors' => $e->getMessage(),
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->toIso8601String(),
+                ],
             ], 500);
         }
     }
-
-
 
     /**
      * Obtener un empleado específico
@@ -128,12 +126,12 @@ class EmployeeController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $employee,
-                'message' => 'Empleado obtenido correctamente'
+                'message' => 'Empleado obtenido correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Empleado no encontrado'
+                'message' => 'Empleado no encontrado',
             ], 404);
         }
     }
@@ -146,7 +144,7 @@ class EmployeeController extends Controller
         try {
             $request->validate([
                 'project_id' => 'required|exists:projects,id',
-                'date' => 'required|date'
+                'date' => 'required|date',
             ]);
 
             // Obtener todos los empleados
@@ -163,18 +161,19 @@ class EmployeeController extends Controller
             // Marcar empleados con asistencia ya registrada
             $employees = $allEmployees->map(function ($employee) use ($employeesWithAttendance) {
                 $employee->has_attendance = $employeesWithAttendance->contains($employee->id);
+
                 return $employee;
             });
 
             return response()->json([
                 'success' => true,
                 'data' => $employees,
-                'message' => 'Empleados obtenidos correctamente'
+                'message' => 'Empleados obtenidos correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener los empleados: ' . $e->getMessage()
+                'message' => 'Error al obtener los empleados: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -198,7 +197,7 @@ class EmployeeController extends Controller
                 'has_attendances' => 'nullable|boolean',
                 'project_id' => 'nullable|exists:projects,id',
                 'attendance_period_from' => 'nullable|date',
-                'attendance_period_to' => 'nullable|date|after_or_equal:attendance_period_from'
+                'attendance_period_to' => 'nullable|date|after_or_equal:attendance_period_from',
             ]);
 
             $query = Employee::with(['attendances.timesheet.project', 'timesheets.project']);
@@ -220,7 +219,7 @@ class EmployeeController extends Controller
 
             // Filtro por número de documento
             if ($request->filled('document_number')) {
-                $query->where('document_number', 'like', '%' . $request->document_number . '%');
+                $query->where('document_number', 'like', '%'.$request->document_number.'%');
             }
 
             // Filtro por sexo
@@ -248,7 +247,7 @@ class EmployeeController extends Controller
 
             // Filtro por dirección
             if ($request->filled('address')) {
-                $query->where('address', 'like', '%' . $request->address . '%');
+                $query->where('address', 'like', '%'.$request->address.'%');
             }
 
             // Filtro por existencia de asistencias
@@ -284,7 +283,7 @@ class EmployeeController extends Controller
             // Agregar estadísticas calculadas
             $employees = $employees->map(function ($employee) use ($request) {
                 // Agregar información adicional del empleado
-                $employee->full_name = trim($employee->first_name . ' ' . $employee->last_name);
+                $employee->full_name = trim($employee->first_name.' '.$employee->last_name);
                 $employee->age = null; // Por ahora, dejaremos esto sin calcular
 
                 // Calcular estadísticas de asistencia
@@ -333,19 +332,19 @@ class EmployeeController extends Controller
                     'has_attendances',
                     'project_id',
                     'attendance_period_from',
-                    'attendance_period_to'
-                ])
+                    'attendance_period_to',
+                ]),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error en la búsqueda: ' . $e->getMessage()
+                'message' => 'Error en la búsqueda: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -372,17 +371,17 @@ class EmployeeController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $employee,
-                'message' => 'Empleado creado correctamente'
+                'message' => 'Empleado creado correctamente',
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear el empleado: ' . $e->getMessage()
+                'message' => 'Error al crear el empleado: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -397,7 +396,7 @@ class EmployeeController extends Controller
 
             $request->validate([
                 'document_type' => 'sometimes|string|in:DNI,PASAPORTE,CARNET DE EXTRANJERIA',
-                'document_number' => 'sometimes|string|max:12|unique:employees,document_number,' . $id,
+                'document_number' => 'sometimes|string|max:12|unique:employees,document_number,'.$id,
                 'first_name' => 'sometimes|string|max:40',
                 'last_name' => 'sometimes|string|max:40',
                 'address' => 'sometimes|string|max:40',
@@ -411,17 +410,17 @@ class EmployeeController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $employee,
-                'message' => 'Empleado actualizado correctamente'
+                'message' => 'Empleado actualizado correctamente',
             ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Empleado no encontrado'
+                'message' => 'Empleado no encontrado',
             ], 404);
         }
     }
@@ -437,12 +436,12 @@ class EmployeeController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Empleado eliminado correctamente'
+                'message' => 'Empleado eliminado correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Empleado no encontrado'
+                'message' => 'Empleado no encontrado',
             ], 404);
         }
     }

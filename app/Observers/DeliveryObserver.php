@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\Delivery;
 use App\Enums\DeliveryStatus;
+use App\Models\Delivery;
 
 class DeliveryObserver
 {

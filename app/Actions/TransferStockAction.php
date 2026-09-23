@@ -21,11 +21,6 @@ class TransferStockAction
     /**
      * Transfer stock from one warehouse location to another.
      *
-     * @param int $eppVariantId
-     * @param int $sourceLocationId
-     * @param int $targetLocationId
-     * @param int $quantity
-     * @param string|null $description
      * @throws InvalidArgumentException
      */
     public function execute(
@@ -36,17 +31,17 @@ class TransferStockAction
         ?string $description = null
     ): void {
         if ($sourceLocationId === $targetLocationId) {
-            throw new InvalidArgumentException("La ubicación de origen y destino no pueden ser la misma.");
+            throw new InvalidArgumentException('La ubicación de origen y destino no pueden ser la misma.');
         }
 
         if ($quantity <= 0) {
-            throw new InvalidArgumentException("La cantidad a transferir debe ser mayor a cero.");
+            throw new InvalidArgumentException('La cantidad a transferir debe ser mayor a cero.');
         }
 
         // Validate stock in source location
         $available = $this->inventoryService->checkStockAvailability($eppVariantId, $sourceLocationId, $quantity);
 
-        if (!$available) {
+        if (! $available) {
             $stock = $this->inventoryService->getStock($eppVariantId, $sourceLocationId);
             $currentStock = $stock ? $stock->current_stock : 0;
             throw new InvalidArgumentException("Stock insuficiente en la ubicación de origen. Disponible: {$currentStock}, Requerido: {$quantity}.");

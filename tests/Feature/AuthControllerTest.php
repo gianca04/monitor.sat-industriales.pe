@@ -5,8 +5,8 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
 use Illuminate\Support\Facades\Hash;
+use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
@@ -20,13 +20,13 @@ class AuthControllerTest extends TestCase
         // Crear un usuario de prueba
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => Hash::make('password123')
+            'password' => Hash::make('password123'),
         ]);
 
         // Datos de login
         $loginData = [
             'email' => 'test@example.com',
-            'password' => 'password123'
+            'password' => 'password123',
         ];
 
         // Realizar petición de login
@@ -34,19 +34,19 @@ class AuthControllerTest extends TestCase
 
         // Verificar respuesta exitosa
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'access_token',
-                    'token_type',
-                    'expires_at'
-                ])
-                ->assertJson([
-                    'token_type' => 'Bearer'
-                ]);
+            ->assertJsonStructure([
+                'access_token',
+                'token_type',
+                'expires_at',
+            ])
+            ->assertJson([
+                'token_type' => 'Bearer',
+            ]);
 
         // Verificar que el token fue creado
         $this->assertDatabaseHas('personal_access_tokens', [
             'tokenable_id' => $user->id,
-            'tokenable_type' => User::class
+            'tokenable_type' => User::class,
         ]);
     }
 
@@ -57,15 +57,15 @@ class AuthControllerTest extends TestCase
     {
         $loginData = [
             'email' => 'invalid@example.com',
-            'password' => 'wrongpassword'
+            'password' => 'wrongpassword',
         ];
 
         $response = $this->postJson('/api/login', $loginData);
 
         $response->assertStatus(401)
-                ->assertJson([
-                    'message' => 'Credenciales inválidas'
-                ]);
+            ->assertJson([
+                'message' => 'Credenciales inválidas',
+            ]);
     }
 
     /**
@@ -76,12 +76,12 @@ class AuthControllerTest extends TestCase
         // Sin email
         $response = $this->postJson('/api/login', ['password' => 'password123']);
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['email']);
 
         // Sin password
         $response = $this->postJson('/api/login', ['email' => 'test@example.com']);
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['password']);
+            ->assertJsonValidationErrors(['password']);
     }
 
     /**
@@ -91,13 +91,13 @@ class AuthControllerTest extends TestCase
     {
         $loginData = [
             'email' => 'invalid-email',
-            'password' => 'password123'
+            'password' => 'password123',
         ];
 
         $response = $this->postJson('/api/login', $loginData);
 
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['email']);
     }
 
     /**
@@ -111,22 +111,22 @@ class AuthControllerTest extends TestCase
 
         // Establecer fecha de expiración en el futuro
         $token->accessToken->update([
-            'expires_at' => now()->addDays(1)
+            'expires_at' => now()->addDays(1),
         ]);
 
         // Realizar logout
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token->plainTextToken
+            'Authorization' => 'Bearer '.$token->plainTextToken,
         ])->postJson('/api/logout');
 
         $response->assertStatus(200)
-                ->assertJson([
-                    'message' => 'Sesión cerrada correctamente'
-                ]);
+            ->assertJson([
+                'message' => 'Sesión cerrada correctamente',
+            ]);
 
         // Verificar que el token fue eliminado
         $this->assertDatabaseMissing('personal_access_tokens', [
-            'tokenable_id' => $user->id
+            'tokenable_id' => $user->id,
         ]);
     }
 
@@ -147,12 +147,12 @@ class AuthControllerTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => Hash::make('password123')
+            'password' => Hash::make('password123'),
         ]);
 
         $loginData = [
             'email' => 'test@example.com',
-            'password' => 'password123'
+            'password' => 'password123',
         ];
 
         $response = $this->postJson('/api/login', $loginData);

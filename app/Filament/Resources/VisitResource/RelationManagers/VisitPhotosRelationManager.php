@@ -7,21 +7,23 @@ use Filament\Forms\Components\Split;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Columns\Layout\Panel;
-use Filament\Support\Enums\MaxWidth;
-use Illuminate\Support\HtmlString;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class VisitPhotosRelationManager extends RelationManager
 {
     protected static string $relationship = 'visitPhotos';
+
     protected static ?string $title = 'Evidencias Fotográficas';
+
     protected static ?string $modelLabel = 'Evidencia';
+
     protected static ?string $pluralModelLabel = 'Evidencias';
+
     protected static ?string $recordTitleAttribute = 'descripcion';
 
     public function form(Form $form): Form
@@ -88,7 +90,7 @@ class VisitPhotosRelationManager extends RelationManager
                         ->searchable()
                         ->size('m')
                         ->lineClamp(2)
-                        ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
+                        ->formatStateUsing(fn (string $state): HtmlString => new HtmlString($state)),
 
                     Tables\Columns\TextColumn::make('created_at')
                         ->label('Fecha de creación')
@@ -151,6 +153,7 @@ class VisitPhotosRelationManager extends RelationManager
                     })
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['visit_id'] = $this->ownerRecord->id;
+
                         return $data;
                     })
                     ->successNotification(
@@ -203,6 +206,7 @@ class VisitPhotosRelationManager extends RelationManager
                     })
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['visit_id'] = $this->ownerRecord->id;
+
                         return $data;
                     })
                     ->successNotification(

@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\VisitResource\Pages;
-use App\Filament\Resources\VisitResource\RelationManagers;
 use App\Filament\Resources\VisitResource\RelationManagers\VisitPhotosRelationManager;
-use App\Forms\Components\ProjectClientSelect;
 use App\Models\Employee;
 use App\Models\Visit;
 use Filament\Forms;
@@ -17,20 +15,25 @@ use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class VisitResource extends Resource
 {
     use Translatable;
+
     protected static ?string $model = Visit::class;
+
     protected static ?string $title = 'Visitas';
+
     protected static ?string $modelLabel = 'Visita';
+
     protected static ?string $pluralModelLabel = 'Visitas';
+
     protected static ?string $singularModelLabel = 'Visita';
+
     protected static ?string $navigationGroup = 'Control de operaciones';
+
     protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
 
     public static function form(Form $form): Form
@@ -45,10 +48,9 @@ class VisitResource extends Resource
                             ->columns(2)
                             ->schema([
 
-
                                 // INICIO DE SELECT DE EMPLEADO
                                 Forms\Components\Select::make('employee_id')
-                                    ->default(fn() => Auth::user()?->employee_id)->required()
+                                    ->default(fn () => Auth::user()?->employee_id)->required()
                                     ->columns(2)
                                     ->reactive()
                                     ->prefixIcon('heroicon-m-user')
@@ -81,20 +83,25 @@ class VisitResource extends Resource
                                             ->color('info')
                                             ->action(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId) {
+                                                if (! $employeeId) {
                                                     Notification::make()
                                                         ->title('Selecciona un supervisor primero')
                                                         ->warning()
                                                         ->send();
+
                                                     return;
                                                 }
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId) return null;
+                                                if (! $employeeId) {
+                                                    return null;
+                                                }
 
                                                 $employee = Employee::with('user')->find($employeeId);
-                                                if (!$employee) return null;
+                                                if (! $employee) {
+                                                    return null;
+                                                }
 
                                                 return view('filament.components.employee-info-modal', compact('employee'));
                                             })
@@ -102,7 +109,7 @@ class VisitResource extends Resource
                                             ->modalSubmitAction(false)
                                             ->modalCancelActionLabel('Cerrar')
                                             ->modalWidth('2xl')
-                                            ->visible(fn(callable $get) => !empty($get('employee_id')))
+                                            ->visible(fn (callable $get) => ! empty($get('employee_id')))
                                     )
                                     ->afterStateHydrated(function (callable $get, callable $set) {
                                         $employeeId = $get('employee_id');
@@ -163,7 +170,7 @@ class VisitResource extends Resource
                                         $endTime = $state;
 
                                         // Si no hay hora de inicio, no validamos
-                                        if (!$startTime || !$endTime) {
+                                        if (! $startTime || ! $endTime) {
                                             return;
                                         }
 
@@ -302,7 +309,7 @@ class VisitResource extends Resource
                                     ->confirmable(),
                             ]),
                         // FIN DE TAB DE FIRMAS
-                    ])->columnSpanFull()
+                    ])->columnSpanFull(),
             ]);
     }
 
@@ -354,9 +361,9 @@ class VisitResource extends Resource
                     ->label('Generar PDF')
                     ->color('danger')
                     ->icon('heroicon-o-document')
-                    ->url(fn($action) => route('visit-report.pdf', $action->getRecord()->id))
+                    ->url(fn ($action) => route('visit-report.pdf', $action->getRecord()->id))
                     ->openUrlInNewTab()
-                    ->visible(fn($action) => $action->getRecord()->visitPhotos()->count() > 0)
+                    ->visible(fn ($action) => $action->getRecord()->visitPhotos()->count() > 0)
                     ->tooltip('Generar reporte PDF del trabajo realizado'),
 
             ])

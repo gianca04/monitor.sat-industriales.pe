@@ -4,37 +4,24 @@ namespace App\Filament\Resources;
 
 use App\Filament\Exports\EmployeeExporter;
 use App\Filament\Resources\EmployeeResource\Pages;
-use App\Filament\Resources\EmployeeResource\RelationManagers;
 use App\Models\Employee;
-use Filament\Actions\Exports\Enums\Contracts\ExportFormat;
 use Filament\Forms;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\Layout\Grid;
-
-use App\Filament\Exports\ProductExporter;
-use Filament\Forms\Components\Tabs;
-
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Split;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
-use Livewire\Attributes\Reactive;
-use PhpParser\Node\Stmt\Label;
 
 class EmployeeResource extends Resource
 {
@@ -43,12 +30,15 @@ class EmployeeResource extends Resource
     protected static ?string $model = Employee::class;
 
     protected static ?string $pluralModelLabel = 'Colaboradores';
+
     protected static ?string $modelLabel = 'Colaborador';
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $navigationGroup = 'Recursos Humanos';
 
     protected static int $globalSearchResultsLimit = 5;
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['first_name', 'last_name', 'document_number'];  // Verifica que estos atributos sean los más relevantes para la búsqueda
@@ -57,16 +47,16 @@ class EmployeeResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Nombre' => $record->first_name . $record->last_name,
+            'Nombre' => $record->first_name.$record->last_name,
         ];
     }
+
     public static function getGlobalSearchEloquentQuery(): Builder
     {
         // Optimiza la consulta, asegurando que solo cargue lo necesario
         return parent::getGlobalSearchEloquentQuery()
             ->with('user'); // Selecciona solo las columnas necesarias del modelo Employee
     }
-
 
     public static function form(Form $form): Form
     {
@@ -138,7 +128,7 @@ class EmployeeResource extends Resource
                                     ->label('Activo')
                                     ->helperText('Marca esta opción para hacer visible al colaborador en el resto de formularios.')
                                     ->default(true)
-                                    ->live() // Hace que el formulario reaccione al cambio de este toggle
+                                    ->live(), // Hace que el formulario reaccione al cambio de este toggle
                             ])
                             ->columnSpan('full'),
 
@@ -193,42 +183,42 @@ class EmployeeResource extends Resource
 
                                         TextInput::make('name')
                                             ->label('Nombre de Usuario')
-                                            ->required(fn(Forms\Get $get): bool => $get('is_active')) // Requerido solo si is_active es true
+                                            ->required(fn (Forms\Get $get): bool => $get('is_active')) // Requerido solo si is_active es true
                                             ->maxLength(255)
                                             ->unique(ignoreRecord: true)
-                                            ->visible(fn(Forms\Get $get): bool => $get('is_active')), // Visible solo si is_active es true
+                                            ->visible(fn (Forms\Get $get): bool => $get('is_active')), // Visible solo si is_active es true
 
                                         TextInput::make('email')
                                             ->label('Correo Electrónico')
-                                            ->required(fn(Forms\Get $get): bool => $get('is_active')) // Requerido solo si is_active es true
+                                            ->required(fn (Forms\Get $get): bool => $get('is_active')) // Requerido solo si is_active es true
                                             ->email()
                                             ->maxLength(255)
                                             ->unique(ignoreRecord: true) // Asegura que el email sea único, ignora el registro actual en edición
-                                            ->visible(fn(Forms\Get $get): bool => $get('is_active')), // Visible solo si is_active es true
+                                            ->visible(fn (Forms\Get $get): bool => $get('is_active')), // Visible solo si is_active es true
 
                                         Forms\Components\Select::make('roles')
                                             ->relationship('roles', 'name')
                                             ->multiple()
                                             ->preload()
                                             ->searchable()
-                                            ->required(fn(Forms\Get $get): bool => $get('is_active')) // Requerido solo si is_active es true
-                                            ->visible(fn(Forms\Get $get): bool => $get('is_active')), // Visible solo si is_active es true
+                                            ->required(fn (Forms\Get $get): bool => $get('is_active')) // Requerido solo si is_active es true
+                                            ->visible(fn (Forms\Get $get): bool => $get('is_active')), // Visible solo si is_active es true
 
                                         TextInput::make('password')
                                             ->label('Contraseña')
                                             ->password()
-                                            ->dehydrateStateUsing(fn(string $state): string => Hash::make($state)) // Hashea la contraseña automáticamente
-                                            ->dehydrated(fn(?string $state): bool => filled($state)) // Solo guarda si hay algo en el campo
-                                            ->required(fn(string $operation): bool => $operation === 'create') // Requerido solo en 'create'
-                                            ->visible(fn(Forms\Get $get): bool => $get('is_active')) // Visible solo si is_active es true
+                                            ->dehydrateStateUsing(fn (string $state): string => Hash::make($state)) // Hashea la contraseña automáticamente
+                                            ->dehydrated(fn (?string $state): bool => filled($state)) // Solo guarda si hay algo en el campo
+                                            ->required(fn (string $operation): bool => $operation === 'create') // Requerido solo en 'create'
+                                            ->visible(fn (Forms\Get $get): bool => $get('is_active')) // Visible solo si is_active es true
                                             ->confirmed() // Requiere un campo de confirmación
                                             ->maxLength(255),
 
                                         TextInput::make('password_confirmation')
                                             ->password()
                                             ->label('Confirmar Contraseña')
-                                            ->visible(fn(Forms\Get $get): bool => $get('is_active')) // Visible solo si is_active es true
-                                            ->required(fn(Forms\Get $get, string $operation): bool => $get('is_active') && $operation === 'create'), // Requerido solo si is_active es true y en 'create'
+                                            ->visible(fn (Forms\Get $get): bool => $get('is_active')) // Visible solo si is_active es true
+                                            ->required(fn (Forms\Get $get, string $operation): bool => $get('is_active') && $operation === 'create'), // Requerido solo si is_active es true y en 'create'
                                     ]),
                             ])
 
@@ -245,17 +235,16 @@ class EmployeeResource extends Resource
 
             ->columns([
 
-
                 TextColumn::make('first_name')
                     ->label('Nombres')
                     ->searchable()
                     ->sortable(),
-                //->icon('heroicon-o-identification'),
+                // ->icon('heroicon-o-identification'),
 
                 TextColumn::make('last_name')
                     ->label('Apellidos')
                     ->sortable()
-                    //->icon('heroicon-o-identification')
+                    // ->icon('heroicon-o-identification')
                     ->searchable(),
 
                 TextColumn::make('document_number')
@@ -277,7 +266,6 @@ class EmployeeResource extends Resource
                     ->searchable()
                     ->label('Profesión'),
 
-
                 TextColumn::make('date_birth')
                     ->label('Fecha de Nacimiento')
                     ->date()
@@ -291,7 +279,7 @@ class EmployeeResource extends Resource
                     ->icon('heroicon-o-calendar'),
 
                 TextColumn::make('address')
-                    ->tooltip(fn($record) => $record->address)
+                    ->tooltip(fn ($record) => $record->address)
                     ->label('Dirección')
                     ->icon('heroicon-o-map-pin')
                     ->searchable(),
@@ -326,7 +314,7 @@ class EmployeeResource extends Resource
             ])
             ->headerActions(
                 [
-                    //ExportAction::make()
+                    // ExportAction::make()
                     //    ->exporter(EmployeeExporter::class)
                 ]
             )

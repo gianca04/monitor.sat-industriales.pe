@@ -2,37 +2,31 @@
 
 namespace App\Filament\Resources\TimesheetResource\RelationManagers;
 
+use App\Models\Attendance;
 use App\Models\Employee;
 use App\Services\HoursCalculator;
-use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Imports\AttendancesImport;
-use App\Exports\AttendanceTemplateExport;
-use App\Models\Attendance;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Storage;
 
 class AttendancesRelationManager extends RelationManager
 {
     use Translatable;
+
     protected static string $relationship = 'attendances';
 
     protected static ?string $pluralModelLabel = 'Asistencias';
 
     protected static ?string $modelLabel = 'Asistencia';
-    protected static ?string $title = 'Asistencias'; // Cambia el título de la tabla aquí
 
+    protected static ?string $title = 'Asistencias'; // Cambia el título de la tabla aquí
 
     public function form(Form $form): Form
     {
@@ -101,7 +95,6 @@ class AttendancesRelationManager extends RelationManager
                             ->native(false)
                             ->prefixIcon('heroicon-o-clock'),
 
-
                     ]),
 
                 Forms\Components\Section::make('Horarios de Trabajo')
@@ -109,7 +102,7 @@ class AttendancesRelationManager extends RelationManager
                     ->icon('heroicon-o-clock')
                     ->collapsed()
                     ->collapsible()
-                    ->visible(fn(callable $get) => in_array($get('status'), ['attended', 'present', 'late']))
+                    ->visible(fn (callable $get) => in_array($get('status'), ['attended', 'present', 'late']))
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -117,14 +110,14 @@ class AttendancesRelationManager extends RelationManager
                                     ->label('Fecha de entrada')
                                     ->seconds(false)
                                     ->weekStartsOnMonday()
-                                    ->default(fn() => $this->getOwnerRecord()?->check_in_date)
+                                    ->default(fn () => $this->getOwnerRecord()?->check_in_date)
                                     ->prefixIcon('heroicon-o-arrow-right-end-on-rectangle'),
 
                                 DateTimePicker::make('check_out_date')
                                     ->label('Fecha de salida')
                                     ->seconds(false)
                                     ->after('check_in_date')
-                                    ->default(fn() => $this->getOwnerRecord()?->check_out_date)
+                                    ->default(fn () => $this->getOwnerRecord()?->check_out_date)
                                     ->prefixIcon('heroicon-o-arrow-right-start-on-rectangle'),
                             ]),
 
@@ -217,7 +210,7 @@ class AttendancesRelationManager extends RelationManager
                         'heroicon-o-sun' => 'day',
                         'heroicon-o-moon' => 'night',
                     ])
-                    ->formatStateUsing(fn(?string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'day' => 'Día',
                         'night' => 'Noche',
                         null => 'No definido',
@@ -231,39 +224,42 @@ class AttendancesRelationManager extends RelationManager
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->placeholder('NO REGISTRADO')
-                    ->color(fn($state) => $state ? 'success' : 'gray')
-                    ->weight(fn($state) => $state ? 'medium' : 'light'),
+                    ->color(fn ($state) => $state ? 'success' : 'gray')
+                    ->weight(fn ($state) => $state ? 'medium' : 'light'),
 
                 Tables\Columns\TextColumn::make('work_duration')
                     ->label('Horas Trabajadas')
                     ->getStateUsing(function ($record) {
-                        if (!$record) {
+                        if (! $record) {
                             return null;
                         }
 
                         $workedHours = HoursCalculator::calculateWorkedHours($record);
+
                         return $workedHours['formatted'];
                     })
                     ->badge()
-                    ->color(fn($state) => $state ? 'success' : 'gray')
+                    ->color(fn ($state) => $state ? 'success' : 'gray')
                     ->placeholder('NO CALCULADO')
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('extra_hours')
                     ->label('Horas Extra')
                     ->getStateUsing(function ($record) {
-                        if (!$record) {
+                        if (! $record) {
                             return null;
                         }
 
                         $extraHours = HoursCalculator::calculateExtraHours($record);
+
                         return $extraHours['formatted'];
                     })
                     ->badge()
                     ->color(function ($state) {
-                        if (!$state || $state === '0h 0m') {
+                        if (! $state || $state === '0h 0m') {
                             return 'gray';
                         }
+
                         return 'warning'; // Color naranja para horas extra
                     })
                     ->placeholder('NO CALCULADO')
@@ -289,7 +285,7 @@ class AttendancesRelationManager extends RelationManager
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->placeholder('NO REGISTRADO')
-                    ->color(fn($state) => $state ? 'success' : 'gray'),
+                    ->color(fn ($state) => $state ? 'success' : 'gray'),
 
                 Tables\Columns\TextInputColumn::make('observation')
                     ->label('Observación')
@@ -304,7 +300,7 @@ class AttendancesRelationManager extends RelationManager
                         'present' => 'Presente',
                         'late' => 'Llegó Tarde',
                         'absent' => 'Faltó',
-                        'justified' => 'Justificado'
+                        'justified' => 'Justificado',
                     ])
                     ->multiple(),
 
@@ -317,12 +313,12 @@ class AttendancesRelationManager extends RelationManager
 
                 Tables\Filters\Filter::make('has_full_schedule')
                     ->label('Horario Completo')
-                    ->query(fn(Builder $query): Builder => $query->whereNotNull('check_in_date')->whereNotNull('check_out_date'))
+                    ->query(fn (Builder $query): Builder => $query->whereNotNull('check_in_date')->whereNotNull('check_out_date'))
                     ->toggle(),
 
                 Tables\Filters\Filter::make('has_break')
                     ->label('Con Descanso')
-                    ->query(fn(Builder $query): Builder => $query->whereNotNull('break_date')->whereNotNull('end_break_date'))
+                    ->query(fn (Builder $query): Builder => $query->whereNotNull('break_date')->whereNotNull('end_break_date'))
                     ->toggle(),
             ])
             ->headerActions([
@@ -355,7 +351,7 @@ class AttendancesRelationManager extends RelationManager
                                     ->options([
                                         'attended' => 'Asistió',
                                         'absent' => 'Faltó',
-                                        'justified' => 'Justificado'
+                                        'justified' => 'Justificado',
                                     ])
                                     ->default('attended')
                                     ->required(),
@@ -366,8 +362,7 @@ class AttendancesRelationManager extends RelationManager
                             ->reorderable(false)
                             ->collapsible()
                             ->itemLabel(
-                                fn(array $state): ?string =>
-                                $state['employee_id'] ? Employee::find($state['employee_id'])?->full_name : 'Nuevo empleado'
+                                fn (array $state): ?string => $state['employee_id'] ? Employee::find($state['employee_id'])?->full_name : 'Nuevo empleado'
                             ),
                     ])
                     ->action(function (array $data, $record) {
@@ -381,11 +376,12 @@ class AttendancesRelationManager extends RelationManager
                             // Verificar si ya existe una asistencia para este empleado en este timesheet
                             $existingAttendance = Attendance::where([
                                 'timesheet_id' => $timesheetId,
-                                'employee_id' => $empleadoData['employee_id']
+                                'employee_id' => $empleadoData['employee_id'],
                             ])->first();
 
                             if ($existingAttendance) {
                                 $duplicatedCount++;
+
                                 continue;
                             }
 
@@ -451,7 +447,7 @@ class AttendancesRelationManager extends RelationManager
                     Tables\Actions\BulkAction::make('marcarComoFalto')
                         ->label('Marcar como Faltó')
                         ->icon('heroicon-o-x-circle')
-                        ->action(fn($records) => $records->each->update([
+                        ->action(fn ($records) => $records->each->update([
                             'status' => 'absent',
                             'check_in_date' => null,
                             'break_date' => null,
@@ -485,7 +481,7 @@ class AttendancesRelationManager extends RelationManager
                         ->icon('heroicon-o-clock')
                         ->form([
                             Forms\Components\DateTimePicker::make('end_break_date')
-                                ->label('Hora de fin de break')
+                                ->label('Hora de fin de break'),
                         ])
                         ->action(function ($records, array $data) {
                             foreach ($records as $attendance) {

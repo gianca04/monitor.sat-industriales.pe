@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Employee;
 use App\Models\User;
-use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -64,7 +63,7 @@ class EmployeeResourceTest extends TestCase
                 'email' => 'janedoe@example.com',
                 'password' => 'securepassword',
                 'is_active' => true,
-            ]
+            ],
         ];
 
         // Enviamos la solicitud POST para crear el empleado con el usuario

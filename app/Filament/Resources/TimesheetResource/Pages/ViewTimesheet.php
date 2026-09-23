@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\TimesheetResource\Pages;
 
 use App\Exports\AttendancesExport;
+use App\Exports\AttendanceTemplateExport;
 use App\Filament\Resources\TimesheetResource;
 use App\Filament\Resources\TimesheetResource\Widgets\TimesheetStatsWidget;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
-use App\Exports\AttendanceTemplateExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ViewTimesheet extends ViewRecord
@@ -41,10 +41,10 @@ class ViewTimesheet extends ViewRecord
 
                     return Excel::download(
                         new AttendancesExport($timesheet->id),
-                        'asistencias_' . $timesheet->project->name . '_' . $timesheet->check_in_date->format('Y-m-d') . '.xlsx'
+                        'asistencias_'.$timesheet->project->name.'_'.$timesheet->check_in_date->format('Y-m-d').'.xlsx'
                     );
                 })
-                ->visible(fn() => $this->record->attendances()->count() > 0),
+                ->visible(fn () => $this->record->attendances()->count() > 0),
 
             Actions\EditAction::make(),
         ];

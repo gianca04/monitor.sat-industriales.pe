@@ -7,39 +7,42 @@ use App\Filament\Resources\WorkReportResource\RelationManagers;
 use App\Filament\Resources\WorkReportResource\RelationManagers\PhotosRelationManager;
 use App\Models\Client;
 use App\Models\Employee;
-use Filament\Resources\Concerns\Translatable;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Actions\Action as FormAction;
 use App\Models\Project;
-use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
-use Closure;
-use Illuminate\Validation\ValidationException;
 use App\Models\Quote;
 use App\Models\SubClient;
-use Illuminate\Support\Facades\Auth;
 use App\Models\WorkReport;
 use Filament\Forms;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Split;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Resources\Concerns\Translatable;
+use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class WorkReportResource extends Resource
 {
     use Translatable;
+
     protected static ?string $modelLabel = 'Reporte de Trabajo';
+
     protected static ?string $pluralModelLabel = 'Reportes de Trabajo';
+
     protected static ?string $model = WorkReport::class;
+
     protected static ?string $navigationGroup = 'Control de operaciones';
+
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
+
     protected static bool $shouldRegisterNavigation = false;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -54,7 +57,7 @@ class WorkReportResource extends Resource
 
                                 // INICIO DE SELECT DE EMPLEADO
                                 Forms\Components\Select::make('employee_id')
-                                    ->default(fn() => Auth::user()?->employee_id)->required()
+                                    ->default(fn () => Auth::user()?->employee_id)->required()
                                     ->columns(2)
                                     ->reactive()
                                     ->prefixIcon('heroicon-m-user')
@@ -87,20 +90,25 @@ class WorkReportResource extends Resource
                                             ->color('info')
                                             ->action(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId) {
+                                                if (! $employeeId) {
                                                     Notification::make()
                                                         ->title('Selecciona un supervisor primero')
                                                         ->warning()
                                                         ->send();
+
                                                     return;
                                                 }
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId) return null;
+                                                if (! $employeeId) {
+                                                    return null;
+                                                }
 
                                                 $employee = Employee::with('user')->find($employeeId);
-                                                if (!$employee) return null;
+                                                if (! $employee) {
+                                                    return null;
+                                                }
 
                                                 return view('filament.components.employee-info-modal', compact('employee'));
                                             })
@@ -108,7 +116,7 @@ class WorkReportResource extends Resource
                                             ->modalSubmitAction(false)
                                             ->modalCancelActionLabel('Cerrar')
                                             ->modalWidth('2xl')
-                                            ->visible(fn(callable $get) => !empty($get('employee_id')))
+                                            ->visible(fn (callable $get) => ! empty($get('employee_id')))
                                     )
                                     ->afterStateHydrated(function (callable $get, callable $set) {
                                         $employeeId = $get('employee_id');
@@ -134,7 +142,7 @@ class WorkReportResource extends Resource
                                 Forms\Components\Select::make('project_id')
                                     ->required()
                                     ->prefixIcon('heroicon-m-briefcase')
-                                    ->default(fn() => session('project_id'))
+                                    ->default(fn () => session('project_id'))
                                     ->label('Proyecto') // Título para el campo 'Proyecto'
                                     ->options(
                                         function (callable $get) {
@@ -146,14 +154,14 @@ class WorkReportResource extends Resource
                                                 })
                                                 ->get()
                                                 ->mapWithKeys(function ($project) {
-                                                    return [$project->id => $project->name . ' - ' . $project->quote_id];
+                                                    return [$project->id => $project->name.' - '.$project->quote_id];
                                                 })
                                                 ->toArray();
                                         }
                                     )
                                     ->searchable() // Activa la búsqueda asincrónica
                                     ->reactive() // Hace el campo reactivo
-                                    ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
+                                    ->afterStateUpdated(fn ($state, callable $set) => $set('sub_client_id', null))
                                     ->helperText('Selecciona un proyecto.') // Ayuda para el campo de cliente
 
                                     // Botón para ver información del proyecto
@@ -164,20 +172,25 @@ class WorkReportResource extends Resource
                                             ->color('info')
                                             ->action(function (callable $get) {
                                                 $projectId = $get('project_id');
-                                                if (!$projectId) {
+                                                if (! $projectId) {
                                                     Notification::make()
                                                         ->title('Selecciona un proyecto primero')
                                                         ->warning()
                                                         ->send();
+
                                                     return;
                                                 }
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $projectId = $get('project_id');
-                                                if (!$projectId) return null;
+                                                if (! $projectId) {
+                                                    return null;
+                                                }
 
                                                 $project = Project::with('clients')->find($projectId);
-                                                if (!$project) return null;
+                                                if (! $project) {
+                                                    return null;
+                                                }
 
                                                 return view('filament.components.project-info-modal', compact('project'));
                                             })
@@ -185,7 +198,7 @@ class WorkReportResource extends Resource
                                             ->modalSubmitAction(false)
                                             ->modalCancelActionLabel('Cerrar')
                                             ->modalWidth('2xl')
-                                            ->visible(fn(callable $get) => !empty($get('project_id')))
+                                            ->visible(fn (callable $get) => ! empty($get('project_id')))
                                     )
 
                                     ->createOptionForm([
@@ -224,31 +237,31 @@ class WorkReportResource extends Resource
                                                             ->unique('id')
                                                             ->mapWithKeys(function ($quote) {
                                                                 $label = "{$quote->correlative} - {$quote->project_description} ({$quote->sub_client_name} / {$quote->client_name})";
+
                                                                 return [$quote->id => $label];
                                                             })
                                                             ->toArray();
                                                     })
-                                                    ->default(fn() => session('quote_id')),
-
+                                                    ->default(fn () => session('quote_id')),
 
                                                 // ...existing code...
                                                 Forms\Components\DatePicker::make('start_date')
                                                     ->label('Fecha de inicio')
                                                     ->default(now())
                                                     ->required()
-                                                    ->maxDate(fn(callable $get) => $get('end_date')), // Valida contra end_date
+                                                    ->maxDate(fn (callable $get) => $get('end_date')), // Valida contra end_date
 
                                                 Forms\Components\DatePicker::make('end_date')
                                                     ->label('Fecha de finalización')
                                                     ->default(now()->addDays(30))
                                                     ->required()
-                                                    ->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
+                                                    ->minDate(fn (callable $get) => $get('start_date')), // Valida contra start_date
                                                 // ...existing code...
 
                                                 Forms\Components\Placeholder::make('status_text')
                                                     ->label('Estado del proyecto:')
                                                     ->extraAttributes(['class' => 'text-2xl font-bold text-primary-600'])
-                                                    ->content(fn($record) => $record?->status_text ?? 'Sin definir'),
+                                                    ->content(fn ($record) => $record?->status_text ?? 'Sin definir'),
                                             ]),
 
                                         Split::make([
@@ -267,14 +280,14 @@ class WorkReportResource extends Resource
                                                                 })
                                                                 ->get()
                                                                 ->mapWithKeys(function ($client) {
-                                                                    return [$client->id => $client->business_name . ' - ' . $client->document_number];
+                                                                    return [$client->id => $client->business_name.' - '.$client->document_number];
                                                                 })
                                                                 ->toArray();
                                                         }
                                                     )
                                                     ->searchable() // Activa la búsqueda asincrónica
                                                     ->reactive() // Hace el campo reactivo
-                                                    ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
+                                                    ->afterStateUpdated(fn ($state, callable $set) => $set('sub_client_id', null))
                                                     ->helperText('Selecciona el cliente para esta cotización.') // Ayuda para el campo de cliente
 
                                                     // Botón para ver información del cliente
@@ -285,20 +298,25 @@ class WorkReportResource extends Resource
                                                             ->color('info')
                                                             ->action(function (callable $get) {
                                                                 $clientId = $get('client_id');
-                                                                if (!$clientId) {
+                                                                if (! $clientId) {
                                                                     Notification::make()
                                                                         ->title('Selecciona un cliente primero')
                                                                         ->warning()
                                                                         ->send();
+
                                                                     return;
                                                                 }
                                                             })
                                                             ->modalContent(function (callable $get) {
                                                                 $clientId = $get('client_id');
-                                                                if (!$clientId) return null;
+                                                                if (! $clientId) {
+                                                                    return null;
+                                                                }
 
                                                                 $client = Client::with('subClients')->find($clientId);
-                                                                if (!$client) return null;
+                                                                if (! $client) {
+                                                                    return null;
+                                                                }
 
                                                                 return view('filament.components.client-info-modal', compact('client'));
                                                             })
@@ -306,7 +324,7 @@ class WorkReportResource extends Resource
                                                             ->modalSubmitAction(false)
                                                             ->modalCancelActionLabel('Cerrar')
                                                             ->modalWidth('2xl')
-                                                            ->visible(fn(callable $get) => !empty($get('client_id')))
+                                                            ->visible(fn (callable $get) => ! empty($get('client_id')))
                                                     )
 
                                                     ->createOptionForm([
@@ -391,6 +409,7 @@ class WorkReportResource extends Resource
                                                     ])
                                                     ->createOptionUsing(function (array $data): int {
                                                         $client = Client::create($data);
+
                                                         return $client->id;
                                                     })
                                                     ->createOptionAction(function (FormAction $action) {
@@ -429,6 +448,7 @@ class WorkReportResource extends Resource
                                                     ->options(
                                                         function (callable $get) {
                                                             $clientId = $get('client_id');
+
                                                             return SubClient::where('client_id', $clientId)
                                                                 ->get()
                                                                 ->mapWithKeys(function ($subClient) {
@@ -439,7 +459,7 @@ class WorkReportResource extends Resource
                                                     )
                                                     ->reactive()
                                                     ->searchable()
-                                                    ->disabled(fn($get) => !$get('client_id')) // Deshabilita si no hay cliente seleccionado
+                                                    ->disabled(fn ($get) => ! $get('client_id')) // Deshabilita si no hay cliente seleccionado
                                                     ->helperText('Selecciona el Sede para esta cotización.') // Ayuda para el campo 'Sede'
 
                                                     // Cuando se carga un registro existente, seleccionar automáticamente el cliente
@@ -460,20 +480,25 @@ class WorkReportResource extends Resource
                                                             ->color('info')
                                                             ->action(function (callable $get) {
                                                                 $subClientId = $get('sub_client_id');
-                                                                if (!$subClientId) {
+                                                                if (! $subClientId) {
                                                                     Notification::make()
                                                                         ->title('Selecciona una sede primero')
                                                                         ->warning()
                                                                         ->send();
+
                                                                     return;
                                                                 }
                                                             })
                                                             ->modalContent(function (callable $get) {
                                                                 $subClientId = $get('sub_client_id');
-                                                                if (!$subClientId) return null;
+                                                                if (! $subClientId) {
+                                                                    return null;
+                                                                }
 
                                                                 $subClient = SubClient::with('client')->find($subClientId);
-                                                                if (!$subClient) return null;
+                                                                if (! $subClient) {
+                                                                    return null;
+                                                                }
 
                                                                 return view('filament.components.sub-client-info-modal', compact('subClient'));
                                                             })
@@ -481,12 +506,12 @@ class WorkReportResource extends Resource
                                                             ->modalSubmitAction(false)
                                                             ->modalCancelActionLabel('Cerrar')
                                                             ->modalWidth('2xl')
-                                                            ->visible(fn(callable $get) => !empty($get('sub_client_id')))
+                                                            ->visible(fn (callable $get) => ! empty($get('sub_client_id')))
                                                     )
 
                                                     ->createOptionForm([
                                                         Forms\Components\Hidden::make('client_id')
-                                                            ->default(fn(callable $get) => $get('client_id')),
+                                                            ->default(fn (callable $get) => $get('client_id')),
                                                         Forms\Components\Section::make('Información de la Sede')
                                                             ->description('Datos de la nueva sede')
                                                             ->icon('heroicon-o-building-office')
@@ -515,6 +540,7 @@ class WorkReportResource extends Resource
                                                     ->createOptionUsing(function (array $data, callable $get): int {
                                                         $data['client_id'] = $get('client_id');
                                                         $subClient = SubClient::create($data);
+
                                                         return $subClient->id;
                                                     })
                                                     ->createOptionAction(function (FormAction $action) {
@@ -554,12 +580,13 @@ class WorkReportResource extends Resource
                                                     ->default([
                                                         'latitude' => -12.046374,
                                                         'longitude' => -77.042793,
-                                                        'location' => ''
+                                                        'location' => '',
                                                     ]),
                                             ]),
                                     ])
                                     ->createOptionUsing(function (array $data): int {
                                         $project = Project::create($data);
+
                                         return $project->id;
                                     })
                                     ->afterStateUpdated(function (callable $get, callable $set) {
@@ -616,7 +643,7 @@ class WorkReportResource extends Resource
                                     ->native(false)
                                     ->seconds(false)
                                     ->displayFormat(format: 'H:i')
-                                    ->helperText('Selecciona la hora de finalización del trabajo')
+                                    ->helperText('Selecciona la hora de finalización del trabajo'),
                                 // Usamos afterStateUpdated para validar y limpiar el campo
 
                                 // FIN DE INPUT DE HORA DE FINALIZACIÓN
@@ -784,7 +811,6 @@ class WorkReportResource extends Resource
             ]);
     }
 
-
     public static function table(Table $table): Table
     {
         return $table
@@ -803,7 +829,7 @@ class WorkReportResource extends Resource
 
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->label('Supervisor')
-                    ->formatStateUsing(fn($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
+                    ->formatStateUsing(fn ($record) => $record->employee->first_name.' '.$record->employee->last_name)
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(),
 
@@ -811,7 +837,7 @@ class WorkReportResource extends Resource
                     ->label('Evidencias')
                     ->counts('photos')
                     ->badge()
-                    ->color(fn(string $state): string => match (true) {
+                    ->color(fn (string $state): string => match (true) {
                         $state == 0 => 'danger',
                         $state < 5 => 'warning',
                         default => 'success',
@@ -839,12 +865,12 @@ class WorkReportResource extends Resource
                     ->relationship('project', 'name')
                     ->searchable()
                     ->preload()
-                    ->default(fn() => session('filter_project_id'))
+                    ->default(fn () => session('filter_project_id'))
                     ->placeholder('Todos los proyectos'),
 
                 Tables\Filters\Filter::make('recent')
                     ->label('Últimas 24 horas')
-                    ->query(fn(Builder $query): Builder => $query->where('created_at', '>=', now()->subDay())),
+                    ->query(fn (Builder $query): Builder => $query->where('created_at', '>=', now()->subDay())),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
@@ -871,25 +897,26 @@ class WorkReportResource extends Resource
                         ->label('Generar PDF')
                         ->color('danger')
                         ->icon('heroicon-o-document')
-                        ->url(fn($record) => route('work-report.pdf', $record->id))
+                        ->url(fn ($record) => route('work-report.pdf', $record->id))
                         ->openUrlInNewTab()
-                        ->visible(fn($record) => $record->photos()->count() > 0)
+                        ->visible(fn ($record) => $record->photos()->count() > 0)
                         ->tooltip('Generar reporte PDF'),
                 ])
                     ->icon('heroicon-m-ellipsis-vertical') // Aquí defines que sea el icono de 3 puntos
-                    ->tooltip('Opciones')
+                    ->tooltip('Opciones'),
             ])
             ->headerActions([
                 Tables\Actions\Action::make('back_to_project')
                     ->label('Volver al Proyecto')
                     ->icon('heroicon-o-arrow-left')
                     ->color('gray')
-                    ->visible(fn() => session()->has('project_id'))
+                    ->visible(fn () => session()->has('project_id'))
                     ->action(function () {
                         $projectId = session('project_id');
                         if ($projectId) {
                             // Limpiar la sesión
                             session()->forget('project_id');
+
                             return redirect(route('filament.dashboard.resources.projects.edit', $projectId));
                         }
                     }),
@@ -908,6 +935,7 @@ class WorkReportResource extends Resource
             RelationManagers\PhotosRelationManager::class,
         ];
     }
+
     public static function getPages(): array
     {
         return [

@@ -57,11 +57,11 @@ class Timesheet extends Model
      */
     protected $casts = [
 
-        'check_in_date'   => 'datetime',
-        'break_date'      => 'datetime',
+        'check_in_date' => 'datetime',
+        'break_date' => 'datetime',
         'end_break_date' => 'datetime',
-        'check_out_date'  => 'datetime',
-        'shift'           => 'string',
+        'check_out_date' => 'datetime',
+        'shift' => 'string',
     ];
 
     /**
@@ -79,7 +79,8 @@ class Timesheet extends Model
     {
         return $this->belongsTo(Project::class);
     }
-        public function attendances()
+
+    public function attendances()
     {
         return $this->hasMany(Attendance::class);
     }

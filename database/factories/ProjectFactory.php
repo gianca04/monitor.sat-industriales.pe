@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Project;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -29,7 +28,7 @@ class ProjectFactory extends Factory
         $endDate = $this->faker->dateTimeBetween($startDate, '+1 year');
 
         return [
-            'name' => $this->faker->company . ' - ' . $this->faker->words(2, true),
+            'name' => $this->faker->company.' - '.$this->faker->words(2, true),
             'start_date' => $startDate,
             'end_date' => $endDate,
             'location' => $this->faker->address,

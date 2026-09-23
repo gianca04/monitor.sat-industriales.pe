@@ -20,6 +20,14 @@ class Item extends Model
         'created_by',
     ];
 
+    /**
+     * Get the resolved URL for the item's photo from S3.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return app(\App\Services\ItemPhotoService::class)->url($this->photo);
+    }
+
     public function subcategory(): BelongsTo
     {
         return $this->belongsTo(Subcategory::class);

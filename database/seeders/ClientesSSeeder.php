@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
 
 class ClientesSSeeder extends Seeder
 {
@@ -79,7 +78,7 @@ class ClientesSSeeder extends Seeder
             ],
         ];
         DB::table('clients')->upsert($clientes, ['id'], [
-            'person_type','document_type','document_number','business_name','contact_email','address','contact_phone','description','created_at','updated_at'
+            'person_type', 'document_type', 'document_number', 'business_name', 'contact_email', 'address', 'contact_phone', 'description', 'created_at', 'updated_at',
         ]);
 
         // SubClientes
@@ -93,7 +92,7 @@ class ClientesSSeeder extends Seeder
             ['id' => 183, 'name' => 'TALARA - GM', 'client_id' => 163, 'description' => null, 'location' => null, 'latitude' => null, 'longitude' => null, 'created_at' => '2025-07-23', 'updated_at' => '2025-07-23'],
         ];
         DB::table('sub_clients')->upsert($subclientes, ['id'], [
-            'name','client_id','description','location','latitude','longitude','created_at','updated_at'
+            'name', 'client_id', 'description', 'location', 'latitude', 'longitude', 'created_at', 'updated_at',
         ]);
     }
 }

@@ -3,41 +3,39 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\QuoteResource\Pages;
-use App\Filament\Resources\QuoteResource\RelationManagers;
 use App\Filament\Resources\QuoteResource\RelationManagers\VisitsRelationManager;
-use App\Forms\Components\ubicacion;
 use App\Models\Client;
-use Filament\Support\View\Components\Modal;
 use App\Models\Employee;
 use App\Models\Quote;
 use App\Models\SubClient;
 use Filament\Forms;
-use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Split;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
-use Filament\Notifications\Notification;
-use Filament\Forms\Components\Actions\Action as FormAction;
-
 
 class QuoteResource extends Resource
 {
-
     use Translatable;
 
     protected static ?string $pluralModelLabel = 'Cotizaciones';
 
     protected static ?string $modelLabel = 'Cotización';
+
     protected static ?string $model = Quote::class;
+
     protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $navigationIcon = 'heroicon-o-calculator';
+
     protected static ?string $navigationGroup = 'Gestión de clientes';
 
     public static function form(Form $form): Form
@@ -56,10 +54,10 @@ class QuoteResource extends Resource
                                     ->action(function (callable $set, callable $get) {
                                         $set('status', 'in_progress');
                                         $currentComment = $get('comment') ?? '';
-                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] Estado cambiado a: En Proceso";
+                                        $newComment = $currentComment."\n[".now()->format('d/m/Y H:i').'] Estado cambiado a: En Proceso';
                                         $set('comment', trim($newComment));
                                     })
-                                    ->visible(fn(callable $get) => $get('status') !== 'in_progress'),
+                                    ->visible(fn (callable $get) => $get('status') !== 'in_progress'),
 
                                 Forms\Components\Actions\Action::make('set_under_review')
                                     ->label('En Revisión')
@@ -68,10 +66,10 @@ class QuoteResource extends Resource
                                     ->action(function (callable $set, callable $get) {
                                         $set('status', 'under_review');
                                         $currentComment = $get('comment') ?? '';
-                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] Estado cambiado a: En Revisión";
+                                        $newComment = $currentComment."\n[".now()->format('d/m/Y H:i').'] Estado cambiado a: En Revisión';
                                         $set('comment', trim($newComment));
                                     })
-                                    ->visible(fn(callable $get) => $get('status') !== 'under_review'),
+                                    ->visible(fn (callable $get) => $get('status') !== 'under_review'),
 
                                 Forms\Components\Actions\Action::make('set_sent')
                                     ->label('Enviada')
@@ -80,10 +78,10 @@ class QuoteResource extends Resource
                                     ->action(function (callable $set, callable $get) {
                                         $set('status', 'sent');
                                         $currentComment = $get('comment') ?? '';
-                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] Estado cambiado a: Enviada";
+                                        $newComment = $currentComment."\n[".now()->format('d/m/Y H:i').'] Estado cambiado a: Enviada';
                                         $set('comment', trim($newComment));
                                     })
-                                    ->visible(fn(callable $get) => $get('status') !== 'sent'),
+                                    ->visible(fn (callable $get) => $get('status') !== 'sent'),
 
                                 Forms\Components\Actions\Action::make('set_accepted')
                                     ->label('Aceptada')
@@ -96,10 +94,10 @@ class QuoteResource extends Resource
                                     ->action(function (callable $set, callable $get) {
                                         $set('status', 'accepted');
                                         $currentComment = $get('comment') ?? '';
-                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] ✅ Cotización ACEPTADA";
+                                        $newComment = $currentComment."\n[".now()->format('d/m/Y H:i').'] ✅ Cotización ACEPTADA';
                                         $set('comment', trim($newComment));
                                     })
-                                    ->visible(fn(callable $get) => $get('status') !== 'accepted'),
+                                    ->visible(fn (callable $get) => $get('status') !== 'accepted'),
 
                                 Forms\Components\Actions\Action::make('set_rejected')
                                     ->label('Rechazada')
@@ -112,10 +110,10 @@ class QuoteResource extends Resource
                                     ->action(function (callable $set, callable $get) {
                                         $set('status', 'rejected');
                                         $currentComment = $get('comment') ?? '';
-                                        $newComment = $currentComment . "\n[" . now()->format('d/m/Y H:i') . "] ❌ Cotización RECHAZADA";
+                                        $newComment = $currentComment."\n[".now()->format('d/m/Y H:i').'] ❌ Cotización RECHAZADA';
                                         $set('comment', trim($newComment));
                                     })
-                                    ->visible(fn(callable $get) => $get('status') !== 'rejected'),
+                                    ->visible(fn (callable $get) => $get('status') !== 'rejected'),
                             ])
                                 ->alignCenter()
                                 ->columns(3),
@@ -158,22 +156,25 @@ class QuoteResource extends Resource
                                     ->color('info')
                                     ->action(function (callable $get) {
                                         $employeeId = $get('employee_id');
-                                        if (!$employeeId) {
+                                        if (! $employeeId) {
                                             Notification::make()
                                                 ->title('Selecciona un cotizador primero')
                                                 ->warning()
                                                 ->send();
+
                                             return;
                                         }
                                     })
                                     ->modalContent(function (callable $get) {
                                         $employeeId = $get('employee_id');
-                                        if (!$employeeId)
+                                        if (! $employeeId) {
                                             return null;
+                                        }
 
                                         $employee = Employee::with('user')->find($employeeId);
-                                        if (!$employee)
+                                        if (! $employee) {
                                             return null;
+                                        }
 
                                         return view('filament.components.employee-info-modal', compact('employee'));
                                     })
@@ -181,7 +182,7 @@ class QuoteResource extends Resource
                                     ->modalSubmitAction(false)
                                     ->modalCancelActionLabel('Cerrar')
                                     ->modalWidth('2xl')
-                                    ->visible(fn(callable $get) => !empty($get('employee_id')))
+                                    ->visible(fn (callable $get) => ! empty($get('employee_id')))
                             )
 
                             ->afterStateUpdated(function (callable $get, callable $set) {
@@ -229,12 +230,9 @@ class QuoteResource extends Resource
                 */
                     ]),
 
-
                 ])
                     ->from('md')
                     ->columnSpanFull(),
-
-
 
                 Split::make([
                     Section::make([
@@ -251,14 +249,14 @@ class QuoteResource extends Resource
                                         })
                                         ->get()
                                         ->mapWithKeys(function ($client) {
-                                            return [$client->id => $client->business_name . ' - ' . $client->document_number];
+                                            return [$client->id => $client->business_name.' - '.$client->document_number];
                                         })
                                         ->toArray();
                                 }
                             )
                             ->searchable() // Activa la búsqueda asincrónica
                             ->reactive() // Hace el campo reactivo
-                            ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('sub_client_id', null))
                             ->helperText('Selecciona el cliente para esta cotización.') // Ayuda para el campo de cliente
 
                             // Botón para ver información del cliente
@@ -269,22 +267,25 @@ class QuoteResource extends Resource
                                     ->color('info')
                                     ->action(function (callable $get) {
                                         $clientId = $get('client_id');
-                                        if (!$clientId) {
+                                        if (! $clientId) {
                                             Notification::make()
                                                 ->title('Selecciona un cliente primero')
                                                 ->warning()
                                                 ->send();
+
                                             return;
                                         }
                                     })
                                     ->modalContent(function (callable $get) {
                                         $clientId = $get('client_id');
-                                        if (!$clientId)
+                                        if (! $clientId) {
                                             return null;
+                                        }
 
                                         $client = Client::with('subClients')->find($clientId);
-                                        if (!$client)
+                                        if (! $client) {
                                             return null;
+                                        }
 
                                         return view('filament.components.client-info-modal', compact('client'));
                                     })
@@ -292,7 +293,7 @@ class QuoteResource extends Resource
                                     ->modalSubmitAction(false)
                                     ->modalCancelActionLabel('Cerrar')
                                     ->modalWidth('2xl')
-                                    ->visible(fn(callable $get) => !empty($get('client_id')))
+                                    ->visible(fn (callable $get) => ! empty($get('client_id')))
                             )
 
                             ->createOptionForm([
@@ -377,6 +378,7 @@ class QuoteResource extends Resource
                             ])
                             ->createOptionUsing(function (array $data): int {
                                 $client = Client::create($data);
+
                                 return $client->id;
                             })
                             ->createOptionAction(function (FormAction $action) {
@@ -470,6 +472,7 @@ class QuoteResource extends Resource
                             ->options(
                                 function (callable $get) {
                                     $clientId = $get('client_id');
+
                                     return SubClient::where('client_id', $clientId)
                                         ->get()
                                         ->mapWithKeys(function ($subClient) {
@@ -480,7 +483,7 @@ class QuoteResource extends Resource
                             )
                             ->reactive()
                             ->searchable()
-                            ->disabled(fn($get) => !$get('client_id')) // Deshabilita si no hay cliente seleccionado
+                            ->disabled(fn ($get) => ! $get('client_id')) // Deshabilita si no hay cliente seleccionado
                             ->helperText('Selecciona el Sede para esta cotización.') // Ayuda para el campo 'Sede'
 
                             // Botón para ver información de la sede
@@ -491,22 +494,25 @@ class QuoteResource extends Resource
                                     ->color('info')
                                     ->action(function (callable $get) {
                                         $subClientId = $get('sub_client_id');
-                                        if (!$subClientId) {
+                                        if (! $subClientId) {
                                             Notification::make()
                                                 ->title('Selecciona una sede primero')
                                                 ->warning()
                                                 ->send();
+
                                             return;
                                         }
                                     })
                                     ->modalContent(function (callable $get) {
                                         $subClientId = $get('sub_client_id');
-                                        if (!$subClientId)
+                                        if (! $subClientId) {
                                             return null;
+                                        }
 
                                         $subClient = SubClient::with('client')->find($subClientId);
-                                        if (!$subClient)
+                                        if (! $subClient) {
                                             return null;
+                                        }
 
                                         return view('filament.components.sub-client-info-modal', compact('subClient'));
                                     })
@@ -514,12 +520,12 @@ class QuoteResource extends Resource
                                     ->modalSubmitAction(false)
                                     ->modalCancelActionLabel('Cerrar')
                                     ->modalWidth('2xl')
-                                    ->visible(fn(callable $get) => !empty($get('sub_client_id')))
+                                    ->visible(fn (callable $get) => ! empty($get('sub_client_id')))
                             )
 
                             ->createOptionForm([
                                 Forms\Components\Hidden::make('client_id')
-                                    ->default(fn(callable $get) => $get('client_id')),
+                                    ->default(fn (callable $get) => $get('client_id')),
                                 Forms\Components\Section::make('Información de la Sede')
                                     ->description('Datos de la nueva sede')
                                     ->icon('heroicon-o-building-office')
@@ -566,6 +572,7 @@ class QuoteResource extends Resource
                             ->createOptionUsing(function (array $data, callable $get): int {
                                 $data['client_id'] = $get('client_id');
                                 $subClient = SubClient::create($data);
+
                                 return $subClient->id;
                             })
                             ->createOptionAction(function (FormAction $action) {
@@ -637,18 +644,19 @@ class QuoteResource extends Resource
                                 if ($subClientId) {
                                     $subClient = \App\Models\SubClient::find($subClientId);
                                     if ($subClient) {
-                                        $siglas = strtoupper(substr($subClient->name, 0, strpos($subClient->name . ' ', ' ')));
+                                        $siglas = strtoupper(substr($subClient->name, 0, strpos($subClient->name.' ', ' ')));
                                         $siglas = substr($siglas, 0, 3);
                                     }
                                 }
                                 $correlative = 'SAT';
                                 if ($siglas) {
-                                    $correlative .= '-' . $siglas;
+                                    $correlative .= '-'.$siglas;
                                 }
                                 if ($pePt) {
-                                    $correlative .= '-' . $pePt;
+                                    $correlative .= '-'.$pePt;
                                 }
-                                $correlative .= '-' . $month . $year;
+                                $correlative .= '-'.$month.$year;
+
                                 // No incluye el ID aquí
                                 return $correlative;
                             })
@@ -668,7 +676,7 @@ class QuoteResource extends Resource
                             ->options([
                                 'PE' => 'PE',
                                 'PT' => 'PT',
-                                'PE/PE_PT' => 'PE - PT'
+                                'PE/PE_PT' => 'PE - PT',
                             ])
 
                             ->afterStateUpdated(function (callable $get, callable $set) {
@@ -683,16 +691,16 @@ class QuoteResource extends Resource
                                     $subClient = \App\Models\SubClient::find($subClientId);
                                     if ($subClient) {
                                         // Obtener siglas (primeros 3 caracteres hasta el primer espacio)
-                                        $siglas = strtoupper(substr($subClient->name, 0, strpos($subClient->name . ' ', ' ')));
+                                        $siglas = strtoupper(substr($subClient->name, 0, strpos($subClient->name.' ', ' ')));
                                         $siglas = substr($siglas, 0, 3);
-                                        $correlative = 'SAT-' . $siglas;
+                                        $correlative = 'SAT-'.$siglas;
                                         if ($pePt) {
-                                            $correlative .= '-' . $pePt;
+                                            $correlative .= '-'.$pePt;
                                         }
-                                        $correlative .= '-' . $month . $year;
+                                        $correlative .= '-'.$month.$year;
                                         // El id solo estará disponible en edición, para nuevos puedes dejarlo vacío o calcular el siguiente id
                                         if ($id) {
-                                            $correlative .= '-' . $id;
+                                            $correlative .= '-'.$id;
                                         }
                                         $set('correlative', $correlative);
                                     }
@@ -720,8 +728,6 @@ class QuoteResource extends Resource
                             ->helperText('Selecciona el plazo de entrega para el proyecto.'),
                     ]),
 
-
-
                 Tabs::make('MainTabs')
 
                     ->tabs([
@@ -745,7 +751,7 @@ class QuoteResource extends Resource
                                     ])
                                     ->columnSpanFull()
                                     ->downloadable()
-                                    ->helperText('Ingresa el TDR.') // Ayuda para el campo 'TDR',
+                                    ->helperText('Ingresa el TDR.'), // Ayuda para el campo 'TDR',
                             ]),
 
                         Tabs\Tab::make('COTIZACIÓN')
@@ -771,8 +777,8 @@ class QuoteResource extends Resource
                                     ->columnSpanFull()
                                     ->downloadable()
                                     ->label('Archivo de Cotización') // Etiqueta para el campo 'Quote File'
-                                    ->helperText('Sube el archivo relacionado con la cotización.') // Ayuda para el campo de archivo,
-                            ])
+                                    ->helperText('Sube el archivo relacionado con la cotización.'), // Ayuda para el campo de archivo,
+                            ]),
                     ])->columnSpanFull(),
                 // Campos adicionales
 
@@ -811,11 +817,9 @@ class QuoteResource extends Resource
                                     ->helperText('Agrega un comentario adicional sobre la cotización.'),
                             ]),
 
-
                     ]),
             ]);
     }
-
 
     // ...existing code...
     public static function table(Table $table): Table
@@ -869,7 +873,6 @@ class QuoteResource extends Resource
                     ->sortable()
                     ->alignCenter(),
 
-
                 Tables\Columns\TextColumn::make('delivery_term')
                     ->label('Plazo de Entrega')
                     ->date('d/m/Y')
@@ -881,19 +884,19 @@ class QuoteResource extends Resource
                 Tables\Columns\TextColumn::make('TDR')
                     ->label('TDR')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->url(fn($record) => $record->TDR ? Storage::url($record->TDR) : null, true)
+                    ->url(fn ($record) => $record->TDR ? Storage::url($record->TDR) : null, true)
                     ->openUrlInNewTab()
                     ->tooltip('Descargar TDR')
-                    ->visible(fn($record) => !empty($record->TDR))
+                    ->visible(fn ($record) => ! empty($record->TDR))
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('quote_file')
                     ->label('Archivo Cotización')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->url(fn($record) => $record->quote_file ? Storage::url($record->quote_file) : null, true)
+                    ->url(fn ($record) => $record->quote_file ? Storage::url($record->quote_file) : null, true)
                     ->openUrlInNewTab()
                     ->tooltip('Descargar Cotización')
-                    ->visible(fn($record) => !empty($record->quote_file))
+                    ->visible(fn ($record) => ! empty($record->quote_file))
                     ->alignCenter(),
 
                 Tables\Columns\SelectColumn::make('status')
@@ -943,13 +946,14 @@ class QuoteResource extends Resource
                 Tables\Actions\Action::make('guardarFlash')
                     ->label('Crear Proyecto')
                     ->icon('heroicon-o-puzzle-piece')
-                    ->visible(fn($record) => $record->status === 'accepted')
+                    ->visible(fn ($record) => $record->status === 'accepted')
                     ->action(function ($record) {
                         session()->flash('quote_id', $record->id);
                         Notification::make()
                             ->title('Cotización transferida.')
                             ->success()
                             ->send();
+
                         return redirect('/dashboard/projects/create'); // Cambia esta URL si tu panel usa otra ruta
                     }),
                 Tables\Actions\ViewAction::make()

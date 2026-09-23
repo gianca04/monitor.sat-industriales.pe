@@ -3,10 +3,8 @@
 namespace App\Services;
 
 use App\Models\WorkReport;
-use App\Jobs\GenerateWorkReportPdfJob;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class WorkReportPdfService
@@ -28,10 +26,6 @@ class WorkReportPdfService
 
     /**
      * Genera un PDF de forma síncrona
-     *
-     * @param int $workReportId
-     * @param array $options
-     * @return \Barryvdh\DomPDF\PDF
      */
     public function generateSync(int $workReportId, array $options = []): \Barryvdh\DomPDF\PDF
     {
@@ -45,11 +39,6 @@ class WorkReportPdfService
 
     /**
      * Genera un PDF de forma asíncrona usando Jobs
-     *
-     * @param int $workReportId
-     * @param string|null $userEmail
-     * @param bool $shouldEmail
-     * @return void
      */
     public function generateAsync(int $workReportId, ?string $userEmail = null, bool $shouldEmail = false): void
     {
@@ -57,15 +46,12 @@ class WorkReportPdfService
         Log::info('Generación asíncrona solicitada', [
             'work_report_id' => $workReportId,
             'user_email' => $userEmail,
-            'should_email' => $shouldEmail
+            'should_email' => $shouldEmail,
         ]);
     }
 
     /**
      * Obtiene el reporte con relaciones optimizadas
-     *
-     * @param int $workReportId
-     * @return WorkReport
      */
     public function getWorkReportWithRelations(int $workReportId): WorkReport
     {
@@ -83,34 +69,30 @@ class WorkReportPdfService
                     'before_work_photo_path',
                     'descripcion',
                     'before_work_descripcion',
-                    'created_at'
+                    'created_at',
                 ])->orderBy('created_at', 'asc');
-            }
+            },
         ])->findOrFail($workReportId);
     }
 
     /**
      * Valida los datos del reporte
      *
-     * @param WorkReport $workReport
      * @throws \Exception
      */
     public function validateWorkReportData(WorkReport $workReport): void
     {
-        if (!$workReport->employee) {
+        if (! $workReport->employee) {
             throw new \Exception('El reporte debe tener un empleado asignado');
         }
 
-        if (!$workReport->project) {
+        if (! $workReport->project) {
             throw new \Exception('El reporte debe estar asociado a un proyecto');
         }
     }
 
     /**
      * Prepara los datos para las vistas
-     *
-     * @param WorkReport $workReport
-     * @return array
      */
     public function prepareViewData(WorkReport $workReport): array
     {
@@ -127,10 +109,6 @@ class WorkReportPdfService
      * Crea un PDF combinando dos vistas:
      * - reports.work-report-pdf
      * - reports.photos-work-report-pdf
-     *
-     * @param array $data
-     * @param array $customOptions
-     * @return \Barryvdh\DomPDF\PDF
      */
     public function createCombinedPdf(array $data, array $customOptions = []): \Barryvdh\DomPDF\PDF
     {
@@ -147,7 +125,7 @@ class WorkReportPdfService
         $htmlPhotos = view('reports.photos-work-report-pdf', $data)->render();
 
         // Combina ambas con salto de página
-        $combinedHtml = $htmlMain . $htmlPhotos;
+        $combinedHtml = $htmlMain.$htmlPhotos;
 
         // Genera el PDF final
         return Pdf::loadHTML($combinedHtml)
@@ -157,9 +135,6 @@ class WorkReportPdfService
 
     /**
      * Genera un nombre único para el archivo
-     *
-     * @param WorkReport $workReport
-     * @return string
      */
     public function generateFilename(WorkReport $workReport): string
     {

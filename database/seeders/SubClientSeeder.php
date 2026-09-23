@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\SubClient;
+use Illuminate\Database\Seeder;
 
 class SubClientSeeder extends Seeder
 {
-
     public function run(): void
     {
         $data = [

@@ -37,7 +37,7 @@ return new class extends Migration
                 'under_review',   // En espera de revisión por el gerente
                 'sent',           // Enviada al cliente
                 'rejected',       // Rechazada por el cliente
-                'accepted'        // Aceptada por el cliente
+                'accepted',        // Aceptada por el cliente
             ]);
 
             $table->timestamps();  // Created_at and updated_at
@@ -46,7 +46,6 @@ return new class extends Migration
             $table->foreign('sub_client_id')->references('id')->on('sub_clients')->onDelete('cascade');
         });
     }
-
 
     /**
      * Reverse the migrations.

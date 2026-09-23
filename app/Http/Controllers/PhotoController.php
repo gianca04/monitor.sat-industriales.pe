@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePhotoRequest;
 use App\Http\Requests\UpdatePhotoRequest;
 use App\Models\Photo;
@@ -101,19 +100,18 @@ class PhotoController extends Controller
 
     /**
      * Actualizar una foto existente.
-     * 
+     *
      * Este método es VERSÁTIL y permite actualizar cualquier combinación de campos:
      * - Solo descripción principal
      * - Solo descripción "before"
      * - Solo foto principal (elimina la anterior automáticamente)
      * - Solo foto "before" (elimina la anterior automáticamente)
      * - Cualquier combinación de los campos anteriores
-     * 
+     *
      * IMPORTANTE: Usar POST con _method=PUT/PATCH cuando se envían archivos
-     * 
-     * @param UpdatePhotoRequest $request - Validación flexible con 'sometimes'
-     * @param Photo $photo - Modelo cargado automáticamente por route model binding
-     * @return JsonResponse
+     *
+     * @param  UpdatePhotoRequest  $request  - Validación flexible con 'sometimes'
+     * @param  Photo  $photo  - Modelo cargado automáticamente por route model binding
      */
     public function update(UpdatePhotoRequest $request, Photo $photo): JsonResponse
     {
@@ -184,7 +182,7 @@ class PhotoController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar la foto: ' . $e->getMessage(),
+                'message' => 'Error al eliminar la foto: '.$e->getMessage(),
                 'meta' => [
                     'apiVersion' => '1.0',
                     'timestamp' => now()->utc()->toIso8601String(),

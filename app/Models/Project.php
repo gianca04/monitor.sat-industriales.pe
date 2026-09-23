@@ -30,8 +30,6 @@ class Project extends Model
         'sub_client_id', // Permite asignar el subcliente directamente
     ];
 
-
-
     /**
      * Relación con la cotización
      * Un proyecto pertenece a una cotización.
@@ -40,6 +38,7 @@ class Project extends Model
     {
         return $this->belongsTo(Quote::class, 'quote_id');
     }
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -68,7 +67,7 @@ class Project extends Model
     {
         return $this->hasManyThrough(Attendance::class, Timesheet::class);
     }
-    
+
     public function timesheets()
     {
         return $this->hasMany(Timesheet::class);
@@ -122,11 +121,12 @@ class Project extends Model
         return $this->belongsToMany(Employee::class, 'employee_project');
     }
 
-
-
     public function getLocationLatitudeAttribute()
     {
-        if (!$this->location || !is_array($this->location)) return null;
+        if (! $this->location || ! is_array($this->location)) {
+            return null;
+        }
+
         return $this->location['latitude'] ?? null;
     }
 
@@ -135,7 +135,10 @@ class Project extends Model
      */
     public function getLocationLongitudeAttribute()
     {
-        if (!$this->location || !is_array($this->location)) return null;
+        if (! $this->location || ! is_array($this->location)) {
+            return null;
+        }
+
         return $this->location['longitude'] ?? null;
     }
 
@@ -150,7 +153,10 @@ class Project extends Model
      */
     public function getLocationAddressAttribute()
     {
-        if (!$this->location || !is_array($this->location)) return null;
+        if (! $this->location || ! is_array($this->location)) {
+            return null;
+        }
+
         return $this->location['location'] ?? null;
     }
 
@@ -197,6 +203,7 @@ class Project extends Model
         if ($start && ($now >= $start || empty($start)) && (empty($end) || $now <= $end)) {
             return 'En proceso';
         }
+
         return 'Sin definir';
     }
 }

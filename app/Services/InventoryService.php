@@ -23,7 +23,7 @@ class InventoryService
     {
         $stock = $this->getStock($eppVariantId, $warehouseLocationId);
 
-        if (!$stock) {
+        if (! $stock) {
             return false;
         }
 
@@ -59,7 +59,7 @@ class InventoryService
         ?float $unitCost = null
     ): \App\Models\StockMovement {
         $location = \App\Models\WarehouseLocation::findOrFail($warehouseLocationId);
-        
+
         $stock = Stock::firstOrCreate(
             [
                 'warehouse_location_id' => $warehouseLocationId,
@@ -74,7 +74,7 @@ class InventoryService
         );
 
         $isNegative = in_array($type, ['loss', 'adjustment_out', 'transfer_out', 'dispatch', 'output']);
-        
+
         if ($isNegative) {
             $stock->decrement('current_stock', $quantity);
         } else {
@@ -104,4 +104,3 @@ class InventoryService
         ]);
     }
 }
-

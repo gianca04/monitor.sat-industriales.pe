@@ -3,22 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class ProjectController extends Controller
 {
-
     public function index(Request $request): JsonResponse
     {
         try {
             $projects = Project::with([
                 'quote.client',
                 'quote.sub_client',
-                'subClient.client'
+                'subClient.client',
             ])
                 ->withCount('workReports')
                 // ->where('start_date', '<=', now())
@@ -93,12 +91,12 @@ class ProjectController extends Controller
                     'to' => $projects->lastItem(),
                     'hasMorePages' => $projects->hasMorePages(),
                 ],
-                'message' => 'Proyectos obtenidos correctamente'
+                'message' => 'Proyectos obtenidos correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener los proyectos'
+                'message' => 'Error al obtener los proyectos',
             ], 500);
         }
     }
@@ -112,12 +110,12 @@ class ProjectController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $project,
-                'message' => 'Proyecto obtenido correctamente'
+                'message' => 'Proyecto obtenido correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Proyecto no encontrado'
+                'message' => 'Proyecto no encontrado',
             ], 404);
         }
     }
@@ -128,11 +126,11 @@ class ProjectController extends Controller
 
         try {
             $request->validate([
-                'query' => 'nullable|string|max:100'
+                'query' => 'nullable|string|max:100',
             ]);
 
             $queryStr = $request->input('query');
-            Log::info('quickSearch: Validación pasada, queryStr: ' . $queryStr);
+            Log::info('quickSearch: Validación pasada, queryStr: '.$queryStr);
 
             $query = Project::query();
 
@@ -149,40 +147,42 @@ class ProjectController extends Controller
                     ];
                 });
 
-            Log::info('quickSearch: Query ejecutada, proyectos encontrados: ' . count($projects));
+            Log::info('quickSearch: Query ejecutada, proyectos encontrados: '.count($projects));
 
             return response()->json([
-                "success" => true,
-                "message" => "Búsqueda rápida completada",
-                "data" => $projects,
-                "meta" => [
-                    "apiVersion" => "1.0",
-                    "timestamp" => now()->toIso8601String()
-                ]
+                'success' => true,
+                'message' => 'Búsqueda rápida completada',
+                'data' => $projects,
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->toIso8601String(),
+                ],
             ]);
         } catch (ValidationException $e) {
             Log::info('quickSearch: Error de validación', ['errors' => $e->errors()]);
+
             return response()->json([
-                "success" => false,
-                "message" => "Datos de validación incorrectos",
-                "data" => null,
-                "errors" => $e->errors(),
-                "meta" => [
-                    "apiVersion" => "1.0",
-                    "timestamp" => now()->toIso8601String()
-                ]
+                'success' => false,
+                'message' => 'Datos de validación incorrectos',
+                'data' => null,
+                'errors' => $e->errors(),
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->toIso8601String(),
+                ],
             ], 422);
         } catch (\Exception $e) {
             Log::info('quickSearch: Excepción general', ['message' => $e->getMessage()]);
+
             return response()->json([
-                "success" => false,
-                "message" => "Error en la búsqueda rápida",
-                "data" => null,
-                "errors" => $e->getMessage(),
-                "meta" => [
-                    "apiVersion" => "1.0",
-                    "timestamp" => now()->toIso8601String()
-                ]
+                'success' => false,
+                'message' => 'Error en la búsqueda rápida',
+                'data' => null,
+                'errors' => $e->getMessage(),
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->toIso8601String(),
+                ],
             ], 500);
         }
     }

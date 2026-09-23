@@ -33,7 +33,7 @@ class EppStockMovementsTable extends Component implements HasForms, HasTable
                 TextColumn::make('type')
                     ->label('Tipo')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'input' => 'success',
                         'transfer_in' => 'success',
                         'loss' => 'danger',
@@ -43,7 +43,7 @@ class EppStockMovementsTable extends Component implements HasForms, HasTable
                         'dispatch' => 'warning',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'input' => 'Ingreso',
                         'transfer_in' => 'Ingreso por traslado',
                         'loss' => 'Merma / Ajuste',
@@ -128,8 +128,8 @@ class EppStockMovementsTable extends Component implements HasForms, HasTable
                                     ->label('Descripción')
                                     ->content(fn ($record) => $record?->description)
                                     ->columnSpanFull(),
-                            ])
-                    ])
+                            ]),
+                    ]),
             ])
             ->recordAction(Tables\Actions\ViewAction::class)
             ->bulkActions([

@@ -23,7 +23,7 @@ class StockMovement extends Model
         parent::boot();
 
         static::creating(function ($movement) {
-            if (auth()->check() && !$movement->user_id) {
+            if (auth()->check() && ! $movement->user_id) {
                 $movement->user_id = auth()->id();
             }
         });

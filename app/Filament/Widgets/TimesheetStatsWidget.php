@@ -19,7 +19,7 @@ class TimesheetStatsWidget extends BaseWidget
         ])->count();
 
         return [
-            
+
             Stat::make('Total Tareos', $totalTimesheets)
                 ->description('Tareos registrados')
                 ->descriptionIcon('heroicon-m-clock')
@@ -34,7 +34,7 @@ class TimesheetStatsWidget extends BaseWidget
                 ->description('Semana actual')
                 ->descriptionIcon('heroicon-m-chart-bar')
                 ->color('info'),
-                
+
         ];
     }
     */

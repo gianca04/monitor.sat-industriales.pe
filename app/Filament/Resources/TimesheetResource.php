@@ -4,28 +4,27 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TimesheetResource\Pages;
 use App\Filament\Resources\TimesheetResource\RelationManagers\AttendancesRelationManager;
+use App\Forms\Components\TimesheetForm;
+use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Timesheet;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\Repeater;
-use Filament\Notifications\Notification;
-use App\Models\Attendance;
-use App\Forms\Components\TimesheetForm;
 use Illuminate\Support\Facades\DB;
 
 class TimesheetResource extends Resource
 {
-
     use Translatable;
 
     protected static ?string $modelLabel = 'Tareo';
+
     protected static ?string $pluralModelLabel = 'Tareos';
 
     protected static ?string $model = Timesheet::class;
@@ -52,7 +51,9 @@ class TimesheetResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema(TimesheetForm::getSchema());
-    }    public static function table(Table $table): Table
+    }
+
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
@@ -68,7 +69,7 @@ class TimesheetResource extends Resource
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->description(function ($record) {
-                        if (!$record || !$record->project_id || !$record->check_in_date) {
+                        if (! $record || ! $record->project_id || ! $record->check_in_date) {
                             return '';
                         }
 
@@ -80,7 +81,7 @@ class TimesheetResource extends Resource
                         return $sameDay > 0 ? 'Conflicto detectado' : 'Único del día';
                     })
                     ->color(function ($record) {
-                        if (!$record || !$record->project_id || !$record->check_in_date) {
+                        if (! $record || ! $record->project_id || ! $record->check_in_date) {
                             return 'gray';
                         }
 
@@ -88,6 +89,7 @@ class TimesheetResource extends Resource
                             ->whereDate('check_in_date', Carbon::parse($record->check_in_date)->toDateString())
                             ->where('id', '!=', $record->id)
                             ->count();
+
                         return $sameDay > 0 ? 'danger' : 'success';
                     }),
 
@@ -101,7 +103,7 @@ class TimesheetResource extends Resource
                         'heroicon-o-sun' => 'day',
                         'heroicon-o-moon' => 'night',
                     ])
-                    ->formatStateUsing(fn(?string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'day' => 'Día',
                         'night' => 'Noche',
                         null => 'No definido',
@@ -139,7 +141,7 @@ class TimesheetResource extends Resource
                     ->badge()
                     ->icon('heroicon-o-check-circle')
 
-                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'attended')->count())
+                    ->getStateUsing(fn ($record) => $record->attendances()->where('status', 'attended')->count())
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('absent_count')
@@ -148,7 +150,7 @@ class TimesheetResource extends Resource
                     ->color('danger')
                     ->icon('heroicon-o-x-circle')
 
-                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'absent')->count())
+                    ->getStateUsing(fn ($record) => $record->attendances()->where('status', 'absent')->count())
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('justified_count')
@@ -157,21 +159,21 @@ class TimesheetResource extends Resource
                     ->color('warning')
                     ->icon('heroicon-o-exclamation-circle')
 
-                    ->getStateUsing(fn($record) => $record->attendances()->where('status', 'justified')->count())
+                    ->getStateUsing(fn ($record) => $record->attendances()->where('status', 'justified')->count())
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('attendances_total')
                     ->label('Total')
                     ->badge()
                     ->color('primary')
-                    ->getStateUsing(fn($record) => $record->attendances()->count())
+                    ->getStateUsing(fn ($record) => $record->attendances()->count())
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('schedule_info')
                     ->label('Horario')
                     ->icon('heroicon-o-clock')
                     ->getStateUsing(function ($record) {
-                        if (!$record) {
+                        if (! $record) {
                             return '--:-- - --:--';
                         }
 
@@ -194,12 +196,12 @@ class TimesheetResource extends Resource
                     ->relationship('project', 'name')
                     ->searchable()
                     ->preload()
-                    ->default(fn() => session('filter_project_id'))
+                    ->default(fn () => session('filter_project_id'))
                     ->placeholder('Todos los proyectos'),
 
                 Tables\Filters\Filter::make('hoy')
                     ->label('Tareos de hoy')
-                    ->query(fn(Builder $query): Builder => $query->whereDate('check_in_date', now()->toDateString()))
+                    ->query(fn (Builder $query): Builder => $query->whereDate('check_in_date', now()->toDateString()))
                     ->toggle(),
 
                 Tables\Filters\Filter::make('conflictos')
@@ -224,10 +226,10 @@ class TimesheetResource extends Resource
                     ->action(function ($record) {
                         return \Maatwebsite\Excel\Facades\Excel::download(
                             new \App\Exports\AttendancesExport($record->id),
-                            'asistencias_' . $record->project->name . '_' . $record->check_in_date->format('Y-m-d') . '.xlsx'
+                            'asistencias_'.$record->project->name.'_'.$record->check_in_date->format('Y-m-d').'.xlsx'
                         );
                     })
-                    ->visible(fn($record) => $record->attendances()->count() > 0),
+                    ->visible(fn ($record) => $record->attendances()->count() > 0),
                 Tables\Actions\Action::make('goto_project')
                     ->label('Ver Proyecto')
                     ->icon('heroicon-o-puzzle-piece')
@@ -238,7 +240,7 @@ class TimesheetResource extends Resource
                             return redirect(route('filament.dashboard.resources.projects.edit', $record->project_id));
                         }
                     })
-                    ->visible(fn($record) => $record->project_id !== null),
+                    ->visible(fn ($record) => $record->project_id !== null),
 
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
@@ -271,7 +273,7 @@ class TimesheetResource extends Resource
                                     ->options([
                                         'attended' => 'Asistió',
                                         'absent' => 'Faltó',
-                                        'justified' => 'Justificado'
+                                        'justified' => 'Justificado',
                                     ])
                                     ->default('attended')
                                     ->required(),
@@ -282,8 +284,7 @@ class TimesheetResource extends Resource
                             ->reorderable(false)
                             ->collapsible()
                             ->itemLabel(
-                                fn(array $state): ?string =>
-                                $state['employee_id'] ? Employee::find($state['employee_id'])?->full_name : 'Nuevo empleado'
+                                fn (array $state): ?string => $state['employee_id'] ? Employee::find($state['employee_id'])?->full_name : 'Nuevo empleado'
                             ),
                     ])
                     ->action(function (array $data, $record) {
@@ -294,11 +295,12 @@ class TimesheetResource extends Resource
                             // Verificar si ya existe una asistencia para este empleado en este timesheet
                             $existingAttendance = Attendance::where([
                                 'timesheet_id' => $record->id,
-                                'employee_id' => $empleadoData['employee_id']
+                                'employee_id' => $empleadoData['employee_id'],
                             ])->first();
 
                             if ($existingAttendance) {
                                 $duplicatedCount++;
+
                                 continue;
                             }
 
@@ -520,12 +522,13 @@ class TimesheetResource extends Resource
                     ->label('Volver al Proyecto')
                     ->icon('heroicon-o-arrow-left')
                     ->color('gray')
-                    ->visible(fn() => session()->has('project_id'))
+                    ->visible(fn () => session()->has('project_id'))
                     ->action(function () {
                         $projectId = session('project_id');
                         if ($projectId) {
                             // Limpiar la sesión
                             session()->forget('project_id');
+
                             return redirect(route('filament.dashboard.resources.projects.edit', $projectId));
                         }
                     }),
@@ -543,7 +546,7 @@ class TimesheetResource extends Resource
     {
         return [
             //
-            AttendancesRelationManager::class
+            AttendancesRelationManager::class,
         ];
     }
 

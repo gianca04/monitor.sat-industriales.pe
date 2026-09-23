@@ -5,25 +5,26 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\EppResource\Pages;
 use App\Filament\Resources\EppResource\RelationManagers;
 use App\Models\Epp;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EppResource extends Resource
 {
     protected static ?string $model = Epp::class;
 
     protected static ?string $modelLabel = 'EPP';
+
     protected static ?string $pluralModelLabel = 'EPPs';
+
     protected static ?string $navigationGroup = 'Gestión de inventario';
+
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
     public static function form(Form $form): Form
@@ -169,8 +170,7 @@ class EppResource extends Resource
                     ->label('Stock')
                     ->badge()
                     ->color(
-                        fn(Epp $record, \App\Services\InventoryService $inventoryService) =>
-                        $inventoryService->isBelowMinimum($record) ? 'danger' : 'success'
+                        fn (Epp $record, \App\Services\InventoryService $inventoryService) => $inventoryService->isBelowMinimum($record) ? 'danger' : 'success'
                     ),
                 Tables\Columns\IconColumn::make('requires_replenishment')
                     ->label('Abastecido')
@@ -180,8 +180,7 @@ class EppResource extends Resource
                     ->trueColor('danger')
                     ->falseColor('success')
                     ->getStateUsing(
-                        fn(Epp $record, \App\Services\InventoryService $inventoryService) =>
-                        $inventoryService->requiresReplenishment($record)
+                        fn (Epp $record, \App\Services\InventoryService $inventoryService) => $inventoryService->requiresReplenishment($record)
                     ),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha de Creación')

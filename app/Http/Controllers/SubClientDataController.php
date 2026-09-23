@@ -40,7 +40,7 @@ class SubClientDataController extends Controller
         $query = SubClient::with('client', 'quotes', 'requests', 'contactData');
 
         if ($request->filled('search')) {
-            $term = '%' . $request->search . '%';
+            $term = '%'.$request->search.'%';
             $query->where(function ($q) use ($term) {
                 $q->where('name', 'like', $term)
                     ->orWhere('description', 'like', $term)
@@ -86,7 +86,7 @@ class SubClientDataController extends Controller
                 $items = $items->reverse()->values();
             }
 
-            $data = $items->map(fn($subClient) => $this->transformSubClient($subClient))->values();
+            $data = $items->map(fn ($subClient) => $this->transformSubClient($subClient))->values();
 
             $nextCursor = null;
             if ($data->isNotEmpty()) {
@@ -119,7 +119,7 @@ class SubClientDataController extends Controller
         $perPage = $request->per_page ?? 100;
         $paginator = $query->paginate($perPage);
 
-        $data = $paginator->getCollection()->map(fn($sc) => $this->transformSubClient($sc));
+        $data = $paginator->getCollection()->map(fn ($sc) => $this->transformSubClient($sc));
 
         return response()->json([
             'success' => true,
@@ -158,9 +158,9 @@ class SubClientDataController extends Controller
                 'id' => $sc->client->id,
                 'businessName' => $sc->client->business_name,
             ] : null,
-            'quotes' => $sc->quotes->map(fn($q) => ['id' => $q->id, 'title' => $q->title ?? ''])->toArray(),
-            'requests' => $sc->requests->map(fn($r) => ['id' => $r->id, 'title' => $r->title ?? ''])->toArray(),
-            'contactData' => $sc->contactData->map(fn($cd) => ['id' => $cd->id, 'name' => $cd->name])->toArray(),
+            'quotes' => $sc->quotes->map(fn ($q) => ['id' => $q->id, 'title' => $q->title ?? ''])->toArray(),
+            'requests' => $sc->requests->map(fn ($r) => ['id' => $r->id, 'title' => $r->title ?? ''])->toArray(),
+            'contactData' => $sc->contactData->map(fn ($cd) => ['id' => $cd->id, 'name' => $cd->name])->toArray(),
         ];
     }
 }

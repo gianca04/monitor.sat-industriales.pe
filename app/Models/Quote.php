@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\Auth; // ¡Esta es la que necesitas!
+// ¡Esta es la que necesitas!
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -37,7 +37,6 @@ class Quote extends Model
         'pe_pt' => 'string',  // 'pe_pt' es un enum, lo tratamos como string
     ];
 
-
     /**
      * Relación con el modelo Employee
      * Una cotización pertenece a un solo empleado.
@@ -61,26 +60,25 @@ class Quote extends Model
         return $this->belongsTo(Client::class, 'client_id');
     }
 
-
     protected static function booted()
     {
         static::creating(function ($quote) {
             $subClient = $quote->sub_client;
             $siglas = '';
             if ($subClient) {
-                $siglas = strtoupper(substr($subClient->name, 0, strpos($subClient->name . ' ', ' ')));
+                $siglas = strtoupper(substr($subClient->name, 0, strpos($subClient->name.' ', ' ')));
                 $siglas = substr($siglas, 0, 3);
             }
             $month = now()->format('m');
             $year = now()->format('y');
             $correlative = 'SAT';
             if ($siglas) {
-                $correlative .= '-' . $siglas;
+                $correlative .= '-'.$siglas;
             }
             if ($quote->pe_pt) {
-                $correlative .= '-' . $quote->pe_pt;
+                $correlative .= '-'.$quote->pe_pt;
             }
-            $correlative .= '-' . $month . $year . '-' . ($quote->id ?? 'NEW');
+            $correlative .= '-'.$month.$year.'-'.($quote->id ?? 'NEW');
 
             $quote->correlative = $correlative;
         });
@@ -89,19 +87,19 @@ class Quote extends Model
             $subClient = $quote->sub_client;
             $siglas = '';
             if ($subClient) {
-                $siglas = strtoupper(substr($subClient->name, 0, strpos($subClient->name . ' ', ' ')));
+                $siglas = strtoupper(substr($subClient->name, 0, strpos($subClient->name.' ', ' ')));
                 $siglas = substr($siglas, 0, 3);
             }
             $month = $quote->created_at->format('m');
             $year = $quote->created_at->format('y');
             $correlative = 'SAT';
             if ($siglas) {
-                $correlative .= '-' . $siglas;
+                $correlative .= '-'.$siglas;
             }
             if ($quote->pe_pt) {
-                $correlative .= '-' . $quote->pe_pt;
+                $correlative .= '-'.$quote->pe_pt;
             }
-            $correlative .= '-' . $month . $year . '-' . $quote->id;
+            $correlative .= '-'.$month.$year.'-'.$quote->id;
 
             if ($quote->correlative !== $correlative) {
                 $quote->correlative = $correlative;

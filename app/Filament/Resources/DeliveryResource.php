@@ -11,17 +11,21 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class DeliveryResource extends Resource
 {
     protected static ?string $model = Delivery::class;
 
     protected static ?string $modelLabel = 'Pedido de Entrega';
+
     protected static ?string $pluralModelLabel = 'Pedidos de Entrega';
+
     protected static ?string $navigationLabel = 'Pedidos de Entrega';
+
     protected static ?string $navigationIcon = 'heroicon-o-truck';
+
     protected static bool $shouldRegisterNavigation = false;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -31,10 +35,10 @@ class DeliveryResource extends Resource
                         Forms\Components\Select::make('employee_id')
                             ->label('Supervisor Operativo')
                             ->relationship('employee', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn($record) => "{$record->first_name} {$record->last_name}")
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name}")
                             ->searchable()
                             ->preload()
-                            ->default(fn() => auth()->user()?->employee_id)
+                            ->default(fn () => auth()->user()?->employee_id)
                             ->required(),
                         Forms\Components\Select::make('client_id')
                             ->label('Cliente')
@@ -71,14 +75,14 @@ class DeliveryResource extends Resource
                                 name: 'deliverer',
                                 titleAttribute: 'first_name',
                                 modifyQueryUsing: function ($query, Forms\Get $get) {
-                                    $query->whereHas('user', fn($q) => $q->whereHas('roles', fn($r) => $r->where('name', 'SSOMA')));
+                                    $query->whereHas('user', fn ($q) => $q->whereHas('roles', fn ($r) => $r->where('name', 'SSOMA')));
                                     $currentVal = $get('delivered_by');
                                     if ($currentVal) {
                                         $query->orWhere('id', $currentVal);
                                     }
                                 }
                             )
-                            ->getOptionLabelFromRecordUsing(fn($record) => "{$record->first_name} {$record->last_name}")
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name}")
                             ->searchable()
                             ->preload()
                             ->helperText('Solo son visibles los colaboradores con rol SSOMA.'),
@@ -114,14 +118,14 @@ class DeliveryResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->label('Creado por')
-                    ->formatStateUsing(fn($record) => "{$record->employee?->first_name} {$record->employee?->last_name}")
+                    ->formatStateUsing(fn ($record) => "{$record->employee?->first_name} {$record->employee?->last_name}")
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('employee.daily_payment')
                     ->label('Pago')
                     ->badge()
-                    ->formatStateUsing(fn($record) => $record->employee ? ($record->employee->daily_payment ? 'Diario' : 'Planilla') : '-')
-                    ->color(fn($record) => $record->employee ? ($record->employee->daily_payment ? 'warning' : 'info') : 'gray')
+                    ->formatStateUsing(fn ($record) => $record->employee ? ($record->employee->daily_payment ? 'Diario' : 'Planilla') : '-')
+                    ->color(fn ($record) => $record->employee ? ($record->employee->daily_payment ? 'warning' : 'info') : 'gray')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('subClient.name')
                     ->label('Tienda')

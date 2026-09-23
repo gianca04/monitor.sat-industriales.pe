@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class WorkReport extends Model
 {
     use HasFactory;
+
     protected $table = 'work_reports';
 
     protected $fillable = [
@@ -24,7 +25,7 @@ class WorkReport extends Model
         'materials',
         'start_time',  // Hora de inicio del trabajo
         'end_time',    // Hora de finalizaci¨®n del trabajo
-        'report_date'  // Fecha del reporte (solo fecha)
+        'report_date',  // Fecha del reporte (solo fecha)
     ];
 
     /**
@@ -42,6 +43,7 @@ class WorkReport extends Model
     {
         return $this->belongsTo(Project::class);
     }
+
     public function photos()
     {
         return $this->hasMany(Photo::class, 'work_report_id');

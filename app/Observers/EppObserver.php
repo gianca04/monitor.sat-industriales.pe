@@ -16,7 +16,7 @@ class EppObserver
         if (is_string($originalPhotos)) {
             $originalPhotos = json_decode($originalPhotos, true) ?: [];
         }
-        
+
         $currentPhotos = $epp->photos ?: [];
 
         // Find photos that were removed from the array

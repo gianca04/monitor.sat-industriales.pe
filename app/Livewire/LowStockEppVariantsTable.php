@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Models\EppVariant;
 use App\Filament\Resources\EppResource;
+use App\Models\EppVariant;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;
@@ -46,7 +46,7 @@ class LowStockEppVariantsTable extends Component implements HasForms, HasTable
                     ->label('Stock Actual')
                     ->badge()
                     ->color('danger')
-                    ->getStateUsing(fn(EppVariant $record) => $record->current_stock_sum ?? $record->current_stock),
+                    ->getStateUsing(fn (EppVariant $record) => $record->current_stock_sum ?? $record->current_stock),
                 TextColumn::make('minimum_stock')
                     ->label('Stock Mínimo')
                     ->sortable(),
@@ -54,13 +54,13 @@ class LowStockEppVariantsTable extends Component implements HasForms, HasTable
                     ->label('Stock Máximo')
                     ->sortable(),
             ])
-            ->recordUrl(fn(EppVariant $record): string => EppResource::getUrl('edit', ['record' => $record->epp_id]))
+            ->recordUrl(fn (EppVariant $record): string => EppResource::getUrl('edit', ['record' => $record->epp_id]))
             ->actions([
                 Action::make('editEpp')
                     ->label('Gestionar')
                     ->icon('heroicon-o-cog-8-tooth')
                     ->color('info')
-                    ->url(fn(EppVariant $record): string => EppResource::getUrl('edit', ['record' => $record->epp_id])),
+                    ->url(fn (EppVariant $record): string => EppResource::getUrl('edit', ['record' => $record->epp_id])),
             ]);
     }
 

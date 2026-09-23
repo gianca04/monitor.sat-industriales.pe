@@ -3,24 +3,25 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\WarehouseLocationResource\Pages;
-use App\Filament\Resources\WarehouseLocationResource\RelationManagers;
 use App\Models\WarehouseLocation;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class WarehouseLocationResource extends Resource
 {
     protected static ?string $model = WarehouseLocation::class;
 
     protected static ?string $modelLabel = 'Ubicación de Almacén';
+
     protected static ?string $pluralModelLabel = 'Ubicaciones de Almacén';
+
     protected static ?string $navigationGroup = 'Gestión de inventario';
+
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
+
     protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form

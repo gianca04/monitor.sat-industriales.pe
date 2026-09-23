@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Evidence extends Model
 {
     use HasFactory;
+
     protected $table = 'work_reports';
 
     protected $fillable = [
@@ -15,7 +16,8 @@ class Evidence extends Model
         'description',
     ];
 
-    public function photos() {
+    public function photos()
+    {
         return $this->hasMany(Photo::class);
     }
 }

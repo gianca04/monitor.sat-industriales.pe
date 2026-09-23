@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\WorkReport;
-use Illuminate\Http\Request;
 use PhpOffice\PhpWord\PhpWord;
-use PhpOffice\PhpWord\IOFactory;
-use PhpOffice\PhpWord\SimpleType\Jc; // Agrega esta línea al inicio con los use
+
+// Agrega esta línea al inicio con los use
 
 class WorkReportWordController extends Controller
 {
@@ -17,7 +16,7 @@ class WorkReportWordController extends Controller
             'project',
             'photos' => function ($query) {
                 $query->orderBy('created_at', 'asc');
-            }
+            },
         ])->findOrFail($workReportId);
 
         // Verificar que el reporte tenga fotografías
@@ -25,29 +24,29 @@ class WorkReportWordController extends Controller
             return redirect()->back()->with('error', 'No se puede generar el reporte sin evidencias fotográficas.');
         }
 
-        $phpWord = new PhpWord();
+        $phpWord = new PhpWord;
         $section = $phpWord->addSection([
             'marginTop' => 1440, // 2.54 cm en puntos
             'marginLeft' => 1440, // 2.54 cm en puntos
             'marginRight' => 1440, // 2.54 cm en puntos
-            'marginBottom' => 1440 // 2.54 cm en puntos
+            'marginBottom' => 1440, // 2.54 cm en puntos
         ]);
 
         // Estilo de fuente por defecto
         $fontStyle = [
             'name' => 'Times New Roman',
             'size' => 12,
-            'align' => 'both'
+            'align' => 'both',
         ];
         $headingStyle = [
             'name' => 'Times New Roman',
             'size' => 14,
-            'bold' => true
+            'bold' => true,
         ];
 
         // Título
         $section->addText($workReport->project->name, ['bold' => true, 'size' => 18, 'name' => 'Times New Roman']);
-        $section->addText('Reporte #' . $workReport->id, $headingStyle);
+        $section->addText('Reporte #'.$workReport->id, $headingStyle);
         $section->addTextBreak();
 
         $table = $section->addTable(['width' => 100 * 50]); // Configurar la tabla para ocupar todo el ancho disponible
@@ -61,7 +60,7 @@ class WorkReportWordController extends Controller
             $table->addCell(5000)->addImage($imgPath1, [
                 'width' => 100,
                 'height' => 100,
-                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
+                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
             ]);
         } else {
             $table->addCell(5000)->addText('Imagen no disponible', ['name' => 'Times New Roman', 'size' => 12]);
@@ -71,16 +70,16 @@ class WorkReportWordController extends Controller
         $table->addCell(5000)->addText($workReport->project->name, [
             'name' => 'Times New Roman',
             'size' => 12,
-            'align' => 'center'
+            'align' => 'center',
         ]);
 
         // Tercera celda con imagen
-        $imgPath2 = public_path('storage/' . $workReport->project->subClient->client->logo);
+        $imgPath2 = public_path('storage/'.$workReport->project->subClient->client->logo);
         if (file_exists($imgPath2)) {
             $table->addCell(5000)->addImage($imgPath2, [
                 'width' => 100,
                 'height' => 100,
-                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
+                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
             ]);
         } else {
             $table->addCell(5000)->addText('Imagen no disponible', ['name' => 'Times New Roman', 'size' => 12]);
@@ -90,7 +89,7 @@ class WorkReportWordController extends Controller
         $section->addText('SAT INDUSTRIALES - Monitor', $fontStyle);
 
         // Descargar el archivo
-        $filename = 'reporte_trabajo_' . $workReport->id . '_' . now()->format('Y-m-d_H-i') . '.docx';
+        $filename = 'reporte_trabajo_'.$workReport->id.'_'.now()->format('Y-m-d_H-i').'.docx';
         $tempFile = tempnam(sys_get_temp_dir(), 'word');
         $phpWord->save($tempFile, 'Word2007');
 

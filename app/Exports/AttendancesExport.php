@@ -2,25 +2,24 @@
 
 namespace App\Exports;
 
-use App\Models\Attendance;
 use App\Models\Timesheet;
 use App\Services\HoursCalculator;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class AttendancesExport implements FromCollection, WithHeadings, WithMapping, WithColumnWidths, WithStyles, WithTitle
+class AttendancesExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     protected $timesheetId;
+
     protected $timesheet;
 
     public function __construct($timesheetId)
@@ -50,7 +49,7 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
             'Fecha Salida',
             'Horas Trabajadas',
             'Horas Extra',
-            'Observación'
+            'Observación',
         ];
     }
 
@@ -58,14 +57,14 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
     {
         // Usar HoursCalculator para obtener todas las horas calculadas
         $hoursSummary = HoursCalculator::getHoursSummary($attendance);
-        
+
         $horasTrabajadas = $hoursSummary['worked_hours']['formatted'] ?? 'NO CALCULADO';
         $horasExtra = $hoursSummary['extra_hours']['formatted'] ?? '0h 0m';
 
         return [
             $attendance->employee->document_number ?? '',
-            $attendance->employee->first_name . ' ' . $attendance->employee->last_name,
-            match($attendance->status) {
+            $attendance->employee->first_name.' '.$attendance->employee->last_name,
+            match ($attendance->status) {
                 'attended' => 'Asistió',
                 'absent' => 'Faltó',
                 'justified' => 'Justificado',
@@ -73,7 +72,7 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
                 'late' => 'Llegó Tarde', // Mapear 'late' a 'Llegó Tarde'
                 default => ucfirst($attendance->status ?? 'Sin definir')
             },
-            match($attendance->shift) {
+            match ($attendance->shift) {
                 'day' => 'Día',
                 'night' => 'Noche',
                 default => ucfirst($attendance->shift ?? 'No definido')
@@ -84,7 +83,7 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
             $attendance->check_out_date ? Carbon::parse($attendance->check_out_date)->format('d/m/Y H:i') : 'NO REGISTRADO',
             $horasTrabajadas,
             $horasExtra,
-            $attendance->observation ?? ''
+            $attendance->observation ?? '',
         ];
     }
 
@@ -125,17 +124,17 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
         ]);
 
         // Información del tareo
-        $sheet->setCellValue('A2', 'Proyecto: ' . $this->timesheet->project->name);
-        $sheet->setCellValue('A3', 'Fecha: ' . $this->timesheet->check_in_date->format('d/m/Y'));
-        $sheet->setCellValue('A4', 'Supervisor: ' . ($this->timesheet->employee->first_name ?? 'N/A') . ' ' . ($this->timesheet->employee->last_name ?? ''));
-        
+        $sheet->setCellValue('A2', 'Proyecto: '.$this->timesheet->project->name);
+        $sheet->setCellValue('A3', 'Fecha: '.$this->timesheet->check_in_date->format('d/m/Y'));
+        $sheet->setCellValue('A4', 'Supervisor: '.($this->timesheet->employee->first_name ?? 'N/A').' '.($this->timesheet->employee->last_name ?? ''));
+
         // Mostrar horario estándar del timesheet
         $horarioEstandar = '';
         if ($this->timesheet->check_in_date && $this->timesheet->check_out_date) {
             $checkInTime = Carbon::parse($this->timesheet->check_in_date)->format('H:i');
             $checkOutTime = Carbon::parse($this->timesheet->check_out_date)->format('H:i');
             $horarioEstandar = "{$checkInTime} - {$checkOutTime}";
-            
+
             // Información de break del timesheet usando HoursCalculator
             $breakMinutes = HoursCalculator::calculateTimesheetBreakTime($this->timesheet);
             if ($breakMinutes > 0) {
@@ -149,14 +148,14 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
                 }
             }
         }
-        $sheet->setCellValue('F2', 'Horario Estándar: ' . ($horarioEstandar ?: 'No definido'));
-        
-        $sheet->setCellValue('A5', 'Generado: ' . now()->format('d/m/Y H:i'));
+        $sheet->setCellValue('F2', 'Horario Estándar: '.($horarioEstandar ?: 'No definido'));
+
+        $sheet->setCellValue('A5', 'Generado: '.now()->format('d/m/Y H:i'));
 
         $sheet->getStyle('A2:A5')->applyFromArray([
             'font' => ['bold' => true],
         ]);
-        
+
         $sheet->getStyle('F2')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => '0066CC']],
         ]);
@@ -221,7 +220,7 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
 
     public function title(): string
     {
-        return 'Asistencias ' . $this->timesheet->check_in_date->format('Y-m-d');
+        return 'Asistencias '.$this->timesheet->check_in_date->format('Y-m-d');
     }
 
     /**
@@ -231,7 +230,7 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping, Wi
     {
         for ($row = $startRow; $row <= $endRow; $row++) {
             $extraHoursValue = $sheet->getCell("J{$row}")->getValue();
-            
+
             // Si hay horas extra (no es '0h 0m' ni está vacío)
             if ($extraHoursValue && $extraHoursValue !== '0h 0m' && $extraHoursValue !== '') {
                 $sheet->getStyle("J{$row}")->applyFromArray([

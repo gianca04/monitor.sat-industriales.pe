@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Timesheet;
 use App\Models\Project;
-use App\Models\User;
+use App\Models\Timesheet;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,7 +26,7 @@ class TimesheetFactory extends Factory
     public function definition(): array
     {
         $checkInDate = $this->faker->dateTimeBetween('-30 days', 'now');
-        $breakDate = $this->faker->optional(0.8)->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d') . ' 23:59:59');
+        $breakDate = $this->faker->optional(0.8)->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d').' 23:59:59');
 
         return [
             'project_id' => Project::factory(),
@@ -35,8 +34,8 @@ class TimesheetFactory extends Factory
             'shift' => $this->faker->randomElement(['day', 'night']),
             'check_in_date' => $checkInDate,
             'break_date' => $breakDate,
-            'end_break_date' => $breakDate ? $this->faker->dateTimeBetween($breakDate, $checkInDate->format('Y-m-d') . ' 23:59:59') : null,
-            'check_out_date' => $this->faker->optional(0.7)->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d') . ' 23:59:59'),
+            'end_break_date' => $breakDate ? $this->faker->dateTimeBetween($breakDate, $checkInDate->format('Y-m-d').' 23:59:59') : null,
+            'check_out_date' => $this->faker->optional(0.7)->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d').' 23:59:59'),
             'created_at' => now(),
             'updated_at' => now(),
         ];
@@ -89,9 +88,10 @@ class TimesheetFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $checkInDate = $this->faker->dateTimeBetween('-7 days', 'now');
+
             return [
                 'check_in_date' => $checkInDate,
-                'check_out_date' => $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d') . ' 18:00:00'),
+                'check_out_date' => $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d').' 18:00:00'),
             ];
         });
     }

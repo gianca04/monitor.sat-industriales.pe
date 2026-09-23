@@ -2,10 +2,10 @@
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasLabel;
 
-enum DeliveryStatus: string implements HasLabel, HasColor
+enum DeliveryStatus: string implements HasColor, HasLabel
 {
     case PENDING = 'pendiente';
     case DELIVERED = 'entregado';

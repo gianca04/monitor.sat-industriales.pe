@@ -2,21 +2,20 @@
 
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
-use Filament\Forms\Components\Select;
 use App\Models\Employee;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EmployeesRelationManager extends RelationManager
 {
     protected static ?string $title = 'Supervisores';
 
     protected static ?string $modelLabel = 'Supervisor';
+
     protected static ?string $pluralModelLabel = 'Supervisores';
 
     protected static string $relationship = 'supervisors';
@@ -121,14 +120,14 @@ class EmployeesRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('full_name')
                     ->label('Nombre completo')
-                    ->getStateUsing(fn($record) => $record->full_name)
+                    ->getStateUsing(fn ($record) => $record->full_name)
                     ->searchable()
                     ->sortable()
                     ->extraAttributes(['class' => 'font-bold']),
             ])
             ->filters([
                 // Ejemplo de filtro para supervisores si tienes un campo 'is_supervisor'
-                //Tables\Filters\TernaryFilter::make('is_supervisor')
+                // Tables\Filters\TernaryFilter::make('is_supervisor')
                 //    ->label('Solo supervisores'),
             ])
             ->headerActions([
@@ -141,7 +140,7 @@ class EmployeesRelationManager extends RelationManager
 
                     // Define el campo Select dentro del modal
                     ->recordSelect(
-                        fn(Select $select) => $select
+                        fn (Select $select) => $select
                             // Le indicamos a Filament en qué columnas buscar
                             ->searchable(['document_number', 'last_name', 'first_name'])
                             ->getSearchResultsUsing(function (string $query) {
@@ -150,11 +149,11 @@ class EmployeesRelationManager extends RelationManager
                                     ->orWhere('last_name', 'like', "%{$query}%")
                                     ->orWhere('first_name', 'like', "%{$query}%")
                                     ->get()
-                                    ->mapWithKeys(fn(Employee $employee) => [
-                                        $employee->id => $employee->full_name
+                                    ->mapWithKeys(fn (Employee $employee) => [
+                                        $employee->id => $employee->full_name,
                                     ]);
                             })
-                            ->getOptionLabelUsing(fn($value) => Employee::find($value)?->full_name ?? $value)
+                            ->getOptionLabelUsing(fn ($value) => Employee::find($value)?->full_name ?? $value)
                             // Configuración adicional para el select
                             ->placeholder('Seleccionar empleado...')
                             ->native(false),
@@ -166,7 +165,7 @@ class EmployeesRelationManager extends RelationManager
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('detach')
                     ->label('Desasociar')
-                    ->action(fn($record, $livewire) => $livewire->ownerRecord->supervisors()->detach($record->id)),
+                    ->action(fn ($record, $livewire) => $livewire->ownerRecord->supervisors()->detach($record->id)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Attendance;
-use App\Models\Timesheet;
 use App\Models\Employee;
+use App\Models\Timesheet;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -40,25 +40,25 @@ class AttendanceFactory extends Factory
         switch ($status) {
             case 'present':
                 $checkInDate = $baseDate;
-                $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d') . ' 23:59:59');
-                $breakDate = $this->faker->optional(0.8)->dateTimeBetween($checkInDate, $checkOutDate ?: $checkInDate->format('Y-m-d') . ' 23:59:59');
+                $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d').' 23:59:59');
+                $breakDate = $this->faker->optional(0.8)->dateTimeBetween($checkInDate, $checkOutDate ?: $checkInDate->format('Y-m-d').' 23:59:59');
                 if ($breakDate) {
-                    $endBreakDate = $this->faker->dateTimeBetween($breakDate, $checkOutDate ?: $checkInDate->format('Y-m-d') . ' 23:59:59');
+                    $endBreakDate = $this->faker->dateTimeBetween($breakDate, $checkOutDate ?: $checkInDate->format('Y-m-d').' 23:59:59');
                 }
                 break;
 
             case 'late':
                 $checkInDate = $baseDate;
-                $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d') . ' 23:59:59');
-                $breakDate = $this->faker->optional(0.7)->dateTimeBetween($checkInDate, $checkOutDate ?: $checkInDate->format('Y-m-d') . ' 23:59:59');
+                $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d').' 23:59:59');
+                $breakDate = $this->faker->optional(0.7)->dateTimeBetween($checkInDate, $checkOutDate ?: $checkInDate->format('Y-m-d').' 23:59:59');
                 if ($breakDate) {
-                    $endBreakDate = $this->faker->dateTimeBetween($breakDate, $checkOutDate ?: $checkInDate->format('Y-m-d') . ' 23:59:59');
+                    $endBreakDate = $this->faker->dateTimeBetween($breakDate, $checkOutDate ?: $checkInDate->format('Y-m-d').' 23:59:59');
                 }
                 break;
 
             case 'permission':
                 $checkInDate = $baseDate;
-                $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d') . ' 18:00:00');
+                $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d').' 18:00:00');
                 break;
         }
 
@@ -84,7 +84,7 @@ class AttendanceFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $checkInDate = $this->faker->dateTimeBetween('-7 days', 'now');
-            $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d') . ' 18:00:00');
+            $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d').' 18:00:00');
 
             return [
                 'status' => 'present',
@@ -117,7 +117,7 @@ class AttendanceFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $checkInDate = $this->faker->dateTimeBetween('-7 days', 'now');
-            $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d') . ' 18:00:00');
+            $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d').' 18:00:00');
 
             return [
                 'status' => 'late',
@@ -135,7 +135,7 @@ class AttendanceFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $checkInDate = $this->faker->dateTimeBetween('-7 days', 'now');
-            $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d') . ' 15:00:00');
+            $checkOutDate = $this->faker->dateTimeBetween($checkInDate, $checkInDate->format('Y-m-d').' 15:00:00');
 
             return [
                 'status' => 'permission',

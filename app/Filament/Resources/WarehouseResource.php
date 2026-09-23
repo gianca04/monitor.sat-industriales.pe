@@ -10,16 +10,19 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class WarehouseResource extends Resource
 {
     protected static ?string $model = Warehouse::class;
+
     protected static ?string $modelLabel = 'Almacén';
+
     protected static ?string $pluralModelLabel = 'Almacen';
+
     protected static ?string $title = 'Almacen';
+
     protected static ?string $navigationGroup = 'Gestión de inventario';
+
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
 
     public static function form(Form $form): Form

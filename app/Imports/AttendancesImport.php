@@ -9,17 +9,19 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\Importable;
 
 class AttendancesImport implements ToCollection, WithHeadingRow, WithValidation
 {
     use Importable;
 
     protected $timesheetId;
+
     protected $errors = [];
+
     protected $successCount = 0;
 
     public function __construct($timesheetId)
@@ -39,8 +41,9 @@ class AttendancesImport implements ToCollection, WithHeadingRow, WithValidation
                     // Buscar empleado por documento o nombre completo
                     $employee = $this->findEmployee($row);
 
-                    if (!$employee) {
-                        $this->errors[] = "Fila " . ($index + 2) . ": No se encontró el empleado con documento '{$row['documento']}' o nombre '{$row['nombre_completo']}'";
+                    if (! $employee) {
+                        $this->errors[] = 'Fila '.($index + 2).": No se encontró el empleado con documento '{$row['documento']}' o nombre '{$row['nombre_completo']}'";
+
                         continue;
                     }
 
@@ -50,7 +53,8 @@ class AttendancesImport implements ToCollection, WithHeadingRow, WithValidation
                         ->first();
 
                     if ($existingAttendance) {
-                        $this->errors[] = "Fila " . ($index + 2) . ": Ya existe una asistencia para {$employee->full_name} en este tareo";
+                        $this->errors[] = 'Fila '.($index + 2).": Ya existe una asistencia para {$employee->full_name} en este tareo";
+
                         continue;
                     }
 
@@ -75,10 +79,10 @@ class AttendancesImport implements ToCollection, WithHeadingRow, WithValidation
                     $this->successCount++;
 
                 } catch (\Exception $e) {
-                    $this->errors[] = "Fila " . ($index + 2) . ": Error al procesar - " . $e->getMessage();
-                    Log::error("Error importing attendance row " . ($index + 2), [
+                    $this->errors[] = 'Fila '.($index + 2).': Error al procesar - '.$e->getMessage();
+                    Log::error('Error importing attendance row '.($index + 2), [
                         'error' => $e->getMessage(),
-                        'row' => $row->toArray()
+                        'row' => $row->toArray(),
                     ]);
                 }
             }
@@ -94,13 +98,15 @@ class AttendancesImport implements ToCollection, WithHeadingRow, WithValidation
     private function findEmployee($row)
     {
         // Buscar por documento primero
-        if (!empty($row['documento'])) {
+        if (! empty($row['documento'])) {
             $employee = Employee::where('document_number', $row['documento'])->first();
-            if ($employee) return $employee;
+            if ($employee) {
+                return $employee;
+            }
         }
 
         // Buscar por nombre completo
-        if (!empty($row['nombre_completo'])) {
+        if (! empty($row['nombre_completo'])) {
             $nameParts = explode(' ', trim($row['nombre_completo']));
             if (count($nameParts) >= 2) {
                 $firstName = $nameParts[0];
@@ -110,7 +116,9 @@ class AttendancesImport implements ToCollection, WithHeadingRow, WithValidation
                     ->where('last_name', 'like', "%{$lastName}%")
                     ->first();
 
-                if ($employee) return $employee;
+                if ($employee) {
+                    return $employee;
+                }
             }
         }
 
@@ -171,7 +179,7 @@ class AttendancesImport implements ToCollection, WithHeadingRow, WithValidation
                 'Y-m-d H:i:s',
                 'Y-m-d H:i',
                 'd-m-Y H:i',
-                'd-m-Y H:i:s'
+                'd-m-Y H:i:s',
             ];
 
             foreach ($formats as $format) {

@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\TimesheetResource\Widgets;
 
-use App\Models\Attendance;
-use App\Models\Timesheet;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +12,7 @@ class TimesheetStatsWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        if (!$this->record) {
+        if (! $this->record) {
             return [];
         }
 

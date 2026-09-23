@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
-use App\Models\Timesheet;
 use App\Models\Attendance;
 use App\Models\Employee;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Models\Project;
+use App\Models\Timesheet;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class ReportController extends Controller
@@ -23,14 +23,14 @@ class ReportController extends Controller
                 'project_id' => 'nullable|exists:projects,id',
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after_or_equal:start_date',
-                'status' => 'nullable|string|in:present,absent,late,permission,sick_leave'
+                'status' => 'nullable|string|in:present,absent,late,permission,sick_leave',
             ]);
 
             $startDate = Carbon::parse($request->start_date)->startOfDay();
             $endDate = Carbon::parse($request->end_date)->endOfDay();
 
             $query = Attendance::with(['employee', 'timesheet.project'])
-                ->whereHas('timesheet', function($q) use ($startDate, $endDate, $request) {
+                ->whereHas('timesheet', function ($q) use ($startDate, $endDate, $request) {
                     $q->whereBetween('check_in_date', [$startDate, $endDate]);
 
                     if ($request->has('project_id')) {
@@ -55,9 +55,9 @@ class ReportController extends Controller
                     'sick_leave' => $attendances->where('status', 'sick_leave')->count(),
                 ],
                 'by_project' => $attendances->groupBy('timesheet.project.name')->map->count(),
-                'by_employee' => $attendances->groupBy(function($attendance) {
-                    return $attendance->employee->first_name . ' ' . $attendance->employee->last_name;
-                })->map->count()
+                'by_employee' => $attendances->groupBy(function ($attendance) {
+                    return $attendance->employee->first_name.' '.$attendance->employee->last_name;
+                })->map->count(),
             ];
 
             return response()->json([
@@ -67,22 +67,22 @@ class ReportController extends Controller
                     'statistics' => $stats,
                     'period' => [
                         'start_date' => $startDate->toDateString(),
-                        'end_date' => $endDate->toDateString()
-                    ]
+                        'end_date' => $endDate->toDateString(),
+                    ],
                 ],
-                'message' => 'Reporte de asistencias generado correctamente'
+                'message' => 'Reporte de asistencias generado correctamente',
             ]);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al generar el reporte: ' . $e->getMessage()
+                'message' => 'Error al generar el reporte: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -108,12 +108,12 @@ class ReportController extends Controller
             $todayTimesheets = Timesheet::whereDate('check_in_date', $today)->count();
 
             // Asistencias de hoy
-            $todayAttendances = Attendance::whereHas('timesheet', function($q) use ($today) {
+            $todayAttendances = Attendance::whereHas('timesheet', function ($q) use ($today) {
                 $q->whereDate('check_in_date', $today);
             })->count();
 
             // Estadísticas de asistencia de la semana actual
-            $weeklyAttendances = Attendance::whereHas('timesheet', function($q) use ($currentWeekStart, $currentWeekEnd) {
+            $weeklyAttendances = Attendance::whereHas('timesheet', function ($q) use ($currentWeekStart, $currentWeekEnd) {
                 $q->whereBetween('check_in_date', [$currentWeekStart, $currentWeekEnd]);
             })->get();
 
@@ -127,7 +127,7 @@ class ReportController extends Controller
             ];
 
             // Estadísticas de asistencia del mes actual
-            $monthlyAttendances = Attendance::whereHas('timesheet', function($q) use ($currentMonthStart, $currentMonthEnd) {
+            $monthlyAttendances = Attendance::whereHas('timesheet', function ($q) use ($currentMonthStart, $currentMonthEnd) {
                 $q->whereBetween('check_in_date', [$currentMonthStart, $currentMonthEnd]);
             })->get();
 
@@ -141,12 +141,12 @@ class ReportController extends Controller
             ];
 
             // Proyectos más activos (con más timesheets este mes)
-            $topProjects = Project::withCount(['timesheets' => function($query) use ($currentMonthStart, $currentMonthEnd) {
+            $topProjects = Project::withCount(['timesheets' => function ($query) use ($currentMonthStart, $currentMonthEnd) {
                 $query->whereBetween('check_in_date', [$currentMonthStart, $currentMonthEnd]);
             }])
-            ->orderByDesc('timesheets_count')
-            ->limit(5)
-            ->get();
+                ->orderByDesc('timesheets_count')
+                ->limit(5)
+                ->get();
 
             return response()->json([
                 'success' => true,
@@ -155,7 +155,7 @@ class ReportController extends Controller
                         'active_projects' => $activeProjects,
                         'today_timesheets' => $todayTimesheets,
                         'today_attendances' => $todayAttendances,
-                        'total_employees' => Employee::count()
+                        'total_employees' => Employee::count(),
                     ],
                     'weekly_stats' => $weeklyStats,
                     'monthly_stats' => $monthlyStats,
@@ -164,21 +164,21 @@ class ReportController extends Controller
                         'today' => $today->toDateString(),
                         'week_range' => [
                             'start' => $currentWeekStart->toDateString(),
-                            'end' => $currentWeekEnd->toDateString()
+                            'end' => $currentWeekEnd->toDateString(),
                         ],
                         'month_range' => [
                             'start' => $currentMonthStart->toDateString(),
-                            'end' => $currentMonthEnd->toDateString()
-                        ]
-                    ]
+                            'end' => $currentMonthEnd->toDateString(),
+                        ],
+                    ],
                 ],
-                'message' => 'Estadísticas del dashboard obtenidas correctamente'
+                'message' => 'Estadísticas del dashboard obtenidas correctamente',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las estadísticas: ' . $e->getMessage()
+                'message' => 'Error al obtener las estadísticas: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -199,35 +199,35 @@ class ReportController extends Controller
             $endDate = Carbon::parse($request->end_date)->endOfDay();
 
             $query = Employee::with(['attendances.timesheet.project'])
-                ->withCount(['attendances as total_attendances' => function($q) use ($startDate, $endDate) {
-                    $q->whereHas('timesheet', function($tq) use ($startDate, $endDate) {
+                ->withCount(['attendances as total_attendances' => function ($q) use ($startDate, $endDate) {
+                    $q->whereHas('timesheet', function ($tq) use ($startDate, $endDate) {
                         $tq->whereBetween('check_in_date', [$startDate, $endDate]);
                     });
                 }])
-                ->withCount(['attendances as present_count' => function($q) use ($startDate, $endDate) {
+                ->withCount(['attendances as present_count' => function ($q) use ($startDate, $endDate) {
                     $q->where('status', 'present')
-                      ->whereHas('timesheet', function($tq) use ($startDate, $endDate) {
-                          $tq->whereBetween('check_in_date', [$startDate, $endDate]);
-                      });
+                        ->whereHas('timesheet', function ($tq) use ($startDate, $endDate) {
+                            $tq->whereBetween('check_in_date', [$startDate, $endDate]);
+                        });
                 }])
-                ->withCount(['attendances as absent_count' => function($q) use ($startDate, $endDate) {
+                ->withCount(['attendances as absent_count' => function ($q) use ($startDate, $endDate) {
                     $q->where('status', 'absent')
-                      ->whereHas('timesheet', function($tq) use ($startDate, $endDate) {
-                          $tq->whereBetween('check_in_date', [$startDate, $endDate]);
-                      });
+                        ->whereHas('timesheet', function ($tq) use ($startDate, $endDate) {
+                            $tq->whereBetween('check_in_date', [$startDate, $endDate]);
+                        });
                 }])
-                ->withCount(['attendances as late_count' => function($q) use ($startDate, $endDate) {
+                ->withCount(['attendances as late_count' => function ($q) use ($startDate, $endDate) {
                     $q->where('status', 'late')
-                      ->whereHas('timesheet', function($tq) use ($startDate, $endDate) {
-                          $tq->whereBetween('check_in_date', [$startDate, $endDate]);
-                      });
+                        ->whereHas('timesheet', function ($tq) use ($startDate, $endDate) {
+                            $tq->whereBetween('check_in_date', [$startDate, $endDate]);
+                        });
                 }]);
 
             if ($request->has('employee_id')) {
                 $query->where('id', $request->employee_id);
             }
 
-            $employees = $query->get()->map(function($employee) {
+            $employees = $query->get()->map(function ($employee) {
                 $attendanceRate = $employee->total_attendances > 0
                     ? round(($employee->present_count / $employee->total_attendances) * 100, 2)
                     : 0;
@@ -239,8 +239,8 @@ class ReportController extends Controller
                         'present_count' => $employee->present_count,
                         'absent_count' => $employee->absent_count,
                         'late_count' => $employee->late_count,
-                        'attendance_rate' => $attendanceRate
-                    ]
+                        'attendance_rate' => $attendanceRate,
+                    ],
                 ];
             });
 
@@ -250,22 +250,22 @@ class ReportController extends Controller
                     'employees' => $employees,
                     'period' => [
                         'start_date' => $startDate->toDateString(),
-                        'end_date' => $endDate->toDateString()
-                    ]
+                        'end_date' => $endDate->toDateString(),
+                    ],
                 ],
-                'message' => 'Reporte de productividad generado correctamente'
+                'message' => 'Reporte de productividad generado correctamente',
             ]);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al generar el reporte: ' . $e->getMessage()
+                'message' => 'Error al generar el reporte: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -297,13 +297,13 @@ class ReportController extends Controller
 
             // Estadísticas del proyecto
             $totalTimesheets = $timesheets->count();
-            $totalAttendances = $timesheets->sum(function($timesheet) {
+            $totalAttendances = $timesheets->sum(function ($timesheet) {
                 return $timesheet->attendances->count();
             });
 
             $attendancesByStatus = [];
             foreach (['present', 'absent', 'late', 'permission', 'sick_leave'] as $status) {
-                $attendancesByStatus[$status] = $timesheets->sum(function($timesheet) use ($status) {
+                $attendancesByStatus[$status] = $timesheets->sum(function ($timesheet) use ($status) {
                     return $timesheet->attendances->where('status', $status)->count();
                 });
             }
@@ -316,22 +316,22 @@ class ReportController extends Controller
                     'statistics' => [
                         'total_timesheets' => $totalTimesheets,
                         'total_attendances' => $totalAttendances,
-                        'attendances_by_status' => $attendancesByStatus
-                    ]
+                        'attendances_by_status' => $attendancesByStatus,
+                    ],
                 ],
-                'message' => 'Reporte de timesheets del proyecto generado correctamente'
+                'message' => 'Reporte de timesheets del proyecto generado correctamente',
             ]);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al generar el reporte: ' . $e->getMessage()
+                'message' => 'Error al generar el reporte: '.$e->getMessage(),
             ], 500);
         }
     }

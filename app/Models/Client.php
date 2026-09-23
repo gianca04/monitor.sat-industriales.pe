@@ -24,13 +24,13 @@ class Client extends Model
     ];
 
     protected $casts = [
-        'document_type'   => 'string',
+        'document_type' => 'string',
         'document_number' => 'string',
-        'person_type'     => 'string',
-        'description'     => 'string',
-        'address'         => 'string',
-        'contact_email'   => 'string',
-        'contact_phone'   => 'string',
+        'person_type' => 'string',
+        'description' => 'string',
+        'address' => 'string',
+        'contact_email' => 'string',
+        'contact_phone' => 'string',
     ];
 
     public function projects()
@@ -38,7 +38,7 @@ class Client extends Model
         return $this->belongsToMany(Project::class, 'client_project')->withTimestamps();
     }
 
-        public function subClients()
+    public function subClients()
     {
         return $this->hasMany(SubClient::class);
     }

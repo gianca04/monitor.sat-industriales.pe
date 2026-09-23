@@ -3,32 +3,31 @@
 namespace App\Filament\Resources\WorkReportResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Components\Concerns\HasMaxHeight;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Actions\Action;
-use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Photo;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Split;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Columns\Layout\Panel;
+use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\Concerns\Translatable;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\Enums\MaxWidth;
+use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Layout\Panel;
 use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 
 class PhotosRelationManager extends RelationManager
 {
     use Translatable;
+
     protected static string $relationship = 'photos';
+
     protected static ?string $title = 'Evidencias Fotográficas';
+
     protected static ?string $modelLabel = 'Evidencia';
+
     protected static ?string $pluralModelLabel = 'Evidencias';
+
     protected static ?string $recordTitleAttribute = 'descripcion';
 
     public function form(Form $form): Form
@@ -138,13 +137,13 @@ class PhotosRelationManager extends RelationManager
                         ->searchable()
                         ->size('m')
                         ->lineClamp(2)
-                        ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
+                        ->formatStateUsing(fn (string $state): HtmlString => new HtmlString($state)),
 
                     Tables\Columns\TextColumn::make('descripcion')
                         ->searchable()
                         ->size('m')
                         ->lineClamp(2)
-                        ->formatStateUsing(fn(string $state): HtmlString => new HtmlString($state)),
+                        ->formatStateUsing(fn (string $state): HtmlString => new HtmlString($state)),
 
                     Tables\Columns\TextColumn::make('created_at')
                         ->label('Fecha de creación')
@@ -240,6 +239,7 @@ class PhotosRelationManager extends RelationManager
                     })
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['work_report_id'] = $this->ownerRecord->id;
+
                         return $data;
                     })
                     ->successNotification(
@@ -323,6 +323,7 @@ class PhotosRelationManager extends RelationManager
                     })
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['work_report_id'] = $this->ownerRecord->id;
+
                         return $data;
                     })
                     ->successNotification(
@@ -360,7 +361,6 @@ class PhotosRelationManager extends RelationManager
                             ->title('Evidencia eliminada')
                             ->body('La fotografía se ha eliminado correctamente.')
                     ),
-
 
             ])
             ->bulkActions([

@@ -7,18 +7,21 @@ use App\Models\Employee;
 use App\Models\Project;
 use App\Models\Timesheet;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
-use Carbon\Carbon;
 
 class ReportControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     protected $user;
+
     protected $project;
+
     protected $timesheet;
+
     protected $employee;
 
     protected function setUp(): void
@@ -47,7 +50,7 @@ class ReportControllerTest extends TestCase
             'status' => 'present',
         ]);
 
-        $response = $this->getJson('/api/reports/attendance?' . http_build_query([
+        $response = $this->getJson('/api/reports/attendance?'.http_build_query([
             'start_date' => Carbon::today()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),
         ]));
@@ -55,7 +58,7 @@ class ReportControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Reporte de asistencias generado correctamente'
+                'message' => 'Reporte de asistencias generado correctamente',
             ])
             ->assertJsonStructure([
                 'success',
@@ -64,10 +67,10 @@ class ReportControllerTest extends TestCase
                     'statistics' => [
                         'total_attendances',
                         'by_status',
-                        'by_project'
-                    ]
+                        'by_project',
+                    ],
                 ],
-                'message'
+                'message',
             ]);
     }
 
@@ -83,7 +86,7 @@ class ReportControllerTest extends TestCase
     /** @test */
     public function it_validates_date_range_for_attendance_report()
     {
-        $response = $this->getJson('/api/reports/attendance?' . http_build_query([
+        $response = $this->getJson('/api/reports/attendance?'.http_build_query([
             'start_date' => '2023-12-01',
             'end_date' => '2023-01-01',
         ]));
@@ -112,7 +115,7 @@ class ReportControllerTest extends TestCase
             'employee_id' => $this->employee->id,
         ]);
 
-        $response = $this->getJson('/api/reports/attendance?' . http_build_query([
+        $response = $this->getJson('/api/reports/attendance?'.http_build_query([
             'project_id' => $this->project->id,
             'start_date' => Carbon::today()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),
@@ -137,7 +140,7 @@ class ReportControllerTest extends TestCase
             'status' => 'absent',
         ]);
 
-        $response = $this->getJson('/api/reports/attendance?' . http_build_query([
+        $response = $this->getJson('/api/reports/attendance?'.http_build_query([
             'status' => 'present',
             'start_date' => Carbon::today()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),
@@ -157,7 +160,7 @@ class ReportControllerTest extends TestCase
             'check_in_date' => Carbon::yesterday()->format('Y-m-d'),
         ]);
 
-        $response = $this->getJson('/api/reports/project?' . http_build_query([
+        $response = $this->getJson('/api/reports/project?'.http_build_query([
             'project_id' => $this->project->id,
             'start_date' => Carbon::yesterday()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),
@@ -166,7 +169,7 @@ class ReportControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Reporte de proyecto generado correctamente'
+                'message' => 'Reporte de proyecto generado correctamente',
             ])
             ->assertJsonStructure([
                 'success',
@@ -177,10 +180,10 @@ class ReportControllerTest extends TestCase
                         'total_timesheets',
                         'total_attendances',
                         'attendance_rate',
-                        'by_status'
-                    ]
+                        'by_status',
+                    ],
                 ],
-                'message'
+                'message',
             ]);
     }
 
@@ -196,7 +199,7 @@ class ReportControllerTest extends TestCase
     /** @test */
     public function it_validates_project_exists_for_project_report()
     {
-        $response = $this->getJson('/api/reports/project?' . http_build_query([
+        $response = $this->getJson('/api/reports/project?'.http_build_query([
             'project_id' => 999,
             'start_date' => Carbon::today()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),
@@ -215,7 +218,7 @@ class ReportControllerTest extends TestCase
             'status' => 'present',
         ]);
 
-        $response = $this->getJson('/api/reports/employee?' . http_build_query([
+        $response = $this->getJson('/api/reports/employee?'.http_build_query([
             'employee_id' => $this->employee->id,
             'start_date' => Carbon::today()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),
@@ -224,7 +227,7 @@ class ReportControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Reporte de empleado generado correctamente'
+                'message' => 'Reporte de empleado generado correctamente',
             ])
             ->assertJsonStructure([
                 'success',
@@ -235,10 +238,10 @@ class ReportControllerTest extends TestCase
                         'total_attendances',
                         'by_status',
                         'attendance_rate',
-                        'total_worked_hours'
-                    ]
+                        'total_worked_hours',
+                    ],
                 ],
-                'message'
+                'message',
             ]);
     }
 
@@ -254,7 +257,7 @@ class ReportControllerTest extends TestCase
     /** @test */
     public function it_validates_employee_exists_for_employee_report()
     {
-        $response = $this->getJson('/api/reports/employee?' . http_build_query([
+        $response = $this->getJson('/api/reports/employee?'.http_build_query([
             'employee_id' => 999,
             'start_date' => Carbon::today()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),
@@ -273,7 +276,7 @@ class ReportControllerTest extends TestCase
             'status' => 'present',
         ]);
 
-        $response = $this->getJson('/api/reports/summary?' . http_build_query([
+        $response = $this->getJson('/api/reports/summary?'.http_build_query([
             'start_date' => Carbon::today()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),
         ]));
@@ -281,7 +284,7 @@ class ReportControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Reporte resumen generado correctamente'
+                'message' => 'Reporte resumen generado correctamente',
             ])
             ->assertJsonStructure([
                 'success',
@@ -293,10 +296,10 @@ class ReportControllerTest extends TestCase
                         'total_employees',
                         'attendance_rate',
                         'by_project',
-                        'by_status'
-                    ]
+                        'by_status',
+                    ],
                 ],
-                'message'
+                'message',
             ]);
     }
 
@@ -326,7 +329,7 @@ class ReportControllerTest extends TestCase
             'status' => 'absent',
         ]);
 
-        $response = $this->getJson('/api/reports/attendance?' . http_build_query([
+        $response = $this->getJson('/api/reports/attendance?'.http_build_query([
             'start_date' => Carbon::today()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),
         ]));
@@ -340,7 +343,7 @@ class ReportControllerTest extends TestCase
     /** @test */
     public function it_handles_empty_date_ranges_gracefully()
     {
-        $response = $this->getJson('/api/reports/attendance?' . http_build_query([
+        $response = $this->getJson('/api/reports/attendance?'.http_build_query([
             'start_date' => Carbon::tomorrow()->format('Y-m-d'),
             'end_date' => Carbon::tomorrow()->format('Y-m-d'),
         ]));
@@ -358,14 +361,14 @@ class ReportControllerTest extends TestCase
             'status' => 'present',
         ]);
 
-        $response = $this->getJson('/api/reports/daily-summary?' . http_build_query([
+        $response = $this->getJson('/api/reports/daily-summary?'.http_build_query([
             'date' => Carbon::today()->format('Y-m-d'),
         ]));
 
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Resumen diario generado correctamente'
+                'message' => 'Resumen diario generado correctamente',
             ])
             ->assertJsonStructure([
                 'success',
@@ -375,10 +378,10 @@ class ReportControllerTest extends TestCase
                         'total_timesheets',
                         'total_attendances',
                         'by_status',
-                        'by_project'
-                    ]
+                        'by_project',
+                    ],
                 ],
-                'message'
+                'message',
             ]);
     }
 
@@ -394,7 +397,7 @@ class ReportControllerTest extends TestCase
     /** @test */
     public function it_validates_status_values_in_attendance_report()
     {
-        $response = $this->getJson('/api/reports/attendance?' . http_build_query([
+        $response = $this->getJson('/api/reports/attendance?'.http_build_query([
             'status' => 'invalid_status',
             'start_date' => Carbon::today()->format('Y-m-d'),
             'end_date' => Carbon::today()->format('Y-m-d'),

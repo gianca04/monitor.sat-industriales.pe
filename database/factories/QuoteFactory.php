@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Quote;
 use App\Models\Client;
 use App\Models\Employee;
+use App\Models\Quote;
 use App\Models\SubClient;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -27,7 +27,7 @@ class QuoteFactory extends Factory
             'employee_id' => Employee::factory(),
             'sub_client_id' => SubClient::factory(),
             'TDR' => $this->faker->sentence(3),
-            'quote_file' => $this->faker->optional()->word() . '.pdf',
+            'quote_file' => $this->faker->optional()->word().'.pdf',
             'correlative' => $this->faker->unique()->regexify('[A-Z]{3}-[0-9]{4}'),
             'contractor' => $this->faker->company(),
             'pe_pt' => $this->faker->randomElement(['PE', 'PT']),

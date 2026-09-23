@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -10,17 +11,17 @@ class CheckTokenExpiration
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'Usuario no autenticado'], 401);
         }
 
         $token = $user->currentAccessToken();
 
-        if (!$token) {
+        if (! $token) {
             return response()->json(['message' => 'Token no válido o inexistente'], 401);
         }
 
-        if (!$token->expires_at) {
+        if (! $token->expires_at) {
             return response()->json(['message' => 'El token no tiene fecha de expiración'], 401);
         }
 

@@ -13,6 +13,7 @@ class EmployeeControllerTest extends TestCase
     use RefreshDatabase, WithFaker;
 
     protected $user;
+
     protected $token;
 
     protected function setUp(): void
@@ -30,7 +31,7 @@ class EmployeeControllerTest extends TestCase
         $employees = Employee::factory()->count(3)->create();
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/employees');
 
         $response->assertStatus(200)
@@ -48,9 +49,9 @@ class EmployeeControllerTest extends TestCase
                         'date_contract',
                         'sex',
                         'created_at',
-                        'updated_at'
-                    ]
-                ]
+                        'updated_at',
+                    ],
+                ],
             ]);
     }
 
@@ -61,7 +62,7 @@ class EmployeeControllerTest extends TestCase
         $passportEmployee = Employee::factory()->create(['document_type' => 'PASAPORTE']);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/employees?document_type=DNI');
 
         $response->assertStatus(200);
@@ -76,15 +77,15 @@ class EmployeeControllerTest extends TestCase
     {
         $employee1 = Employee::factory()->create([
             'first_name' => 'Juan',
-            'last_name' => 'Pérez'
+            'last_name' => 'Pérez',
         ]);
         $employee2 = Employee::factory()->create([
             'first_name' => 'María',
-            'last_name' => 'García'
+            'last_name' => 'García',
         ]);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/employees?search=Juan');
 
         $response->assertStatus(200);
@@ -107,7 +108,7 @@ class EmployeeControllerTest extends TestCase
         $employee = Employee::factory()->create(['document_number' => '12345678']);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/employees?search=12345678');
 
         $response->assertStatus(200);
@@ -130,7 +131,7 @@ class EmployeeControllerTest extends TestCase
         $employee = Employee::factory()->create();
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson("/api/employees/{$employee->id}");
 
         $response->assertStatus(200)
@@ -147,8 +148,8 @@ class EmployeeControllerTest extends TestCase
                     'date_contract',
                     'sex',
                     'created_at',
-                    'updated_at'
-                ]
+                    'updated_at',
+                ],
             ]);
     }
 
@@ -156,7 +157,7 @@ class EmployeeControllerTest extends TestCase
     public function it_returns_404_for_non_existent_employee()
     {
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/employees/999');
 
         $response->assertStatus(404);
@@ -177,7 +178,7 @@ class EmployeeControllerTest extends TestCase
         ];
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->postJson('/api/employees', $employeeData);
 
         $response->assertStatus(201);
@@ -185,7 +186,7 @@ class EmployeeControllerTest extends TestCase
         $this->assertDatabaseHas('employees', [
             'first_name' => 'Juan',
             'last_name' => 'Pérez',
-            'document_number' => '12345678'
+            'document_number' => '12345678',
         ]);
     }
 
@@ -193,7 +194,7 @@ class EmployeeControllerTest extends TestCase
     public function it_validates_required_fields_when_creating()
     {
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->postJson('/api/employees', []);
 
         $response->assertStatus(422)
@@ -201,7 +202,7 @@ class EmployeeControllerTest extends TestCase
                 'first_name',
                 'last_name',
                 'document_type',
-                'document_number'
+                'document_number',
             ]);
     }
 
@@ -220,7 +221,7 @@ class EmployeeControllerTest extends TestCase
         ];
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->postJson('/api/employees', $employeeData);
 
         $response->assertStatus(422)
@@ -244,7 +245,7 @@ class EmployeeControllerTest extends TestCase
         ];
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->postJson('/api/employees', $employeeData);
 
         $response->assertStatus(422)
@@ -258,11 +259,11 @@ class EmployeeControllerTest extends TestCase
 
         $updateData = [
             'first_name' => 'Juan Carlos',
-            'last_name' => 'García'
+            'last_name' => 'García',
         ];
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->putJson("/api/employees/{$employee->id}", $updateData);
 
         $response->assertStatus(200);
@@ -270,7 +271,7 @@ class EmployeeControllerTest extends TestCase
         $this->assertDatabaseHas('employees', [
             'id' => $employee->id,
             'first_name' => 'Juan Carlos',
-            'last_name' => 'García'
+            'last_name' => 'García',
         ]);
     }
 
@@ -280,7 +281,7 @@ class EmployeeControllerTest extends TestCase
         $employee = Employee::factory()->create();
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->deleteJson("/api/employees/{$employee->id}");
 
         $response->assertStatus(200);
@@ -294,17 +295,17 @@ class EmployeeControllerTest extends TestCase
         $employee1 = Employee::factory()->create([
             'first_name' => 'Juan',
             'last_name' => 'Pérez',
-            'document_type' => 'DNI'
+            'document_type' => 'DNI',
         ]);
 
         $employee2 = Employee::factory()->create([
             'first_name' => 'María',
             'last_name' => 'García',
-            'document_type' => 'PASAPORTE'
+            'document_type' => 'PASAPORTE',
         ]);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/employees/search?first_name=Juan&document_type=DNI');
 
         $response->assertStatus(200);
@@ -316,7 +317,7 @@ class EmployeeControllerTest extends TestCase
         $employees = Employee::factory()->count(3)->create();
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/employees/available/project?date=2024-01-15');
 
         $response->assertStatus(200);

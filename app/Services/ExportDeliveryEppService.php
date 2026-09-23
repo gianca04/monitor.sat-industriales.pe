@@ -24,7 +24,7 @@ class ExportDeliveryEppService
             'resource_path' => $resourcePath,
             'resource_exists' => file_exists($resourcePath),
             'base_path' => $basePath,
-            'base_exists' => file_exists($basePath)
+            'base_exists' => file_exists($basePath),
         ]);
 
         if (file_exists($resourcePath)) {
@@ -36,7 +36,7 @@ class ExportDeliveryEppService
         } else {
             Log::error('ExportDeliveryEppService: Plantilla no encontrada en ninguna de las rutas.', [
                 'resource_path' => $resourcePath,
-                'base_path' => $basePath
+                'base_path' => $basePath,
             ]);
             throw new \Exception("Plantilla Excel no encontrada. Buscado en: {$resourcePath} y {$basePath}");
         }
@@ -45,7 +45,6 @@ class ExportDeliveryEppService
     /**
      * Exporta los datos de una entrega usando la plantilla Excel
      *
-     * @param DeliveryExportData $data
      * @return string Ruta del archivo generado
      */
     public function export(DeliveryExportData $data): string
@@ -102,7 +101,7 @@ class ExportDeliveryEppService
             $sheet->setCellValue("O{$currentRow}", $item->notes);
             $sheet->setCellValue("P{$currentRow}", ' ');
 
-            if (!empty($item->signature)) {
+            if (! empty($item->signature)) {
                 $sheet->getRowDimension($currentRow)->setRowHeight(35);
                 $this->insertSignatureImage($sheet, $item->signature, "P{$currentRow}");
             }
@@ -110,12 +109,12 @@ class ExportDeliveryEppService
 
         // Crear directorio temporal si no existe
         $tempDir = storage_path('app/public/exports');
-        if (!file_exists($tempDir)) {
+        if (! file_exists($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
 
-        $filename = 'entrega_epp_' . time() . '_' . uniqid() . '.xlsx';
-        $tempPath = $tempDir . '/' . $filename;
+        $filename = 'entrega_epp_'.time().'_'.uniqid().'.xlsx';
+        $tempPath = $tempDir.'/'.$filename;
 
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->save($tempPath);
@@ -126,28 +125,25 @@ class ExportDeliveryEppService
     /**
      * Ejecuta la exportación directamente desde el modelo Delivery
      *
-     * @param Delivery $delivery
      * @return string Ruta del archivo generado
      */
     public function exportFromModel(Delivery $delivery): string
     {
         $dto = DeliveryExportData::fromModel($delivery);
+
         return $this->export($dto);
     }
 
     /**
      * Copia los estilos de celda de una fila a otra
      *
-     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet
-     * @param int $fromRow
-     * @param int $toRow
-     * @return void
+     * @param  \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet  $sheet
      */
     private function copyRowStyles($sheet, int $fromRow, int $toRow): void
     {
         foreach (['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'] as $col) {
-            $fromCell = $sheet->getCell($col . $fromRow);
-            $toCell = $sheet->getCell($col . $toRow);
+            $fromCell = $sheet->getCell($col.$fromRow);
+            $toCell = $sheet->getCell($col.$toRow);
             $toCell->setXfIndex($fromCell->getXfIndex());
         }
     }
@@ -155,10 +151,7 @@ class ExportDeliveryEppService
     /**
      * Inserta la imagen de la firma en la celda correspondiente
      *
-     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet
-     * @param string $signatureData
-     * @param string $cellCoordinates
-     * @return void
+     * @param  \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet  $sheet
      */
     private function insertSignatureImage($sheet, string $signatureData, string $cellCoordinates): void
     {
@@ -175,14 +168,14 @@ class ExportDeliveryEppService
                 return;
             }
             $ext = strtolower($type[1] ?? 'png');
-            $tempImgPath = sys_get_temp_dir() . '/sig_' . uniqid() . '.' . $ext;
+            $tempImgPath = sys_get_temp_dir().'/sig_'.uniqid().'.'.$ext;
             file_put_contents($tempImgPath, $decodedData);
         } elseif (file_exists($signatureData)) {
             $tempImgPath = $signatureData;
         }
 
         if ($tempImgPath && file_exists($tempImgPath)) {
-            $drawing = new Drawing();
+            $drawing = new Drawing;
             $drawing->setName('Firma');
             $drawing->setDescription('Firma de conformidad');
             $drawing->setPath($tempImgPath);

@@ -2,11 +2,11 @@
 
 namespace App\Forms\Components;
 
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 
 class ProjectMainInfo
 {
@@ -40,29 +40,31 @@ class ProjectMainInfo
                         if ($sessionQuoteId) {
                             $query->orWhere('quotes.id', $sessionQuoteId);
                         }
+
                         return $query->get()
                             ->unique('id')
                             ->mapWithKeys(function ($quote) {
                                 $label = "{$quote->correlative} - {$quote->project_description} ({$quote->sub_client_name} / {$quote->client_name})";
+
                                 return [$quote->id => $label];
                             })
                             ->toArray();
                     })
-                    ->default(fn() => session('quote_id')),
+                    ->default(fn () => session('quote_id')),
                 DatePicker::make('start_date')
                     ->label('Fecha de inicio')
                     ->default(now())
                     ->required()
-                    ->maxDate(fn(callable $get) => $get('end_date')),
+                    ->maxDate(fn (callable $get) => $get('end_date')),
                 DatePicker::make('end_date')
                     ->label('Fecha de finalización')
                     ->default(now()->addDays(30))
                     ->required()
-                    ->minDate(fn(callable $get) => $get('start_date')),
+                    ->minDate(fn (callable $get) => $get('start_date')),
                 Placeholder::make('status_text')
                     ->label('Estado del proyecto:')
                     ->extraAttributes(['class' => 'text-2xl font-bold text-primary-600'])
-                    ->content(fn($record) => $record?->status_text ?? 'Sin definir'),
+                    ->content(fn ($record) => $record?->status_text ?? 'Sin definir'),
             ]);
     }
 }

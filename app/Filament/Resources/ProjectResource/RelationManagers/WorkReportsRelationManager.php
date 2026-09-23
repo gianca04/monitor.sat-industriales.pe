@@ -2,11 +2,6 @@
 
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
-use App\Filament\Resources\WorkReportResource\Pages\CreateWorkReport;
-use App\Filament\Resources\WorkReportResource\Pages\EditWorkReport;
-use App\Filament\Resources\WorkReportResource\Pages\ListWorkReports;
-use App\Filament\Resources\WorkReportResource\Pages\ViewWorkReport;
-use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
 use App\Filament\Resources\WorkReportResource\RelationManagers\PhotosRelationManager;
 use App\Models\Employee;
 use App\Models\Project;
@@ -15,20 +10,21 @@ use Filament\Forms;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
 use Illuminate\Support\Facades\Auth;
+use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class WorkReportsRelationManager extends RelationManager
 {
     protected static ?string $title = 'Reportes de Trabajo';
 
     protected static ?string $modelLabel = 'Reporte de Trabajo';
+
     protected static ?string $pluralModelLabel = 'Reportes de Trabajo';
+
     protected static string $relationship = 'WorkReports';
 
     public function form(Form $form): Form
@@ -45,7 +41,7 @@ class WorkReportsRelationManager extends RelationManager
 
                                 // INICIO DE SELECT DE EMPLEADO
                                 Forms\Components\Select::make('employee_id')
-                                    ->default(fn() => Auth::user()?->employee_id)->required()
+                                    ->default(fn () => Auth::user()?->employee_id)->required()
                                     ->columns(2)
                                     ->reactive()
                                     ->prefixIcon('heroicon-m-user')
@@ -78,22 +74,25 @@ class WorkReportsRelationManager extends RelationManager
                                             ->color('info')
                                             ->action(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId) {
+                                                if (! $employeeId) {
                                                     Notification::make()
                                                         ->title('Selecciona un supervisor primero')
                                                         ->warning()
                                                         ->send();
+
                                                     return;
                                                 }
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId)
+                                                if (! $employeeId) {
                                                     return null;
+                                                }
 
                                                 $employee = Employee::with('user')->find($employeeId);
-                                                if (!$employee)
+                                                if (! $employee) {
                                                     return null;
+                                                }
 
                                                 return view('filament.components.employee-info-modal', compact('employee'));
                                             })
@@ -101,7 +100,7 @@ class WorkReportsRelationManager extends RelationManager
                                             ->modalSubmitAction(false)
                                             ->modalCancelActionLabel('Cerrar')
                                             ->modalWidth('2xl')
-                                            ->visible(fn(callable $get) => !empty($get('employee_id')))
+                                            ->visible(fn (callable $get) => ! empty($get('employee_id')))
                                     )
                                     ->afterStateHydrated(function (callable $get, callable $set) {
                                         $employeeId = $get('employee_id');
@@ -126,7 +125,7 @@ class WorkReportsRelationManager extends RelationManager
                                 // INICIO DE SELECT DE PROYECTO
                                 Forms\Components\Select::make('project_id')
                                     ->prefixIcon('heroicon-m-briefcase')
-                                    ->default(fn() => session('project_id'))
+                                    ->default(fn () => session('project_id'))
                                     ->label('Proyecto') // Título para el campo 'Proyecto'
                                     ->options(
                                         function (callable $get) {
@@ -138,14 +137,14 @@ class WorkReportsRelationManager extends RelationManager
                                                 })
                                                 ->get()
                                                 ->mapWithKeys(function ($project) {
-                                                    return [$project->id => $project->name . ' - ' . $project->quote_id];
+                                                    return [$project->id => $project->name.' - '.$project->quote_id];
                                                 })
                                                 ->toArray();
                                         }
                                     )
                                     ->searchable() // Activa la búsqueda asincrónica
                                     ->reactive() // Hace el campo reactivo
-                                    ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
+                                    ->afterStateUpdated(fn ($state, callable $set) => $set('sub_client_id', null))
                                     ->helperText('Selecciona un proyecto.') // Ayuda para el campo de cliente
 
                                     // Botón para ver información del proyecto
@@ -156,22 +155,25 @@ class WorkReportsRelationManager extends RelationManager
                                             ->color('info')
                                             ->action(function (callable $get) {
                                                 $projectId = $get('project_id');
-                                                if (!$projectId) {
+                                                if (! $projectId) {
                                                     Notification::make()
                                                         ->title('Selecciona un proyecto primero')
                                                         ->warning()
                                                         ->send();
+
                                                     return;
                                                 }
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $projectId = $get('project_id');
-                                                if (!$projectId)
+                                                if (! $projectId) {
                                                     return null;
+                                                }
 
                                                 $project = Project::with('clients')->find($projectId);
-                                                if (!$project)
+                                                if (! $project) {
                                                     return null;
+                                                }
 
                                                 return view('filament.components.project-info-modal', compact('project'));
                                             })
@@ -179,7 +181,7 @@ class WorkReportsRelationManager extends RelationManager
                                             ->modalSubmitAction(false)
                                             ->modalCancelActionLabel('Cerrar')
                                             ->modalWidth('2xl')
-                                            ->visible(fn(callable $get) => !empty($get('project_id')))
+                                            ->visible(fn (callable $get) => ! empty($get('project_id')))
                                     )
 
                                     ->createOptionForm([
@@ -219,26 +221,26 @@ class WorkReportsRelationManager extends RelationManager
                                                             ->unique('id')
                                                             ->mapWithKeys(function ($quote) {
                                                                 $label = "{$quote->correlative} - {$quote->project_description} ({$quote->sub_client_name} / {$quote->client_name})";
+
                                                                 return [$quote->id => $label];
                                                             })
                                                             ->toArray();
                                                     })
-                                                    ->default(fn() => session('quote_id'))
+                                                    ->default(fn () => session('quote_id'))
                                                     ->required(),
-
 
                                                 // ...existing code...
                                                 Forms\Components\DatePicker::make('start_date')
                                                     ->label('Fecha de inicio')
                                                     ->default(now())
                                                     ->required()
-                                                    ->maxDate(fn(callable $get) => $get('end_date')), // Valida contra end_date
+                                                    ->maxDate(fn (callable $get) => $get('end_date')), // Valida contra end_date
 
                                                 Forms\Components\DatePicker::make('end_date')
                                                     ->label('Fecha de finalización')
                                                     ->default(now()->addDays(30))
                                                     ->required()
-                                                    ->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
+                                                    ->minDate(fn (callable $get) => $get('start_date')), // Valida contra start_date
                                                 // ...existing code...
 
                                             ]),
@@ -255,6 +257,7 @@ class WorkReportsRelationManager extends RelationManager
                                     ])
                                     ->createOptionUsing(function (array $data): int {
                                         $project = Project::create($data);
+
                                         return $project->id;
                                     })
                                     ->afterStateUpdated(function (callable $get, callable $set) {
@@ -319,7 +322,7 @@ class WorkReportsRelationManager extends RelationManager
                                         $endTime = $state;
 
                                         // Si no hay hora de inicio, no validamos
-                                        if (!$startTime || !$endTime) {
+                                        if (! $startTime || ! $endTime) {
                                             return;
                                         }
 
@@ -501,17 +504,18 @@ class WorkReportsRelationManager extends RelationManager
                                     ->confirmable(),
                             ]),
                         // FIN DE TAB DE FIRMAS
-                    ])->columnSpanFull()
+                    ])->columnSpanFull(),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-                //
+            //
             PhotosRelationManager::class,
         ];
     }
+
     public function table(Table $table): Table
     {
         return $table
@@ -532,7 +536,7 @@ class WorkReportsRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->label('Supervisor')
-                    ->formatStateUsing(fn($record) => $record->employee->first_name . ' ' . $record->employee->last_name)
+                    ->formatStateUsing(fn ($record) => $record->employee->first_name.' '.$record->employee->last_name)
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(),
 
@@ -540,7 +544,7 @@ class WorkReportsRelationManager extends RelationManager
                     ->label('Evidencias')
                     ->counts('photos')
                     ->badge()
-                    ->color(fn(string $state): string => match (true) {
+                    ->color(fn (string $state): string => match (true) {
                         $state == 0 => 'danger',
                         $state < 5 => 'warning',
                         default => 'success',
@@ -563,7 +567,7 @@ class WorkReportsRelationManager extends RelationManager
                     ->relationship('project', 'name')
                     ->searchable()
                     ->preload()
-                    ->default(fn() => session('filter_project_id'))
+                    ->default(fn () => session('filter_project_id'))
                     ->placeholder('Todos los proyectos'),
             ])
             ->headerActions([
@@ -572,9 +576,9 @@ class WorkReportsRelationManager extends RelationManager
                     ->icon('heroicon-o-document-duplicate')
                     ->color('success')
                     ->tooltip('Generar PDF consolidado con todos los reportes del proyecto')
-                    ->url(fn() => route('project.consolidated-report.pdf', $this->ownerRecord->id))
+                    ->url(fn () => route('project.consolidated-report.pdf', $this->ownerRecord->id))
                     ->openUrlInNewTab()
-                    ->visible(fn() => $this->ownerRecord->workReports()->count() > 0),
+                    ->visible(fn () => $this->ownerRecord->workReports()->count() > 0),
 
                 Tables\Actions\Action::make('create_advanced')
                     ->label('Crear reporte')
@@ -607,9 +611,9 @@ class WorkReportsRelationManager extends RelationManager
                         ->label('Reporte PDF')
                         ->color('danger')
                         ->icon('heroicon-o-document')
-                        ->url(fn($action) => route('work-report.pdf', $action->getRecord()->id))
+                        ->url(fn ($action) => route('work-report.pdf', $action->getRecord()->id))
                         ->openUrlInNewTab()
-                        ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
+                        ->visible(fn ($action) => $action->getRecord()->photos()->count() > 0)
                         ->tooltip('Generar reporte PDF del trabajo realizado'),
                     Tables\Actions\ViewAction::make()
                         ->icon('heroicon-o-eye')
@@ -628,7 +632,7 @@ class WorkReportsRelationManager extends RelationManager
                     ->slideOver(true)
                     ->relationManager(PhotosRelationManager::make()),
 
-                //Tables\Actions\Action::make('generate_word_report')
+                // Tables\Actions\Action::make('generate_word_report')
                 //    ->label('Generar Word')
                 //    ->icon('heroicon-o-document-text')
                 //    ->color('info')

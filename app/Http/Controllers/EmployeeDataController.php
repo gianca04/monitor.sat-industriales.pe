@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+
 // use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmployeeDataController extends Controller
@@ -42,7 +43,7 @@ class EmployeeDataController extends Controller
         $query = Employee::with('position');
 
         if ($request->filled('search')) {
-            $term = '%' . $request->search . '%';
+            $term = '%'.$request->search.'%';
             $query->where(function ($q) use ($term) {
                 $q->where('document_number', 'like', $term)
                     ->orWhere('first_name', 'like', $term)
@@ -93,7 +94,7 @@ class EmployeeDataController extends Controller
                 $items = $items->reverse()->values();
             }
 
-            $data = $items->map(fn($employee) => $this->transformEmployee($employee))->values();
+            $data = $items->map(fn ($employee) => $this->transformEmployee($employee))->values();
 
             $nextCursor = null;
             if ($data->isNotEmpty()) {
@@ -126,7 +127,7 @@ class EmployeeDataController extends Controller
         $perPage = $request->per_page ?? 100;
         $paginator = $query->paginate($perPage);
 
-        $data = $paginator->getCollection()->map(fn($e) => $this->transformEmployee($e));
+        $data = $paginator->getCollection()->map(fn ($e) => $this->transformEmployee($e));
 
         return response()->json([
             'success' => true,

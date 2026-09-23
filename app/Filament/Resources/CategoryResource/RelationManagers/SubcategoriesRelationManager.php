@@ -8,14 +8,15 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SubcategoriesRelationManager extends RelationManager
 {
     protected static string $relationship = 'subcategories';
+
     protected static ?string $modelLabel = 'Subcategoria';
+
     protected static ?string $pluralModelLabel = 'Subcategorias';
+
     protected static ?string $title = 'Subcategorias';
 
     public function form(Form $form): Form
@@ -52,7 +53,7 @@ class SubcategoriesRelationManager extends RelationManager
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
-                ])
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

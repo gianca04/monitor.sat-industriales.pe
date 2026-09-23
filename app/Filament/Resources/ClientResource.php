@@ -11,10 +11,6 @@ use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Filters\TextInputFilter;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Split;
-use Illuminate\Database\Eloquent\Builder;
 
 class ClientResource extends Resource
 {
@@ -37,7 +33,7 @@ class ClientResource extends Resource
 
                 ClientMainInfo::make(),
                 Forms\Components\Repeater::make('subClients')
-                    ->itemLabel(fn(array $state): ?string => $state['name'] ?? null)
+                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
                     ->label('Subclientes')
                     ->relationship('subClients')
                     ->schema([
@@ -61,7 +57,7 @@ class ClientResource extends Resource
                             ->columnSpanFull(),
 
                         Forms\Components\Repeater::make('contactData')
-                            ->itemLabel(fn(array $state): ?string => $state['contact_name'] ?? null)
+                            ->itemLabel(fn (array $state): ?string => $state['contact_name'] ?? null)
                             ->collapsed()
                             ->label('Datos de contacto')
                             ->relationship('contactData')
@@ -150,7 +146,7 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('address')
                     ->label('Dirección')
                     ->limit(30)
-                    ->tooltip(fn($record) => $record->address)
+                    ->tooltip(fn ($record) => $record->address)
                     ->icon('heroicon-o-map-pin'),
                 Tables\Columns\TextColumn::make('contact_phone')
                     ->label('Teléfono')
@@ -191,7 +187,7 @@ class ClientResource extends Resource
 
             ])
             ->defaultSort('created_at', 'desc')
-            
+
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')

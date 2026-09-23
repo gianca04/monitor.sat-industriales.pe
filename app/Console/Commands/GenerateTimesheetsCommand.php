@@ -35,7 +35,7 @@ class GenerateTimesheetsCommand extends Command
         $this->info("🚀 Generando tareos para la fecha: {$date->format('d/m/Y')}");
 
         if ($dryRun) {
-            $this->warn("⚠️  Modo DRY RUN activado - No se realizarán cambios reales");
+            $this->warn('⚠️  Modo DRY RUN activado - No se realizarán cambios reales');
         }
 
         // Obtener proyectos
@@ -45,6 +45,7 @@ class GenerateTimesheetsCommand extends Command
 
         if ($projects->isEmpty()) {
             $this->error('❌ No se encontraron proyectos');
+
             return 1;
         }
 
@@ -60,6 +61,7 @@ class GenerateTimesheetsCommand extends Command
             if ($existingTimesheet) {
                 $this->line("⏭️  Saltando {$project->name} - Ya existe tareo para esta fecha");
                 $skipped++;
+
                 continue;
             }
 
@@ -74,7 +76,7 @@ class GenerateTimesheetsCommand extends Command
                 'check_out_date' => $date->copy()->setTime(17, 0), // 5:00 PM
             ];
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 try {
                     Timesheet::create($timesheetData);
                     $this->line("✅ Tareo creado para: {$project->name}");
@@ -89,13 +91,13 @@ class GenerateTimesheetsCommand extends Command
         }
 
         $this->newLine();
-        $this->info("📊 Resumen:");
+        $this->info('📊 Resumen:');
         $this->line("   • Tareos generados: {$generated}");
         $this->line("   • Tareos saltados: {$skipped}");
-        $this->line("   • Total proyectos procesados: " . ($generated + $skipped));
+        $this->line('   • Total proyectos procesados: '.($generated + $skipped));
 
         if ($dryRun) {
-            $this->warn("⚠️  Para ejecutar realmente, quite la opción --dry-run");
+            $this->warn('⚠️  Para ejecutar realmente, quite la opción --dry-run');
         }
 
         return 0;

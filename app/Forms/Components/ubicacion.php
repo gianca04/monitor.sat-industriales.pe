@@ -29,7 +29,7 @@ class ubicacion extends Field
             return [
                 'latitude' => -12.046374,
                 'longitude' => -77.042793,
-                'location' => ''
+                'location' => '',
             ];
         });
 
@@ -39,7 +39,7 @@ class ubicacion extends Field
                 return [
                     'latitude' => (float) ($state['latitude'] ?? -12.046374),
                     'longitude' => (float) ($state['longitude'] ?? -77.042793),
-                    'location' => (string) ($state['location'] ?? '')
+                    'location' => (string) ($state['location'] ?? ''),
                 ];
             }
 

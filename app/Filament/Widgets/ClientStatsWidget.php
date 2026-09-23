@@ -27,7 +27,7 @@ class ClientStatsWidget extends BaseWidget
                 ->color('success'),
 
             Stat::make('Nuevos este Mes', $thisMonthClients)
-                ->description('Registrados en ' . Carbon::now()->format('M'))
+                ->description('Registrados en '.Carbon::now()->format('M'))
                 ->descriptionIcon('heroicon-m-plus-circle')
                 ->color('info'),
         ];

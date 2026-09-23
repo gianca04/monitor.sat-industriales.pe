@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DeliveryDetailResource\Pages;
-use App\Filament\Resources\DeliveryDetailResource\RelationManagers;
 use App\Models\DeliveryDetail;
-use App\Filament\Resources\DeliveryResource;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,7 +11,6 @@ use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class DeliveryDetailResource extends Resource
@@ -21,8 +18,11 @@ class DeliveryDetailResource extends Resource
     protected static ?string $model = DeliveryDetail::class;
 
     protected static ?string $modelLabel = 'Detalle de Pedido';
+
     protected static ?string $pluralModelLabel = "Requerimientos EPP's";
+
     protected static ?string $navigationLabel = "Requerimientos EPP's";
+
     protected static ?string $navigationIcon = 'heroicon-o-list-bullet';
 
     public static function form(Form $form): Form
@@ -34,7 +34,7 @@ class DeliveryDetailResource extends Resource
                         Forms\Components\Select::make('delivery_id')
                             ->label('Pedido de Entrega')
                             ->relationship('delivery', 'id')
-                            ->getOptionLabelFromRecordUsing(fn($record) => "Pedido #" . $record->id . ($record->employee ? " - " . $record->employee->first_name . " " . $record->employee->last_name : ""))
+                            ->getOptionLabelFromRecordUsing(fn ($record) => 'Pedido #'.$record->id.($record->employee ? ' - '.$record->employee->first_name.' '.$record->employee->last_name : ''))
                             ->searchable()
                             ->preload()
                             ->required()
@@ -83,6 +83,7 @@ class DeliveryDetailResource extends Resource
                                 if ($categoryId) {
                                     return \App\Models\Subcategory::where('category_id', $categoryId)->pluck('name', 'id');
                                 }
+
                                 return \App\Models\Subcategory::all()->pluck('name', 'id');
                             })
                             ->live()
@@ -109,6 +110,7 @@ class DeliveryDetailResource extends Resource
                                         $q->where('subcategories.id', $subcategoryId);
                                     })->pluck('name', 'id');
                                 }
+
                                 return \App\Models\Epp::all()->pluck('name', 'id');
                             })
                             ->live()
@@ -127,6 +129,7 @@ class DeliveryDetailResource extends Resource
                                 if ($eppId) {
                                     return \App\Models\EppVariant::where('epp_id', $eppId)->pluck('sku', 'id');
                                 }
+
                                 return \App\Models\EppVariant::all()->pluck('sku', 'id');
                             })
                             ->required()
@@ -137,19 +140,19 @@ class DeliveryDetailResource extends Resource
                             ->label('Fotos del EPP')
                             ->content(function (Forms\Get $get) {
                                 $eppId = $get('epp_id');
-                                if (!$eppId) {
+                                if (! $eppId) {
                                     return 'Seleccione un EPP para ver sus fotos.';
                                 }
 
                                 $epp = \App\Models\Epp::find($eppId);
-                                if (!$epp || empty($epp->photos)) {
+                                if (! $epp || empty($epp->photos)) {
                                     return 'El EPP seleccionado no tiene fotos registradas.';
                                 }
 
                                 $html = '<div style="display: flex; gap: 12px; overflow-x: auto; padding: 8px 4px; max-width: 100%; scrollbar-width: thin;">';
                                 foreach ($epp->photos as $photo) {
-                                    $url = asset('storage/' . $photo);
-                                    $html .= '<a href="' . $url . '" target="_blank" style="flex-shrink: 0;"><img src="' . $url . '" style="height: 110px; width: 110px; border-radius: 8px; object-fit: cover; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" /></a>';
+                                    $url = asset('storage/'.$photo);
+                                    $html .= '<a href="'.$url.'" target="_blank" style="flex-shrink: 0;"><img src="'.$url.'" style="height: 110px; width: 110px; border-radius: 8px; object-fit: cover; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" /></a>';
                                 }
                                 $html .= '</div>';
 
@@ -165,11 +168,11 @@ class DeliveryDetailResource extends Resource
                             ->label('Costo Unitario (S/)')
                             ->numeric()
                             ->prefix('S/')
-                            ->default(fn(Forms\Get $get) => $get('epp_variant_id') ? \App\Models\EppVariant::find($get('epp_variant_id'))?->unit_cost : 0),
+                            ->default(fn (Forms\Get $get) => $get('epp_variant_id') ? \App\Models\EppVariant::find($get('epp_variant_id'))?->unit_cost : 0),
                         Forms\Components\Select::make('employee_id')
                             ->label('Destinatario (Personal)')
                             ->relationship('employee', 'first_name')
-                            ->getOptionLabelFromRecordUsing(fn($record) => "{$record->first_name} {$record->last_name}")
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name}")
                             ->searchable()
                             ->native(false)
                             ->preload(),
@@ -190,18 +193,19 @@ class DeliveryDetailResource extends Resource
                         Forms\Components\Placeholder::make('signature_preview')
                             ->label('Firma de Conformidad')
                             ->content(function (?\App\Models\DeliveryDetail $record) {
-                                if (!$record || !$record->signature) {
+                                if (! $record || ! $record->signature) {
                                     return 'Sin firma registrada';
                                 }
-                                $signedAt = $record->signed_at ? ' (Firmado el ' . $record->signed_at->format('d/m/Y H:i') . ')' : '';
+                                $signedAt = $record->signed_at ? ' (Firmado el '.$record->signed_at->format('d/m/Y H:i').')' : '';
+
                                 return new \Illuminate\Support\HtmlString(
-                                    '<div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; display: inline-block;">' .
-                                    '<img src="' . $record->signature . '" style="max-height: 120px; width: auto;" />' .
-                                    '<div style="font-size: 0.75rem; color: #6b7280; margin-top: 4px;">' . $signedAt . '</div>' .
+                                    '<div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; display: inline-block;">'.
+                                    '<img src="'.$record->signature.'" style="max-height: 120px; width: auto;" />'.
+                                    '<div style="font-size: 0.75rem; color: #6b7280; margin-top: 4px;">'.$signedAt.'</div>'.
                                     '</div>'
                                 );
                             })
-                            ->visible(fn(?\App\Models\DeliveryDetail $record) => !empty($record?->signature))
+                            ->visible(fn (?\App\Models\DeliveryDetail $record) => ! empty($record?->signature))
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
@@ -223,7 +227,7 @@ class DeliveryDetailResource extends Resource
                     ->toggledHiddenByDefault(true)
                     ->sortable()
                     ->searchable()
-                    ->url(fn($record) => DeliveryResource::getUrl('edit', ['record' => $record->delivery_id])),
+                    ->url(fn ($record) => DeliveryResource::getUrl('edit', ['record' => $record->delivery_id])),
                 Tables\Columns\TextColumn::make('eppVariant.sku')
                     ->label('Variante (SKU)')
                     ->toggleable()
@@ -246,7 +250,7 @@ class DeliveryDetailResource extends Resource
                 Tables\Columns\TextColumn::make('employee')
                     ->label('Destinatario')
                     ->toggleable()
-                    ->formatStateUsing(fn($record) => $record->employee ? "{$record->employee->first_name} {$record->employee->last_name}" : '-')
+                    ->formatStateUsing(fn ($record) => $record->employee ? "{$record->employee->first_name} {$record->employee->last_name}" : '-')
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query->whereHas('employee', function (Builder $q) use ($search) {
                             $q->where('first_name', 'like', "%{$search}%")
@@ -258,8 +262,8 @@ class DeliveryDetailResource extends Resource
                 Tables\Columns\TextColumn::make('employee.daily_payment')
                     ->label('Pago')
                     ->badge()
-                    ->formatStateUsing(fn($record) => $record->employee ? ($record->employee->daily_payment ? 'Diario' : 'Planilla') : '-')
-                    ->color(fn($record) => $record->employee ? ($record->employee->daily_payment ? 'warning' : 'info') : 'gray')
+                    ->formatStateUsing(fn ($record) => $record->employee ? ($record->employee->daily_payment ? 'Diario' : 'Planilla') : '-')
+                    ->color(fn ($record) => $record->employee ? ($record->employee->daily_payment ? 'warning' : 'info') : 'gray')
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
@@ -286,11 +290,11 @@ class DeliveryDetailResource extends Resource
                 Tables\Columns\IconColumn::make('is_signed')
                     ->label('Firmado')
                     ->boolean()
-                    ->sortable(query: fn(Builder $query, string $direction) => $query->orderByRaw("signed_at IS NOT NULL {$direction}"))
+                    ->sortable(query: fn (Builder $query, string $direction) => $query->orderByRaw("signed_at IS NOT NULL {$direction}"))
                     ->toggleable(),
             ])
             ->recordUrl(
-                fn(DeliveryDetail $record): string => DeliveryResource::getUrl('edit', ['record' => $record->delivery_id])
+                fn (DeliveryDetail $record): string => DeliveryResource::getUrl('edit', ['record' => $record->delivery_id])
             )
             ->filters([
                 Tables\Filters\Filter::make('buscar_empleado')
@@ -303,7 +307,7 @@ class DeliveryDetailResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['search'],
-                            fn(Builder $query, $search) => $query->whereHas('employee', function (Builder $q) use ($search) {
+                            fn (Builder $query, $search) => $query->whereHas('employee', function (Builder $q) use ($search) {
                                 $q->where('first_name', 'like', "%{$search}%")
                                     ->orWhere('last_name', 'like', "%{$search}%")
                                     ->orWhere('document_number', 'like', "%{$search}%");
@@ -311,11 +315,11 @@ class DeliveryDetailResource extends Resource
                         );
                     })
                     ->indicateUsing(function (array $data): ?string {
-                        if (!$data['search']) {
+                        if (! $data['search']) {
                             return null;
                         }
 
-                        return 'Destinatario: ' . $data['search'];
+                        return 'Destinatario: '.$data['search'];
                     }),
                 Tables\Filters\Filter::make('delivery_date_range')
                     ->label('Rango de Fechas (Atendido)')
@@ -329,13 +333,13 @@ class DeliveryDetailResource extends Resource
                         return $query
                             ->when(
                                 $data['delivery_from'],
-                                fn(Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
+                                fn (Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
                                     $q->whereDate('delivery_date', '>=', $date);
                                 })
                             )
                             ->when(
                                 $data['delivery_until'],
-                                fn(Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
+                                fn (Builder $query, $date): Builder => $query->whereHas('delivery', function (Builder $q) use ($date) {
                                     $q->whereDate('delivery_date', '<=', $date);
                                 })
                             );
@@ -343,11 +347,12 @@ class DeliveryDetailResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['delivery_from'] ?? null) {
-                            $indicators['delivery_from'] = 'Atendido Desde: ' . \Carbon\Carbon::parse($data['delivery_from'])->format('d/m/Y');
+                            $indicators['delivery_from'] = 'Atendido Desde: '.\Carbon\Carbon::parse($data['delivery_from'])->format('d/m/Y');
                         }
                         if ($data['delivery_until'] ?? null) {
-                            $indicators['delivery_until'] = 'Atendido Hasta: ' . \Carbon\Carbon::parse($data['delivery_until'])->format('d/m/Y');
+                            $indicators['delivery_until'] = 'Atendido Hasta: '.\Carbon\Carbon::parse($data['delivery_until'])->format('d/m/Y');
                         }
+
                         return $indicators;
                     }),
             ])
@@ -357,7 +362,7 @@ class DeliveryDetailResource extends Resource
                     ->icon('heroicon-o-truck')
                     ->color('success')
                     ->modalWidth('4xl')
-                    ->visible(fn(\App\Models\DeliveryDetail $record): bool => $record->status !== \App\Enums\DeliveryStatus::DELIVERED)
+                    ->visible(fn (\App\Models\DeliveryDetail $record): bool => $record->status !== \App\Enums\DeliveryStatus::DELIVERED)
                     ->mountUsing(function (Forms\ComponentContainer $form, \App\Models\DeliveryDetail $record) {
                         $form->fill([
                             'sku' => $record->eppVariant->sku,
@@ -400,32 +405,34 @@ class DeliveryDetailResource extends Resource
                                     ->label('Ubicación')
                                     ->options(function (Forms\Get $get, \App\Models\DeliveryDetail $record) {
                                         $warehouseId = $get('warehouse_id');
-                                        if (!$warehouseId)
+                                        if (! $warehouseId) {
                                             return [];
+                                        }
 
                                         return \App\Models\Stock::with('warehouseLocation')
                                             ->where('epp_variant_id', $record->epp_variant_id)
                                             ->where('warehouse_id', $warehouseId)
                                             ->where('current_stock', '>', 0)
                                             ->get()
-                                            ->mapWithKeys(fn($stock) => [
-                                                $stock->warehouse_location_id => "{$stock->warehouseLocation->code} (Disponible: {$stock->current_stock})"
+                                            ->mapWithKeys(fn ($stock) => [
+                                                $stock->warehouse_location_id => "{$stock->warehouseLocation->code} (Disponible: {$stock->current_stock})",
                                             ]);
                                     })
                                     ->required()
                                     ->searchable()
                                     ->preload()
-                                    ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id')),
+                                    ->disabled(fn (Forms\Get $get): bool => ! $get('warehouse_id')),
                                 Forms\Components\TextInput::make('quantity')
                                     ->label('Cantidad')
                                     ->numeric()
                                     ->required()
                                     ->minValue(1)
                                     ->rules([
-                                        fn(Forms\Get $get, \App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($get, $record) {
+                                        fn (Forms\Get $get, \App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($get, $record) {
                                             $locationId = $get('warehouse_location_id');
-                                            if (!$locationId)
+                                            if (! $locationId) {
                                                 return;
+                                            }
 
                                             $stock = \App\Models\Stock::where('epp_variant_id', $record->epp_variant_id)
                                                 ->where('warehouse_location_id', $locationId)
@@ -435,20 +442,20 @@ class DeliveryDetailResource extends Resource
                                             if ($value > $available) {
                                                 $fail("La cantidad supera el stock disponible en esta ubicación ({$available}).");
                                             }
-                                        }
+                                        },
                                     ]),
                             ])
                             ->columns(3)
                             ->defaultItems(1)
                             ->required()
                             ->rules([
-                                fn(\App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+                                fn (\App\Models\DeliveryDetail $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
                                     $totalDispatched = collect($value)->sum('quantity');
                                     $remaining = $record->quantity - $record->delivered_quantity;
                                     if ($totalDispatched > $remaining) {
                                         $fail("La cantidad total a despachar ({$totalDispatched}) supera la cantidad pendiente ({$remaining}).");
                                     }
-                                }
+                                },
                             ]),
                         SignaturePad::make('signature')
                             ->label('Firma de Conformidad')
@@ -476,13 +483,13 @@ class DeliveryDetailResource extends Resource
 
                 ActionGroup::make([
                     Tables\Actions\EditAction::make()
-                        ->url(fn($record) => DeliveryResource::getUrl('edit', ['record' => $record->delivery_id])),
+                        ->url(fn ($record) => DeliveryResource::getUrl('edit', ['record' => $record->delivery_id])),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('firmar')
                         ->label('Firmar')
                         ->icon('heroicon-o-pencil-square')
                         ->color('warning')
-                        ->visible(fn(\App\Models\DeliveryDetail $record): bool => ($record->status === \App\Enums\DeliveryStatus::DELIVERED || $record->status === \App\Enums\DeliveryStatus::PARTIAL) && !$record->is_signed)
+                        ->visible(fn (\App\Models\DeliveryDetail $record): bool => ($record->status === \App\Enums\DeliveryStatus::DELIVERED || $record->status === \App\Enums\DeliveryStatus::PARTIAL) && ! $record->is_signed)
                         ->form([
                             SignaturePad::make('signature')
                                 ->label('Firma de Conformidad')
@@ -493,7 +500,7 @@ class DeliveryDetailResource extends Resource
                                 ->penColorOnDark('#fff'),
                         ])
                         ->action(function (array $data, \App\Models\DeliveryDetail $record) {
-                            if (!empty($data['signature'])) {
+                            if (! empty($data['signature'])) {
                                 $record->update([
                                     'signature' => $data['signature'],
                                     'signed_at' => now(),
@@ -505,7 +512,7 @@ class DeliveryDetailResource extends Resource
                                     ->send();
                             }
                         }),
-                ])
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -517,14 +524,14 @@ class DeliveryDetailResource extends Resource
                         ->action(function (\Illuminate\Support\Collection $records) {
                             try {
                                 $firstRecord = $records->first();
-                                $delivery = $firstRecord?->delivery ?? new \App\Models\Delivery();
+                                $delivery = $firstRecord?->delivery ?? new \App\Models\Delivery;
 
                                 $dto = \App\DTOs\DeliveryExportData::fromDetailsCollection($records, $delivery);
 
                                 $service = app(\App\Services\ExportDeliveryEppService::class);
                                 $filePath = $service->export($dto);
 
-                                return response()->download($filePath, 'entrega_epp_' . ($delivery->id ?? 'detalles') . '.xlsx')->deleteFileAfterSend(true);
+                                return response()->download($filePath, 'entrega_epp_'.($delivery->id ?? 'detalles').'.xlsx')->deleteFileAfterSend(true);
                             } catch (\Exception $e) {
                                 \Filament\Notifications\Notification::make()
                                     ->title('Error al exportar')

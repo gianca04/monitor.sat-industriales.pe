@@ -2,22 +2,21 @@
 
 namespace App\Filament\Resources\EppResource\RelationManagers;
 
-use App\Actions\AdjustStockAction;
-use App\Actions\BulkStockEntryAction;
-use App\Actions\TransferStockAction;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
 
 class StockMovementsRelationManager extends RelationManager
 {
     protected static string $relationship = 'stockMovements';
 
     protected static ?string $modelLabel = 'Movimiento';
+
     protected static ?string $pluralModelLabel = 'Movimientos de Stock';
+
     protected static ?string $title = 'Movimientos de Stock';
 
     public function form(Form $form): Form
@@ -32,7 +31,7 @@ class StockMovementsRelationManager extends RelationManager
                     ->disabled(),
                 Forms\Components\TextInput::make('type')
                     ->label('Tipo')
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'input' => 'Ingreso',
                         'transfer_in' => 'Ingreso por traslado',
                         'loss' => 'Merma / Ajuste',
@@ -60,7 +59,7 @@ class StockMovementsRelationManager extends RelationManager
                     ->disabled(),
                 Forms\Components\TextInput::make('user.name')
                     ->label('Registrado por')
-                    ->formatStateUsing(fn($record) => $record?->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record?->user?->name ?? 'Sistema'))
+                    ->formatStateUsing(fn ($record) => $record?->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record?->user?->name ?? 'Sistema'))
                     ->disabled(),
                 Forms\Components\Textarea::make('description')
                     ->label('Descripción')
@@ -87,7 +86,7 @@ class StockMovementsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('type')
                     ->label('Tipo')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'input' => 'success',
                         'transfer_in' => 'success',
                         'loss' => 'danger',
@@ -97,7 +96,7 @@ class StockMovementsRelationManager extends RelationManager
                         'dispatch' => 'warning',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'input' => 'Ingreso',
                         'transfer_in' => 'Ingreso por traslado',
                         'loss' => 'Merma / Ajuste',
@@ -130,7 +129,7 @@ class StockMovementsRelationManager extends RelationManager
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('user.employee')
                     ->label('Registrado por')
-                    ->formatStateUsing(fn($record) => $record->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record->user?->name ?? 'Sistema'))
+                    ->formatStateUsing(fn ($record) => $record->user?->employee ? "{$record->user->employee->first_name} {$record->user->employee->last_name}" : ($record->user?->name ?? 'Sistema'))
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('description')
@@ -180,15 +179,17 @@ class StockMovementsRelationManager extends RelationManager
                             ->label('Ubicación de Almacén')
                             ->options(function (Forms\Get $get) {
                                 $warehouseId = $get('warehouse_id');
-                                if (!$warehouseId)
+                                if (! $warehouseId) {
                                     return [];
+                                }
+
                                 return \App\Models\WarehouseLocation::where('warehouse_id', $warehouseId)
                                     ->pluck('code', 'id');
                             })
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id'))
+                            ->disabled(fn (Forms\Get $get): bool => ! $get('warehouse_id'))
                             ->live()
                             ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
                                 $variantId = $get('epp_variant_id');
@@ -230,7 +231,7 @@ class StockMovementsRelationManager extends RelationManager
                                     'quantity' => $data['quantity'],
                                     'unit_cost' => $data['unit_cost'] ?? null,
                                     'description' => $data['description'],
-                                ]
+                                ],
                             ]);
                             Notification::make()
                                 ->title('Ingreso registrado con éxito')
@@ -275,8 +276,10 @@ class StockMovementsRelationManager extends RelationManager
                         Forms\Components\Select::make('warehouse_id')
                             ->label('Almacén (Origen)')
                             ->options(function (Forms\Get $get) {
-                                if (!$get('epp_variant_id'))
+                                if (! $get('epp_variant_id')) {
                                     return [];
+                                }
+
                                 return \App\Models\Stock::with('warehouse')
                                     ->where('epp_variant_id', $get('epp_variant_id'))
                                     ->where('current_stock', '>', 0)
@@ -290,8 +293,10 @@ class StockMovementsRelationManager extends RelationManager
                         Forms\Components\Select::make('warehouse_location_id')
                             ->label('Ubicación de Almacén (Origen)')
                             ->options(function (Forms\Get $get) {
-                                if (!$get('epp_variant_id') || !$get('warehouse_id'))
+                                if (! $get('epp_variant_id') || ! $get('warehouse_id')) {
                                     return [];
+                                }
+
                                 return \App\Models\Stock::with('warehouseLocation')
                                     ->where('epp_variant_id', $get('epp_variant_id'))
                                     ->where('warehouse_id', $get('warehouse_id'))
@@ -302,7 +307,7 @@ class StockMovementsRelationManager extends RelationManager
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->disabled(fn(Forms\Get $get): bool => !$get('warehouse_id'))
+                            ->disabled(fn (Forms\Get $get): bool => ! $get('warehouse_id'))
                             ->live()
                             ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
                                 $variantId = $get('epp_variant_id');
@@ -389,8 +394,10 @@ class StockMovementsRelationManager extends RelationManager
                         Forms\Components\Select::make('source_warehouse_id')
                             ->label('Almacén (Origen)')
                             ->options(function (Forms\Get $get) {
-                                if (!$get('epp_variant_id'))
+                                if (! $get('epp_variant_id')) {
                                     return [];
+                                }
+
                                 return \App\Models\Stock::with('warehouse')
                                     ->where('epp_variant_id', $get('epp_variant_id'))
                                     ->where('current_stock', '>', 0)
@@ -404,8 +411,10 @@ class StockMovementsRelationManager extends RelationManager
                         Forms\Components\Select::make('source_location_id')
                             ->label('Ubicación de Origen')
                             ->options(function (Forms\Get $get) {
-                                if (!$get('epp_variant_id') || !$get('source_warehouse_id'))
+                                if (! $get('epp_variant_id') || ! $get('source_warehouse_id')) {
                                     return [];
+                                }
+
                                 return \App\Models\Stock::with('warehouseLocation')
                                     ->where('epp_variant_id', $get('epp_variant_id'))
                                     ->where('warehouse_id', $get('source_warehouse_id'))
@@ -416,7 +425,7 @@ class StockMovementsRelationManager extends RelationManager
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->disabled(fn(Forms\Get $get): bool => !$get('source_warehouse_id'))
+                            ->disabled(fn (Forms\Get $get): bool => ! $get('source_warehouse_id'))
                             ->live()
                             ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
                                 $variantId = $get('epp_variant_id');
@@ -445,15 +454,17 @@ class StockMovementsRelationManager extends RelationManager
                             ->label('Ubicación de Destino')
                             ->options(function (Forms\Get $get) {
                                 $warehouseId = $get('target_warehouse_id');
-                                if (!$warehouseId)
+                                if (! $warehouseId) {
                                     return [];
+                                }
+
                                 return \App\Models\WarehouseLocation::where('warehouse_id', $warehouseId)
                                     ->pluck('code', 'id');
                             })
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->disabled(fn(Forms\Get $get): bool => !$get('target_warehouse_id'))
+                            ->disabled(fn (Forms\Get $get): bool => ! $get('target_warehouse_id'))
                             ->different('source_location_id')
                             ->live()
                             ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {

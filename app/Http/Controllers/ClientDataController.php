@@ -40,7 +40,7 @@ class ClientDataController extends Controller
         $query = Client::with('projects', 'subClients');
 
         if ($request->filled('search')) {
-            $term = '%' . $request->search . '%';
+            $term = '%'.$request->search.'%';
             $query->where(function ($q) use ($term) {
                 $q->where('document_number', 'like', $term)
                     ->orWhere('business_name', 'like', $term)
@@ -88,7 +88,7 @@ class ClientDataController extends Controller
                 $items = $items->reverse()->values();
             }
 
-            $data = $items->map(fn($client) => $this->transformClient($client))->values();
+            $data = $items->map(fn ($client) => $this->transformClient($client))->values();
 
             $nextCursor = null;
             if ($data->isNotEmpty()) {
@@ -121,7 +121,7 @@ class ClientDataController extends Controller
         $perPage = $request->per_page ?? 100;
         $paginator = $query->paginate($perPage);
 
-        $data = $paginator->getCollection()->map(fn($c) => $this->transformClient($c));
+        $data = $paginator->getCollection()->map(fn ($c) => $this->transformClient($c));
 
         return response()->json([
             'success' => true,
@@ -157,8 +157,8 @@ class ClientDataController extends Controller
             'logo' => $c->logo,
             'createdAt' => $c->created_at?->toIso8601String(),
             'updatedAt' => $c->updated_at?->toIso8601String(),
-            'projects' => $c->projects->map(fn($p) => ['id' => $p->id, 'name' => $p->name])->toArray(),
-            'subClients' => $c->subClients->map(fn($sc) => ['id' => $sc->id, 'name' => $sc->name])->toArray(),
+            'projects' => $c->projects->map(fn ($p) => ['id' => $p->id, 'name' => $p->name])->toArray(),
+            'subClients' => $c->subClients->map(fn ($sc) => ['id' => $sc->id, 'name' => $sc->name])->toArray(),
         ];
     }
 }

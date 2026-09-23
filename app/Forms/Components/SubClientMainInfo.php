@@ -4,8 +4,8 @@ namespace App\Forms\Components;
 
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 
 class SubClientMainInfo
 {
@@ -13,7 +13,7 @@ class SubClientMainInfo
     {
         return [
             Hidden::make('client_id')
-                ->default(fn(callable $get) => $get('client_id')),
+                ->default(fn (callable $get) => $get('client_id')),
 
             Section::make('Información de la Sede')
                 ->description('Datos de la nueva sede')

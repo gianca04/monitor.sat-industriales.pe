@@ -3,17 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GenerateItemSkuAction;
+use App\Actions\UploadItemPhotoAction;
 use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
 use App\Http\Resources\ItemResource;
+use App\Jobs\UploadItemPhotoJob;
 use App\Models\Item;
+use App\Services\ItemPhotoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\Storage;
 
 class ItemController extends Controller
 {
+    public function __construct(
+        protected UploadItemPhotoAction $uploadItemPhotoAction,
+        protected ItemPhotoService $itemPhotoService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -64,11 +71,14 @@ class ItemController extends Controller
             $data['sku'] = app(GenerateItemSkuAction::class)->execute($subcategoryId);
         }
 
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('items', 'public');
-        }
+        unset($data['photo']);
 
         $item = Item::create($data);
+
+        if ($request->hasFile('photo')) {
+            $this->uploadItemPhotoAction->execute($item, $request->file('photo'));
+        }
+
         $item->load(['subcategory', 'unit', 'creator']);
 
         return (new ItemResource($item))
@@ -92,15 +102,14 @@ class ItemController extends Controller
     public function update(UpdateItemRequest $request, Item $item): ItemResource
     {
         $data = $request->validated();
-
-        if ($request->hasFile('photo')) {
-            if ($item->photo && Storage::disk('public')->exists($item->photo)) {
-                Storage::disk('public')->delete($item->photo);
-            }
-            $data['photo'] = $request->file('photo')->store('items', 'public');
-        }
+        unset($data['photo']);
 
         $item->update($data);
+
+        if ($request->hasFile('photo')) {
+            $this->uploadItemPhotoAction->execute($item, $request->file('photo'));
+        }
+
         $item->load(['subcategory', 'unit', 'creator']);
 
         return new ItemResource($item);
@@ -118,8 +127,8 @@ class ItemController extends Controller
             ], 422);
         }
 
-        if ($item->photo && Storage::disk('public')->exists($item->photo)) {
-            Storage::disk('public')->delete($item->photo);
+        if ($item->photo) {
+            $this->itemPhotoService->delete($item->photo);
         }
 
         $item->delete();
@@ -128,5 +137,40 @@ class ItemController extends Controller
             'success' => true,
             'message' => 'Ítem eliminado exitosamente.',
         ], 200);
+    }
+
+    /**
+     * Poner en cola la subida de una fotografía para un ítem.
+     */
+    public function queuePhotoUpload(Request $request, ?Item $item = null): JsonResponse
+    {
+        $request->validate([
+            'photo' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:10240'],
+            'item_id' => [$item ? 'nullable' : 'required', 'exists:items,id'],
+        ], [
+            'photo.required' => 'Debe adjuntar una imagen.',
+            'photo.image' => 'El archivo adjunto debe ser una imagen válida.',
+            'photo.mimes' => 'La imagen debe ser de formato jpeg, png, jpg o webp.',
+            'photo.max' => 'La imagen no debe superar los 10MB.',
+            'item_id.required' => 'El ID del ítem es obligatorio.',
+            'item_id.exists' => 'El ítem especificado no existe.',
+        ]);
+
+        $targetItem = $item ?? Item::findOrFail($request->input('item_id'));
+
+        // Guardar temporalmente en el disco local para que el worker de colas lo procese
+        $tempPath = $request->file('photo')->store('temp/item-photos', 'local');
+
+        UploadItemPhotoJob::dispatch($targetItem, $tempPath);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'La fotografía del ítem ha sido puesta en cola para su procesamiento.',
+            'data' => [
+                'item_id' => $targetItem->id,
+                'sku' => $targetItem->sku,
+                'status' => 'queued',
+            ],
+        ], 202);
     }
 }

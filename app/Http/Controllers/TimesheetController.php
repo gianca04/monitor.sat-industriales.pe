@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Timesheet;
 use App\Models\Project;
-use App\Models\Employee;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Models\Timesheet;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class TimesheetController extends Controller
@@ -35,7 +34,7 @@ class TimesheetController extends Controller
             if ($request->has('start_date') && $request->has('end_date')) {
                 $query->whereBetween('check_in_date', [
                     Carbon::parse($request->start_date)->startOfDay(),
-                    Carbon::parse($request->end_date)->endOfDay()
+                    Carbon::parse($request->end_date)->endOfDay(),
                 ]);
             }
 
@@ -44,12 +43,12 @@ class TimesheetController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $timesheets,
-                'message' => 'Timesheets obtenidos correctamente'
+                'message' => 'Timesheets obtenidos correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener los timesheets: ' . $e->getMessage()
+                'message' => 'Error al obtener los timesheets: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -78,7 +77,7 @@ class TimesheetController extends Controller
                 $checkInDate->gt(Carbon::parse($project->end_date))) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'La fecha del timesheet debe estar dentro del rango del proyecto'
+                    'message' => 'La fecha del timesheet debe estar dentro del rango del proyecto',
                 ], 400);
             }
 
@@ -88,19 +87,19 @@ class TimesheetController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $timesheet,
-                'message' => 'Timesheet creado correctamente'
+                'message' => 'Timesheet creado correctamente',
             ], 201);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear el timesheet: ' . $e->getMessage()
+                'message' => 'Error al crear el timesheet: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -117,12 +116,12 @@ class TimesheetController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $timesheet,
-                'message' => 'Timesheet obtenido correctamente'
+                'message' => 'Timesheet obtenido correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Timesheet no encontrado'
+                'message' => 'Timesheet no encontrado',
             ], 404);
         }
     }
@@ -156,7 +155,7 @@ class TimesheetController extends Controller
                     $checkInDate->gt(Carbon::parse($project->end_date))) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'La fecha del timesheet debe estar dentro del rango del proyecto'
+                        'message' => 'La fecha del timesheet debe estar dentro del rango del proyecto',
                     ], 400);
                 }
             }
@@ -167,19 +166,19 @@ class TimesheetController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $timesheet,
-                'message' => 'Timesheet actualizado correctamente'
+                'message' => 'Timesheet actualizado correctamente',
             ]);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar el timesheet: ' . $e->getMessage()
+                'message' => 'Error al actualizar el timesheet: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -196,7 +195,7 @@ class TimesheetController extends Controller
             if ($timesheet->attendances()->count() > 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No se puede eliminar el timesheet porque tiene asistencias asociadas'
+                    'message' => 'No se puede eliminar el timesheet porque tiene asistencias asociadas',
                 ], 400);
             }
 
@@ -204,12 +203,12 @@ class TimesheetController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Timesheet eliminado correctamente'
+                'message' => 'Timesheet eliminado correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar el timesheet: ' . $e->getMessage()
+                'message' => 'Error al eliminar el timesheet: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -222,7 +221,7 @@ class TimesheetController extends Controller
         try {
             $request->validate([
                 'project_id' => 'required|exists:projects,id',
-                'date' => 'required|date'
+                'date' => 'required|date',
             ]);
 
             $date = Carbon::parse($request->date)->toDateString();
@@ -232,28 +231,28 @@ class TimesheetController extends Controller
                 ->whereDate('check_in_date', $date)
                 ->first();
 
-            if (!$timesheet) {
+            if (! $timesheet) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No se encontró timesheet para este proyecto en la fecha especificada'
+                    'message' => 'No se encontró timesheet para este proyecto en la fecha especificada',
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'data' => $timesheet,
-                'message' => 'Timesheet obtenido correctamente'
+                'message' => 'Timesheet obtenido correctamente',
             ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener el timesheet: ' . $e->getMessage()
+                'message' => 'Error al obtener el timesheet: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -275,7 +274,7 @@ class TimesheetController extends Controller
                 'employee_name' => 'nullable|string',
                 'has_attendances' => 'nullable|boolean',
                 'attendance_count_min' => 'nullable|integer|min:0',
-                'attendance_count_max' => 'nullable|integer|min:0'
+                'attendance_count_max' => 'nullable|integer|min:0',
             ]);
 
             $query = Timesheet::with(['employee', 'project.quote.client', 'attendances.employee']);
@@ -299,7 +298,7 @@ class TimesheetController extends Controller
             if ($request->filled('date_from') && $request->filled('date_to')) {
                 $query->whereBetween('check_in_date', [
                     Carbon::parse($request->date_from)->startOfDay(),
-                    Carbon::parse($request->date_to)->endOfDay()
+                    Carbon::parse($request->date_to)->endOfDay(),
                 ]);
             } elseif ($request->filled('date_from')) {
                 $query->where('check_in_date', '>=', Carbon::parse($request->date_from)->startOfDay());
@@ -314,18 +313,18 @@ class TimesheetController extends Controller
 
             // Filtro por nombre del proyecto
             if ($request->filled('project_name')) {
-                $query->whereHas('project', function($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->project_name . '%');
+                $query->whereHas('project', function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->project_name.'%');
                 });
             }
 
             // Filtro por nombre del empleado
             if ($request->filled('employee_name')) {
-                $query->whereHas('employee', function($q) use ($request) {
-                    $q->where(function($qq) use ($request) {
-                        $qq->where('first_name', 'like', '%' . $request->employee_name . '%')
-                           ->orWhere('last_name', 'like', '%' . $request->employee_name . '%')
-                           ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $request->employee_name . '%']);
+                $query->whereHas('employee', function ($q) use ($request) {
+                    $q->where(function ($qq) use ($request) {
+                        $qq->where('first_name', 'like', '%'.$request->employee_name.'%')
+                            ->orWhere('last_name', 'like', '%'.$request->employee_name.'%')
+                            ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%'.$request->employee_name.'%']);
                     });
                 });
             }
@@ -354,13 +353,13 @@ class TimesheetController extends Controller
                 'total_found' => $timesheets->count(),
                 'by_shift' => $timesheets->groupBy('shift')->map->count(),
                 'by_project' => $timesheets->groupBy('project.name')->map->count(),
-                'total_attendances' => $timesheets->sum(function($timesheet) {
+                'total_attendances' => $timesheets->sum(function ($timesheet) {
                     return $timesheet->attendances->count();
                 }),
                 'date_range' => [
                     'earliest' => $timesheets->min('check_in_date'),
-                    'latest' => $timesheets->max('check_in_date')
-                ]
+                    'latest' => $timesheets->max('check_in_date'),
+                ],
             ];
 
             return response()->json([
@@ -371,20 +370,20 @@ class TimesheetController extends Controller
                 'filters_applied' => $request->only([
                     'project_id', 'employee_id', 'shift', 'date_from', 'date_to',
                     'specific_date', 'project_name', 'employee_name', 'has_attendances',
-                    'attendance_count_min', 'attendance_count_max'
-                ])
+                    'attendance_count_min', 'attendance_count_max',
+                ]),
             ]);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de validación incorrectos',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error en la búsqueda: ' . $e->getMessage()
+                'message' => 'Error en la búsqueda: '.$e->getMessage(),
             ], 500);
         }
     }

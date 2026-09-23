@@ -23,12 +23,12 @@ class Attendance extends Model
     ];
 
     protected $casts = [
-        'check_in_date'   => 'datetime',
-        'break_date'      => 'datetime',
-        'end_break_date'  => 'datetime',
-        'check_out_date'  => 'datetime',
-        'shift'           => 'string',
-        'status'          => 'string',
+        'check_in_date' => 'datetime',
+        'break_date' => 'datetime',
+        'end_break_date' => 'datetime',
+        'check_out_date' => 'datetime',
+        'shift' => 'string',
+        'status' => 'string',
     ];
 
     // Relaciones

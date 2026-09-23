@@ -2,20 +2,21 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\Client;
 use App\Models\Project;
 use App\Models\Quote;
-use App\Models\Client;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use Carbon\Carbon;
 
 class ProjectControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
     protected $user;
+
     protected $token;
 
     protected function setUp(): void
@@ -41,36 +42,36 @@ class ProjectControllerTest extends TestCase
             'quote_id' => $quote->id,
             'start_date' => Carbon::now()->subDays(5),
             'end_date' => Carbon::now()->addDays(5),
-            'name' => 'Proyecto Activo'
+            'name' => 'Proyecto Activo',
         ]);
 
         $futureProject = Project::factory()->create([
             'quote_id' => $quote->id,
             'start_date' => Carbon::now()->addDays(10),
             'end_date' => Carbon::now()->addDays(20),
-            'name' => 'Proyecto Futuro'
+            'name' => 'Proyecto Futuro',
         ]);
 
         $pastProject = Project::factory()->create([
             'quote_id' => $quote->id,
             'start_date' => Carbon::now()->subDays(20),
             'end_date' => Carbon::now()->subDays(10),
-            'name' => 'Proyecto Pasado'
+            'name' => 'Proyecto Pasado',
         ]);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/projects');
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'success',
-                    'data',
-                    'message'
-                ])
-                ->assertJson([
-                    'success' => true
-                ]);
+            ->assertJsonStructure([
+                'success',
+                'data',
+                'message',
+            ])
+            ->assertJson([
+                'success' => true,
+            ]);
 
         // Verificar que solo devuelve el proyecto activo
         $projects = $response->json('data');
@@ -90,15 +91,15 @@ class ProjectControllerTest extends TestCase
         Project::factory()->count(3)->create(['quote_id' => $quote->id]);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/projects/all');
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'success',
-                    'data',
-                    'message'
-                ]);
+            ->assertJsonStructure([
+                'success',
+                'data',
+                'message',
+            ]);
 
         $projects = $response->json('data');
         $this->assertCount(3, $projects);
@@ -116,12 +117,12 @@ class ProjectControllerTest extends TestCase
             'quote_id' => $quote->id,
             'name' => 'Proyecto Test',
             'start_date' => '2025-07-01',
-            'end_date' => '2025-07-15'
+            'end_date' => '2025-07-15',
         ]);
 
         // Test filtro por nombre
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/projects/all?search=Test');
 
         $response->assertStatus(200);
@@ -131,7 +132,7 @@ class ProjectControllerTest extends TestCase
 
         // Test filtro por fecha específica
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/projects/all?date=2025-07-07');
 
         $response->assertStatus(200);
@@ -149,23 +150,23 @@ class ProjectControllerTest extends TestCase
         $project = Project::factory()->create(['quote_id' => $quote->id]);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson("/api/projects/{$project->id}");
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'success',
-                    'data' => [
-                        'id',
-                        'name',
-                        'start_date',
-                        'end_date',
-                        'quote' => [
-                            'client'
-                        ]
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'id',
+                    'name',
+                    'start_date',
+                    'end_date',
+                    'quote' => [
+                        'client',
                     ],
-                    'message'
-                ]);
+                ],
+                'message',
+            ]);
     }
 
     /**
@@ -174,14 +175,14 @@ class ProjectControllerTest extends TestCase
     public function test_get_non_existent_project()
     {
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/projects/99999');
 
         $response->assertStatus(404)
-                ->assertJson([
-                    'success' => false,
-                    'message' => 'Proyecto no encontrado'
-                ]);
+            ->assertJson([
+                'success' => false,
+                'message' => 'Proyecto no encontrado',
+            ]);
     }
 
     /**
@@ -197,28 +198,28 @@ class ProjectControllerTest extends TestCase
             'name' => 'Proyecto Búsqueda',
             'start_date' => '2025-07-01',
             'end_date' => '2025-07-31',
-            'location' => 'Lima, Perú'
+            'location' => 'Lima, Perú',
         ]);
 
         // Test búsqueda por múltiples parámetros
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
-        ])->getJson('/api/projects/search?' . http_build_query([
+            'Authorization' => 'Bearer '.$this->token,
+        ])->getJson('/api/projects/search?'.http_build_query([
             'name' => 'Búsqueda',
             'client_id' => $client->id,
             'start_date_from' => '2025-07-01',
             'start_date_to' => '2025-07-31',
-            'location' => 'Lima'
+            'location' => 'Lima',
         ]));
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'success',
-                    'data',
-                    'message',
-                    'total_found',
-                    'filters_applied'
-                ]);
+            ->assertJsonStructure([
+                'success',
+                'data',
+                'message',
+                'total_found',
+                'filters_applied',
+            ]);
 
         $projects = $response->json('data');
         $this->assertCount(1, $projects);
@@ -231,14 +232,14 @@ class ProjectControllerTest extends TestCase
     public function test_search_with_invalid_parameters()
     {
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
-        ])->getJson('/api/projects/search?' . http_build_query([
+            'Authorization' => 'Bearer '.$this->token,
+        ])->getJson('/api/projects/search?'.http_build_query([
             'start_date_from' => 'invalid-date',
-            'client_id' => 99999
+            'client_id' => 99999,
         ]));
 
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['start_date_from', 'client_id']);
+            ->assertJsonValidationErrors(['start_date_from', 'client_id']);
     }
 
     /**
@@ -262,18 +263,18 @@ class ProjectControllerTest extends TestCase
         $activeProject = Project::factory()->create([
             'quote_id' => $quote->id,
             'start_date' => Carbon::now()->subDays(5),
-            'end_date' => Carbon::now()->addDays(5)
+            'end_date' => Carbon::now()->addDays(5),
         ]);
 
         $upcomingProject = Project::factory()->create([
             'quote_id' => $quote->id,
             'start_date' => Carbon::now()->addDays(10),
-            'end_date' => Carbon::now()->addDays(20)
+            'end_date' => Carbon::now()->addDays(20),
         ]);
 
         // Test filtro de proyectos activos
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/projects/all?status=active');
 
         $response->assertStatus(200);
@@ -282,7 +283,7 @@ class ProjectControllerTest extends TestCase
 
         // Test filtro de proyectos futuros
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ])->getJson('/api/projects/all?status=upcoming');
 
         $response->assertStatus(200);

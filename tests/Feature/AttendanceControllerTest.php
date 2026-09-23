@@ -6,18 +6,21 @@ use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Project;
 use App\Models\Timesheet;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AttendanceControllerTest extends TestCase
 {
-    use RefreshDatabase, CreatesAuthenticatedUser;
+    use CreatesAuthenticatedUser, RefreshDatabase;
 
     protected $user;
+
     protected $token;
+
     protected $project;
+
     protected $timesheet;
+
     protected $employee;
 
     protected function setUp(): void
@@ -40,7 +43,7 @@ class AttendanceControllerTest extends TestCase
     protected function authenticatedJson($method, $uri, array $data = [], array $headers = [])
     {
         $headers = array_merge([
-            'Authorization' => 'Bearer ' . $this->token
+            'Authorization' => 'Bearer '.$this->token,
         ], $headers);
 
         return $this->json($method, $uri, $data, $headers);
@@ -79,7 +82,7 @@ class AttendanceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Asistencias obtenidas correctamente'
+                'message' => 'Asistencias obtenidas correctamente',
             ])
             ->assertJsonStructure([
                 'success',
@@ -96,10 +99,10 @@ class AttendanceControllerTest extends TestCase
                         'created_at',
                         'updated_at',
                         'employee',
-                        'timesheet'
-                    ]
+                        'timesheet',
+                    ],
                 ],
-                'message'
+                'message',
             ]);
     }
 
@@ -186,7 +189,7 @@ class AttendanceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Asistencia obtenida correctamente'
+                'message' => 'Asistencia obtenida correctamente',
             ])
             ->assertJsonPath('data.id', $attendance->id);
     }
@@ -199,7 +202,7 @@ class AttendanceControllerTest extends TestCase
         $response->assertStatus(404)
             ->assertJson([
                 'success' => false,
-                'message' => 'Asistencia no encontrada'
+                'message' => 'Asistencia no encontrada',
             ]);
     }
 
@@ -220,7 +223,7 @@ class AttendanceControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJson([
                 'success' => true,
-                'message' => 'Asistencia registrada correctamente'
+                'message' => 'Asistencia registrada correctamente',
             ]);
 
         $this->assertDatabaseHas('attendances', [
@@ -325,7 +328,7 @@ class AttendanceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Asistencia actualizada correctamente'
+                'message' => 'Asistencia actualizada correctamente',
             ]);
 
         $this->assertDatabaseHas('attendances', [
@@ -348,7 +351,7 @@ class AttendanceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Asistencia eliminada correctamente'
+                'message' => 'Asistencia eliminada correctamente',
             ]);
 
         $this->assertSoftDeleted('attendances', ['id' => $attendance->id]);
@@ -369,7 +372,7 @@ class AttendanceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Asistencia restaurada correctamente'
+                'message' => 'Asistencia restaurada correctamente',
             ]);
 
         $this->assertDatabaseHas('attendances', [
@@ -404,8 +407,8 @@ class AttendanceControllerTest extends TestCase
                     'employee_id' => $employee3->id,
                     'status' => 'absent',
                     'shift' => 'night', // Corregir valores de shift
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->authenticatedPostJson('/api/attendances/bulk', $bulkData);
@@ -413,7 +416,7 @@ class AttendanceControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJson([
                 'success' => true,
-                'message' => 'Asistencias creadas en lote correctamente'
+                'message' => 'Asistencias creadas en lote correctamente',
             ]);
 
         $this->assertDatabaseCount('attendances', 3);
@@ -428,12 +431,12 @@ class AttendanceControllerTest extends TestCase
             'status' => 'present',
         ]);
 
-        $response = $this->authenticatedGetJson('/api/attendances/search?timesheet_id=' . $this->timesheet->id . '&status=present');
+        $response = $this->authenticatedGetJson('/api/attendances/search?timesheet_id='.$this->timesheet->id.'&status=present');
 
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Búsqueda de asistencias completada' // Corregir mensaje
+                'message' => 'Búsqueda de asistencias completada', // Corregir mensaje
             ])
             ->assertJsonCount(1, 'data');
     }

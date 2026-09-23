@@ -4,7 +4,6 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Filament\Resources\ProjectResource;
 use App\Models\Quote;
-use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -14,14 +13,17 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProject extends CreateRecord
 {
     protected static string $resource = ProjectResource::class;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Si hay quote_id en la sesión, úsalo
         if (session()->has('quote_id')) {
             $data['quote_id'] = session('quote_id');
         }
+
         return $data;
     }
+
     protected function getFormSchema(): array
     {
         $quoteId = session('quote_id');

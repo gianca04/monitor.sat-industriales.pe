@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\SubClient;
 use App\Models\Client;
+use App\Models\SubClient;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -3,11 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Intervention\Image\ImageManager;
+use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class Epp extends Model
 {
@@ -24,7 +23,7 @@ class Epp extends Model
         static::saving(function (Epp $epp) {
             if ($epp->photos && is_array($epp->photos)) {
                 $convertedPhotos = [];
-                $manager = new ImageManager(new Driver());
+                $manager = new ImageManager(new Driver);
 
                 foreach ($epp->photos as $photoPath) {
                     if (Storage::disk('public')->exists($photoPath)) {
@@ -33,6 +32,7 @@ class Epp extends Model
 
                         if ($extension === 'webp') {
                             $convertedPhotos[] = $photoPath;
+
                             continue;
                         }
 
@@ -58,7 +58,7 @@ class Epp extends Model
                             }
 
                             // Generate new webp filename
-                            $newFilename = pathinfo($photoPath, PATHINFO_DIRNAME) . '/' . pathinfo($photoPath, PATHINFO_FILENAME) . '.webp';
+                            $newFilename = pathinfo($photoPath, PATHINFO_DIRNAME).'/'.pathinfo($photoPath, PATHINFO_FILENAME).'.webp';
                             $newFullPath = Storage::disk('public')->path($newFilename);
 
                             // Save as WebP
@@ -69,7 +69,7 @@ class Epp extends Model
 
                             $convertedPhotos[] = $newFilename;
                         } catch (\Exception $e) {
-                            Log::error("Failed to convert EPP image to WebP: " . $e->getMessage());
+                            Log::error('Failed to convert EPP image to WebP: '.$e->getMessage());
                             $convertedPhotos[] = $photoPath; // Fallback to original
                         }
                     } else {
@@ -127,4 +127,3 @@ class Epp extends Model
         return $this->is_below_minimum;
     }
 }
-

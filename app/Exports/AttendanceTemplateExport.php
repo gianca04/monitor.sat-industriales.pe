@@ -4,23 +4,22 @@ namespace App\Exports;
 
 use App\Models\Employee;
 use App\Models\Project;
-use App\Models\Timesheet;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class AttendanceTemplateExport implements FromCollection, WithHeadings, WithMapping, WithColumnWidths, WithStyles, WithTitle
+class AttendanceTemplateExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     protected $projectId;
+
     protected $date;
 
     public function __construct($projectId = null, $date = null)
@@ -47,22 +46,22 @@ class AttendanceTemplateExport implements FromCollection, WithHeadings, WithMapp
                 'document_number' => '12345678',
                 'first_name' => 'Juan',
                 'last_name' => 'Pérez',
-                'full_name' => 'Juan Pérez'
+                'full_name' => 'Juan Pérez',
             ],
             (object) [
                 'id' => 2,
                 'document_number' => '87654321',
                 'first_name' => 'María',
                 'last_name' => 'García',
-                'full_name' => 'María García'
+                'full_name' => 'María García',
             ],
             (object) [
                 'id' => 3,
                 'document_number' => '11223344',
                 'first_name' => 'Carlos',
                 'last_name' => 'López',
-                'full_name' => 'Carlos López'
-            ]
+                'full_name' => 'Carlos López',
+            ],
         ]);
     }
 
@@ -77,7 +76,7 @@ class AttendanceTemplateExport implements FromCollection, WithHeadings, WithMapp
             'Inicio Descanso',
             'Fin Descanso',
             'Fecha Salida',
-            'Observación'
+            'Observación',
         ];
     }
 
@@ -85,14 +84,14 @@ class AttendanceTemplateExport implements FromCollection, WithHeadings, WithMapp
     {
         return [
             $employee->document_number ?? '',
-            $employee->full_name ?? ($employee->first_name . ' ' . $employee->last_name),
+            $employee->full_name ?? ($employee->first_name.' '.$employee->last_name),
             'Asistió', // Estado por defecto
             'Día', // Turno por defecto
             '', // Fecha entrada (se llenará automáticamente o manualmente)
             '', // Inicio descanso
             '', // Fin descanso
             '', // Fecha salida
-            '' // Observación
+            '', // Observación
         ];
     }
 
@@ -138,7 +137,7 @@ class AttendanceTemplateExport implements FromCollection, WithHeadings, WithMapp
         // Estilo para las filas de datos
         $lastRow = $sheet->getHighestRow();
         if ($lastRow > 1) {
-            $sheet->getStyle('A2:I' . $lastRow)->applyFromArray([
+            $sheet->getStyle('A2:I'.$lastRow)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -153,7 +152,7 @@ class AttendanceTemplateExport implements FromCollection, WithHeadings, WithMapp
             // Alternar colores de fila
             for ($row = 2; $row <= $lastRow; $row++) {
                 if ($row % 2 == 0) {
-                    $sheet->getStyle('A' . $row . ':I' . $row)->applyFromArray([
+                    $sheet->getStyle('A'.$row.':I'.$row)->applyFromArray([
                         'fill' => [
                             'fillType' => Fill::FILL_SOLID,
                             'startColor' => ['rgb' => 'F8F9FA'],
@@ -184,11 +183,11 @@ class AttendanceTemplateExport implements FromCollection, WithHeadings, WithMapp
         // Información del proyecto y fecha
         if ($this->projectId) {
             $project = Project::find($this->projectId);
-            $sheet->setCellValue('A2', 'Proyecto: ' . ($project->name ?? 'No especificado'));
+            $sheet->setCellValue('A2', 'Proyecto: '.($project->name ?? 'No especificado'));
         } else {
             $sheet->setCellValue('A2', 'Proyecto: [Especificar proyecto]');
         }
-        $sheet->setCellValue('A3', 'Fecha: ' . Carbon::parse($this->date)->format('d/m/Y'));
+        $sheet->setCellValue('A3', 'Fecha: '.Carbon::parse($this->date)->format('d/m/Y'));
 
         $sheet->getStyle('A2:A3')->applyFromArray([
             'font' => ['bold' => true],

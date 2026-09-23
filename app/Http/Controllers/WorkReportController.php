@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreWorkReportRequest;
 use App\Http\Requests\UpdateWorkReportRequest;
 use App\Models\WorkReport;
@@ -10,7 +9,6 @@ use App\Services\WorkReportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class WorkReportController extends Controller
 {
@@ -23,12 +21,12 @@ class WorkReportController extends Controller
             'employee.position',
             'project.subClient',
             'project.client',
-            'photos'
+            'photos',
         ]);
 
         // 1. Búsqueda por texto (Global)
         if ($request->filled('search')) {
-            $searchTerm = '%' . $request->search . '%';
+            $searchTerm = '%'.$request->search.'%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm)
                     ->orWhere('description', 'like', $searchTerm)
@@ -68,7 +66,6 @@ class WorkReportController extends Controller
         // 4. Ordenamiento (Default: Más recientes por creación primero)
         $query->orderBy('created_at', 'desc')
             ->orderBy('report_date', 'desc');
-
 
         // Paginación
         $workReports = $query->paginate($request->per_page ?? 15);
@@ -149,10 +146,10 @@ class WorkReportController extends Controller
             'employee.position',
             'project.subClient',
             'project.client',
-            'photos'
+            'photos',
         ])->find($id);
 
-        if (!$workReport) {
+        if (! $workReport) {
             return response()->json([
                 'success' => false,
                 'message' => 'Work report no encontrado',
@@ -182,7 +179,7 @@ class WorkReportController extends Controller
     {
         $workReport = WorkReport::find($id);
 
-        if (!$workReport) {
+        if (! $workReport) {
             return response()->json([
                 'success' => false,
                 'message' => 'Work report no encontrado',
@@ -216,7 +213,7 @@ class WorkReportController extends Controller
     {
         $workReport = WorkReport::find($id);
 
-        if (!$workReport) {
+        if (! $workReport) {
             return response()->json([
                 'success' => false,
                 'message' => 'Work report no encontrado',
@@ -235,7 +232,7 @@ class WorkReportController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Work report eliminado exitosamente',
-                'data' => ['id' => (int)$id],
+                'data' => ['id' => (int) $id],
                 'meta' => [
                     'apiVersion' => '1.0',
                     'timestamp' => now()->utc()->toIso8601String(),
@@ -244,14 +241,12 @@ class WorkReportController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar el work report: ' . $e->getMessage(),
+                'message' => 'Error al eliminar el work report: '.$e->getMessage(),
                 'data' => null,
                 'meta' => ['timestamp' => now()->utc()->toIso8601String()],
             ], 500);
         }
     }
-
-
 
     /**
      * Obtener work reports por proyecto
@@ -262,7 +257,7 @@ class WorkReportController extends Controller
             'employee.position',
             'project.subClient',
             'project.client',
-            'photos'
+            'photos',
         ])
             ->where('project_id', $projectId)
             ->orderBy('created_at', 'desc')
@@ -309,7 +304,7 @@ class WorkReportController extends Controller
             'employee.position',
             'project.subClient',
             'project.client',
-            'photos'
+            'photos',
         ])
             ->where('employee_id', $employeeId)
             ->orderBy('created_at', 'desc')
@@ -370,7 +365,7 @@ class WorkReportController extends Controller
             'summary' => [
                 'hasPhotos' => $report->photos->isNotEmpty(),
                 'photosCount' => $report->photos->count(),
-                'hasSignatures' => !is_null($report->supervisor_signature) || !is_null($report->manager_signature),
+                'hasSignatures' => ! is_null($report->supervisor_signature) || ! is_null($report->manager_signature),
             ],
             'employee' => $report->employee ? [
                 'id' => $report->employee->id,
@@ -378,7 +373,7 @@ class WorkReportController extends Controller
                 'document_number' => $report->employee->document_number ?? '',
                 'first_name' => $report->employee->first_name ?? '',
                 'last_name' => $report->employee->last_name ?? '',
-                'full_name' => trim(($report->employee->first_name ?? '') . ' ' . ($report->employee->last_name ?? '')),
+                'full_name' => trim(($report->employee->first_name ?? '').' '.($report->employee->last_name ?? '')),
                 'position' => $report->employee->position ? [
                     'id' => $report->employee->position->id,
                     'name' => $report->employee->position->name ?? '',

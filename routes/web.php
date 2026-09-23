@@ -22,11 +22,13 @@ Route::get('/sub-clients/search', [SubClientDataController::class, 'index'])
     ->name('sub-clients.search')
     ->middleware('auth');
 
-// Búsqueda y creación de ítems para componentes internos autenticados
+// Búsqueda, creación y subida en cola de fotos para componentes internos autenticados
 Route::prefix('items')->middleware('auth')->group(function () {
     Route::get('/search', [ItemController::class, 'index'])->name('items.search');
     Route::get('/', [ItemController::class, 'index'])->name('items.web.index');
     Route::post('/', [ItemController::class, 'store'])->name('items.store');
+    Route::post('/{item}/photo/queue', [ItemController::class, 'queuePhotoUpload'])->name('items.photo.queue');
+    Route::post('/photo/queue', [ItemController::class, 'queuePhotoUpload'])->name('items.photo.queue.general');
 });
 
 // Búsqueda y listado de unidades para componentes internos autenticados

@@ -5,7 +5,6 @@ namespace App\Filament\Resources\EppResource\Pages;
 use App\Filament\Resources\EppResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-
 use Filament\Resources\Pages\ListRecords\Tab;
 
 class ListEpps extends ListRecords

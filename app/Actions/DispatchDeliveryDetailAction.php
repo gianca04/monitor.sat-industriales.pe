@@ -2,11 +2,10 @@
 
 namespace App\Actions;
 
+use App\Enums\DeliveryStatus;
 use App\Models\DeliveryDetail;
 use App\Models\WarehouseLocation;
-use App\Models\StockMovement;
 use App\Services\InventoryService;
-use App\Enums\DeliveryStatus;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -22,14 +21,14 @@ class DispatchDeliveryDetailAction
     /**
      * Dispatch EPP variants for a given DeliveryDetail from multiple locations.
      *
-     * @param DeliveryDetail $detail
-     * @param array $dispatches Array of arrays: [['warehouse_location_id' => X, 'quantity' => Y]]
+     * @param  array  $dispatches  Array of arrays: [['warehouse_location_id' => X, 'quantity' => Y]]
+     *
      * @throws InvalidArgumentException
      */
     public function execute(DeliveryDetail $detail, array $dispatches, ?string $signature = null): void
     {
         if (empty($dispatches)) {
-            throw new InvalidArgumentException("Debe especificar al menos una ubicación para despachar.");
+            throw new InvalidArgumentException('Debe especificar al menos una ubicación para despachar.');
         }
 
         // 1. Calculate remaining quantity to fulfill
@@ -38,7 +37,7 @@ class DispatchDeliveryDetailAction
         $totalQuantityToDispatch = collect($dispatches)->sum('quantity');
 
         if ($totalQuantityToDispatch <= 0) {
-            throw new InvalidArgumentException("La cantidad total a despachar debe ser mayor a cero.");
+            throw new InvalidArgumentException('La cantidad total a despachar debe ser mayor a cero.');
         }
 
         if ($totalQuantityToDispatch > $remaining) {
@@ -50,12 +49,12 @@ class DispatchDeliveryDetailAction
             $locationId = $dispatch['warehouse_location_id'] ?? null;
             $qty = (int) ($dispatch['quantity'] ?? 0);
 
-            if (!$locationId || $qty <= 0) {
-                throw new InvalidArgumentException("Cada distribución debe tener una ubicación válida y cantidad mayor a cero.");
+            if (! $locationId || $qty <= 0) {
+                throw new InvalidArgumentException('Cada distribución debe tener una ubicación válida y cantidad mayor a cero.');
             }
 
             $available = $this->inventoryService->checkStockAvailability($detail->epp_variant_id, $locationId, $qty);
-            if (!$available) {
+            if (! $available) {
                 $location = WarehouseLocation::findOrFail($locationId);
                 $stock = $this->inventoryService->getStock($detail->epp_variant_id, $locationId);
                 $currentStock = $stock ? $stock->current_stock : 0;
