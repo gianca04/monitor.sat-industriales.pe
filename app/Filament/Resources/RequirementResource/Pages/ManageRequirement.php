@@ -14,10 +14,15 @@ class ManageRequirement extends Page
 
     public ?Requirement $record = null;
 
-    public function mount(int|string|null $record = null): void
+    public function mount(int|string|\App\Models\Requirement|null $record = null): void
     {
         if ($record) {
-            $this->record = Requirement::findOrFail($record);
+            $id = $record instanceof \App\Models\Requirement ? $record->id : $record;
+            $this->record = \App\Models\Requirement::with([
+                'subClient.client',
+                'requirementLists.item.unit',
+                'requirementLists.item.subcategory.category',
+            ])->findOrFail($id);
         }
     }
 

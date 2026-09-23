@@ -26,13 +26,19 @@ class ItemController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $query = Item::with(['subcategory', 'unit', 'creator']);
+        $query = Item::with(['subcategory.category', 'unit', 'creator']);
 
         if ($request->filled('search')) {
             $searchTerm = '%'.$request->search.'%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm)
                     ->orWhere('sku', 'like', $searchTerm);
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->whereHas('subcategory', function ($q) use ($request) {
+                $q->where('category_id', $request->category_id);
             });
         }
 

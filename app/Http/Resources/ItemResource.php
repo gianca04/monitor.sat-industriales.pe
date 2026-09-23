@@ -23,6 +23,10 @@ class ItemResource extends JsonResource
                 'id' => $this->subcategory->id,
                 'name' => $this->subcategory->name,
                 'category_id' => $this->subcategory->category_id,
+                'category' => $this->subcategory->relationLoaded('category') && $this->subcategory->category ? [
+                    'id' => $this->subcategory->category->id,
+                    'name' => $this->subcategory->category->name,
+                ] : null,
             ]),
             'unit_id' => $this->unit_id,
             'unit' => $this->whenLoaded('unit', fn () => [

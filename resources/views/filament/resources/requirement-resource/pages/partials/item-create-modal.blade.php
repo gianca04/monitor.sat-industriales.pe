@@ -64,6 +64,7 @@
         };
         this.photoPreview = null;
         this.photoFile = null;
+        this.$dispatch('reset-photo');
         if (this.$refs.photoInput) {
             this.$refs.photoInput.value = '';
         }
@@ -246,10 +247,10 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-transparent pointer-events-auto"
         @click.self="if(!childModalOpen && !$event.target.closest('#category-subcategory-modal-root')) closeModal()">
         <!-- Dialog Container (Shadcn style) -->
-        <div @click.outside="if(!childModalOpen && !$event.target.closest('#category-subcategory-modal-root')) closeModal()" x-transition:enter="transition ease-out duration-150"
-            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
+        <div @click.outside="if(!childModalOpen && !$event.target.closest('#category-subcategory-modal-root')) closeModal()"
+            x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
             class="relative w-full max-w-lg rounded-xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950 max-h-[90vh] overflow-y-auto">
             <!-- Close Button -->
             <button type="button" @click="closeModal()"
@@ -308,9 +309,7 @@
                         class="text-xs font-medium text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
                         <span>Nombre del Ítem <span class="text-red-500">*</span></span>
                     </label>
-                    <input type="text" x-model="form.name"
-                        placeholder="Ej. Interruptor Termomagnético 2x20A Schneider" class="shadcn-input !h-9 !text-xs"
-                        autofocus />
+                    <input type="text" x-model="form.name" class="shadcn-input !h-9 !text-xs" autofocus />
                 </div>
 
                 <!-- Grid: Categoría y Subcategoría -->
@@ -380,7 +379,6 @@
                         <label
                             class="text-xs font-medium text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
                             <span>Unidad de Medida</span>
-                            <span class="text-[10px] text-zinc-400 font-normal">Recomendado</span>
                         </label>
                         <select x-model="form.unit_id" class="shadcn-select !h-9 !text-xs" :disabled="loadingUnits">
                             <option value="">Sin unidad especificada</option>
@@ -398,44 +396,14 @@
                             <span>Código SKU</span>
                             <span class="text-[10px] text-zinc-400 font-normal">Autogenerado si está vacío</span>
                         </label>
-                        <input type="text" x-model="form.sku" placeholder="Ej. AUTOGENERADO"
-                            class="shadcn-input !h-9 !text-xs" />
+                        <input type="text" x-model="form.sku" class="shadcn-input !h-9 !text-xs" />
                     </div>
                 </div>
 
-                <!-- Foto del Ítem (Opcional) -->
-                <div class="space-y-1.5">
-                    <label
-                        class="text-xs font-medium text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                        <span>Foto del Material</span>
-                        <span class="text-[10px] text-zinc-400 font-normal">Opcional</span>
-                    </label>
-
-                    <div class="flex items-center gap-3">
-                        <!-- Preview Thumbnail -->
-                        <template x-if="photoPreview">
-                            <div
-                                class="relative h-14 w-14 shrink-0 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-zinc-50 dark:bg-zinc-900">
-                                <img :src="photoPreview" alt="Vista previa" class="h-full w-full object-cover" />
-                                <button type="button" @click="removePhoto()"
-                                    class="absolute inset-0 flex items-center justify-center bg-zinc-950/50 opacity-0 hover:opacity-100 transition-opacity text-white"
-                                    title="Quitar imagen">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </template>
-
-                        <!-- Input File Button -->
-                        <div class="flex-1">
-                            <input type="file" accept="image/*" x-ref="photoInput"
-                                @change="handlePhotoChange($event)"
-                                class="block w-full text-xs text-zinc-500 dark:text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-900 dark:file:text-zinc-300 dark:hover:file:bg-zinc-800 file:cursor-pointer transition-colors" />
-                        </div>
-                    </div>
+                <!-- Foto del Ítem (Componente Shadcn con Soporte Portapapeles y Drag & Drop) -->
+                <div @photo-changed="photoFile = $event.detail.file; photoPreview = $event.detail.preview"
+                    @photo-removed="photoFile = null; photoPreview = null">
+                    <x-image-uploader label="Foto del Material" name="photo" />
                 </div>
 
                 <!-- Toggle: Agregar directamente al requerimiento -->

@@ -3,6 +3,8 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\RequestConsolidatedController;
+use App\Http\Controllers\RequirementController;
+use App\Http\Controllers\RequirementListController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SubClientDataController;
 use App\Http\Controllers\UnitController;
@@ -47,6 +49,17 @@ Route::prefix('subcategories')->middleware('auth')->group(function () {
     Route::get('/', [SubcategoryController::class, 'index'])->name('subcategories.web.index');
     Route::get('/search', [SubcategoryController::class, 'index'])->name('subcategories.search');
     Route::post('/', [SubcategoryController::class, 'store'])->name('subcategories.store');
+});
+
+// Requerimientos para componentes internos autenticados
+Route::prefix('requirements')->middleware('auth')->group(function () {
+    Route::post('/', [RequirementController::class, 'store'])->name('requirements.web.store');
+    Route::put('/{requirement}', [RequirementController::class, 'update'])->name('requirements.web.update');
+    Route::get('/{requirement}/items', [RequirementListController::class, 'index'])->name('requirements.items.index');
+    Route::post('/{requirement}/items', [RequirementListController::class, 'store'])->name('requirements.items.store');
+    Route::delete('/{requirement}/items', [RequirementListController::class, 'clear'])->name('requirements.items.clear');
+    Route::put('/{requirement}/items/{item}', [RequirementListController::class, 'update'])->name('requirements.items.update');
+    Route::delete('/{requirement}/items/{item}', [RequirementListController::class, 'destroy'])->name('requirements.items.destroy');
 });
 
 // Ruta para generar reporte PDF de trabajo

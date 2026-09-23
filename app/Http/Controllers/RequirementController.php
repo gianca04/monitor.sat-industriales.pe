@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateRequirementAction;
+use App\Actions\UpdateRequirementAction;
 use App\Http\Requests\StoreRequirementRequest;
 use App\Http\Requests\UpdateRequirementRequest;
 use App\Http\Resources\RequirementResource;
 use App\Models\Requirement;
-use App\Models\RequirementList;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\DB;
 
 class RequirementController extends Controller
 {
@@ -53,30 +53,13 @@ class RequirementController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequirementRequest $request): JsonResponse
+    public function store(StoreRequirementRequest $request, CreateRequirementAction $createRequirementAction): JsonResponse
     {
-        $requirement = DB::transaction(function () use ($request) {
-            $requirement = Requirement::create([
-                'sub_client_id' => $request->sub_client_id,
-                'activity_name' => $request->activity_name,
-                'created_by' => auth()->id(),
-            ]);
-
-            if ($request->filled('items') && is_array($request->items)) {
-                foreach ($request->items as $itemData) {
-                    RequirementList::create([
-                        'requirement_id' => $requirement->id,
-                        'item_id' => $itemData['item_id'],
-                        'quantity' => $itemData['quantity'],
-                    ]);
-                }
-            }
-
-            return $requirement;
-        });
-
-        $requirement->load(['subClient', 'creator', 'requirementLists.item.unit'])
-            ->loadCount('requirementLists');
+        $requirement = $createRequirementAction->execute(
+            requirementData: $request->validated(),
+            items: $request->input('items', []),
+            user: auth()->user()
+        );
 
         return (new RequirementResource($requirement))
             ->response()
@@ -97,11 +80,16 @@ class RequirementController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequirementRequest $request, Requirement $requirement): RequirementResource
-    {
-        $requirement->update($request->validated());
-        $requirement->load(['subClient', 'creator', 'requirementLists.item.unit'])
-            ->loadCount('requirementLists');
+    public function update(
+        UpdateRequirementRequest $request,
+        Requirement $requirement,
+        UpdateRequirementAction $updateRequirementAction
+    ): RequirementResource {
+        $requirement = $updateRequirementAction->execute(
+            requirement: $requirement,
+            requirementData: $request->validated(),
+            items: $request->input('items', null)
+        );
 
         return new RequirementResource($requirement);
     }

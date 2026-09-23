@@ -3,17 +3,31 @@
 namespace App\Filament\Resources\RequirementResource\Pages;
 
 use App\Filament\Resources\RequirementResource;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use App\Models\Requirement;
+use Filament\Resources\Pages\Page;
 
-class EditRequirement extends EditRecord
+class EditRequirement extends Page
 {
     protected static string $resource = RequirementResource::class;
 
-    protected function getHeaderActions(): array
+    protected static string $view = 'filament.resources.requirement-resource.pages.manage-requirement';
+
+    public ?Requirement $record = null;
+
+    public function mount(int|string|Requirement|null $record = null): void
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        if ($record) {
+            $id = $record instanceof Requirement ? $record->id : $record;
+            $this->record = Requirement::with([
+                'subClient.client',
+                'requirementLists.item.unit',
+                'requirementLists.item.subcategory.category',
+            ])->findOrFail($id);
+        }
+    }
+
+    public function getTitle(): string
+    {
+        return 'Editar Requerimiento #'.$this->record->id;
     }
 }

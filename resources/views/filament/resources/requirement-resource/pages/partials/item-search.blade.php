@@ -2,37 +2,118 @@
     x-data="{
         search: '',
         items: [],
+        categories: [],
+        subcategories: [],
+        selectedCategoryId: '',
+        selectedSubcategoryId: '',
+        page: 1,
+        perPage: 12,
+        total: 0,
+        hasMore: false,
         loading: false,
+        loadingMore: false,
         hasSearched: false,
-        async fetchItems() {
-            this.loading = true;
+
+        init() {
+            this.loadCategories();
+            this.fetchItems(true);
+        },
+
+        async loadCategories() {
+            try {
+                if (!window._cachedCategoriesPromise) {
+                    window._cachedCategoriesPromise = fetch(`{{ route('categories.search') }}?per_page=100`)
+                        .then(r => r.ok ? r.json() : { data: [] })
+                        .catch(err => { console.error('Error cargando categorías:', err); return { data: [] }; });
+                }
+                const json = await window._cachedCategoriesPromise;
+                this.categories = json.data || [];
+            } catch (err) {
+                console.error('Error cargando categorías:', err);
+            }
+        },
+
+        async onCategoryChange() {
+            this.selectedSubcategoryId = '';
+            this.subcategories = [];
+            if (this.selectedCategoryId) {
+                try {
+                    const res = await fetch(`{{ route('subcategories.search') }}?category_id=${this.selectedCategoryId}&per_page=100`);
+                    if (res.ok) {
+                        const json = await res.json();
+                        this.subcategories = json.data || [];
+                    }
+                } catch (err) {
+                    console.error('Error cargando subcategorías:', err);
+                }
+            }
+            this.fetchItems(true);
+        },
+
+        async fetchItems(reset = false) {
+            if (reset) {
+                this.page = 1;
+                this.loading = true;
+            } else {
+                this.loadingMore = true;
+            }
+
             try {
                 const params = new URLSearchParams();
-                if (this.search && this.search.trim().length > 0) {
-                    params.append('search', this.search.trim());
+                const trimmed = (this.search || '').trim();
+                if (trimmed.length > 0) {
+                    params.append('search', trimmed);
                 }
-                params.append('per_page', '12');
-    
+                if (this.selectedCategoryId) {
+                    params.append('category_id', this.selectedCategoryId);
+                }
+                if (this.selectedSubcategoryId) {
+                    params.append('subcategory_id', this.selectedSubcategoryId);
+                }
+                params.append('page', this.page);
+                params.append('per_page', this.perPage);
+
                 const response = await fetch(`{{ route('items.search') }}?${params.toString()}`);
                 if (response.ok) {
                     const res = await response.json();
-                    this.items = res.data || [];
+                    const newItems = res.data || [];
+                    if (reset) {
+                        this.items = newItems;
+                    } else {
+                        this.items = [...this.items, ...newItems];
+                    }
                     this.hasSearched = true;
+                    if (res.meta) {
+                        this.total = res.meta.total || 0;
+                        this.hasMore = res.meta.current_page < res.meta.last_page;
+                    } else {
+                        this.hasMore = false;
+                        this.total = this.items.length;
+                    }
                 }
             } catch (error) {
                 console.error('Error buscando ítems:', error);
             } finally {
                 this.loading = false;
+                this.loadingMore = false;
             }
         },
-        clearSearch() {
-            this.search = '';
-            this.fetchItems();
+
+        loadMore() {
+            if (this.loading || this.loadingMore || !this.hasMore) return;
+            this.page++;
+            this.fetchItems(false);
         },
-        init() {
-            this.fetchItems();
+
+        clearFilters() {
+            this.search = '';
+            this.selectedCategoryId = '';
+            this.selectedSubcategoryId = '';
+            this.subcategories = [];
+            this.fetchItems(true);
         }
-    }" @item-created.window="fetchItems()">
+    }" @item-created.window="fetchItems(true)">
+
     <!-- Card Header -->
     <div class="flex items-center justify-between p-4 border-b border-zinc-100 dark:border-zinc-900">
         <div class="flex items-center gap-2">
@@ -59,8 +140,9 @@
         </div>
     </div>
 
-    <!-- Barra de búsqueda superior -->
-    <div class="p-3 border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/20">
+    <!-- Filtros y Búsqueda Superior -->
+    <div class="p-3 border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/20 space-y-2">
+        <!-- Input Search Principal -->
         <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
@@ -70,13 +152,13 @@
                 </svg>
             </div>
 
-            <input type="text" x-model="search" @input.debounce.300ms="fetchItems()"
-                placeholder="Buscar por nombre o SKU..." class="shadcn-input !h-9 !text-xs !pl-8 !pr-8"
+            <input type="text" x-model="search" @input.debounce.400ms="fetchItems(true)"
+                placeholder="Buscar por nombre o SKU..." class="shadcn-input !h-8 !text-xs !pl-8 !pr-8"
                 autocomplete="off" />
 
             <!-- Botón de limpiar o Spinner -->
-            <div class="absolute inset-y-0 right-0 flex items-center pr-2.5">
-                <template x-if="loading">
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+                <template x-if="loading && items.length === 0">
                     <svg class="animate-spin h-3.5 w-3.5 text-zinc-400" xmlns="http://www.w3.org/2000/svg"
                         fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
@@ -85,7 +167,7 @@
                     </svg>
                 </template>
                 <template x-if="!loading && search.length > 0">
-                    <button type="button" @click="clearSearch()"
+                    <button type="button" @click="search = ''; fetchItems(true)"
                         class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors p-0.5 rounded"
                         title="Limpiar búsqueda">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
@@ -97,11 +179,43 @@
                 </template>
             </div>
         </div>
+
+        <!-- Filtros: Categoría y Subcategoría (Full width apilados para máxima legibilidad) -->
+        <div class="space-y-1.5">
+            <div>
+                <select x-model="selectedCategoryId" @change="onCategoryChange()"
+                    class="shadcn-select-sm">
+                    <option value="">Todas las Categorías</option>
+                    <template x-for="cat in categories" :key="cat.id">
+                        <option :value="cat.id" x-text="cat.name"></option>
+                    </template>
+                </select>
+            </div>
+
+            <div>
+                <select x-model="selectedSubcategoryId" @change="fetchItems(true)" :disabled="!selectedCategoryId"
+                    class="shadcn-select-sm">
+                    <option value="" x-text="!selectedCategoryId ? 'Seleccione categoría...' : 'Todas las Subcategorías'"></option>
+                    <template x-for="sub in subcategories" :key="sub.id">
+                        <option :value="sub.id" x-text="sub.name"></option>
+                    </template>
+                </select>
+            </div>
+        </div>
+
+        <!-- Barra de estado y limpiar filtros activos -->
+        <div x-show="selectedCategoryId || selectedSubcategoryId || search"
+            class="flex items-center justify-between text-[10px] text-zinc-500 pt-0.5">
+            <span>Filtros activos</span>
+            <button type="button" @click="clearFilters()" class="text-red-500 hover:underline">
+                Limpiar filtros
+            </button>
+        </div>
     </div>
 
     <!-- Lista de resultados de ítems -->
-    <div class="flex-1 overflow-y-auto max-h-[520px] p-2 space-y-1.5">
-        <!-- Skeleton loader -->
+    <div class="flex-1 overflow-y-auto max-h-[500px] p-2 space-y-1.5">
+        <!-- Skeleton loader inicial -->
         <template x-if="loading && items.length === 0">
             <div class="space-y-2 p-1">
                 <div class="h-16 rounded-lg bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
@@ -138,8 +252,25 @@
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
+                        <span>Agregar</span>
                     </span>
                 </div>
+            </div>
+        </template>
+
+        <!-- Botón Cargar más (Paginación Incremental) -->
+        <template x-if="hasMore">
+            <div class="pt-2 pb-1 text-center">
+                <button type="button" @click="loadMore()" :disabled="loadingMore"
+                    class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-medium rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-colors shadow-xs disabled:opacity-50">
+                    <template x-if="loadingMore">
+                        <svg class="animate-spin h-3.5 w-3.5 text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                    </template>
+                    <span x-text="loadingMore ? 'Cargando más...' : 'Cargar más ítems (' + items.length + ' de ' + total + ')'"></span>
+                </button>
             </div>
         </template>
 
@@ -170,5 +301,10 @@
                 </button>
             </div>
         </template>
+    </div>
+
+    <!-- Footer info del catálogo -->
+    <div class="p-2 border-t border-zinc-100 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/20 text-[10px] text-zinc-400 text-center">
+        <span x-text="'Mostrando ' + items.length + ' de ' + total + ' materiales'"></span>
     </div>
 </div>

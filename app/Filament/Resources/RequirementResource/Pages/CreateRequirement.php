@@ -3,16 +3,19 @@
 namespace App\Filament\Resources\RequirementResource\Pages;
 
 use App\Filament\Resources\RequirementResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Models\Requirement;
+use Filament\Resources\Pages\Page;
 
-class CreateRequirement extends CreateRecord
+class CreateRequirement extends Page
 {
     protected static string $resource = RequirementResource::class;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        $data['created_by'] = auth()->id();
+    protected static string $view = 'filament.resources.requirement-resource.pages.manage-requirement';
 
-        return $data;
+    public ?Requirement $record = null;
+
+    public function getTitle(): string
+    {
+        return 'Crear Requerimiento';
     }
 }

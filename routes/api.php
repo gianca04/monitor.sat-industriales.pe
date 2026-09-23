@@ -135,4 +135,5 @@ Route::apiResource('items', ItemController::class);
 Route::apiResource('categories', CategoryController::class)->only(['index', 'store']);
 Route::apiResource('subcategories', SubcategoryController::class)->only(['index', 'store']);
 Route::apiResource('requirements', RequirementController::class);
+Route::delete('requirements/{requirement}/items', [RequirementListController::class, 'clear'])->name('api.requirements.items.clear');
 Route::apiResource('requirements.items', RequirementListController::class);
