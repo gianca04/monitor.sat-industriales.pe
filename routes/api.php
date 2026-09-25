@@ -69,7 +69,8 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration', 'throttle:api'])
         // SubClientes
         Route::prefix('sub-clients')->group(function () {
             // Endpoints para transferencia masiva/por lotes de datos de subclientes
-            Route::get('/data', [SubClientDataController::class, 'index']); // ⬅️ ESTE SÍ SE USA
+            Route::get('/data', [SubClientDataController::class, 'index']);
+            Route::get('/search', [SubClientDataController::class, 'index']); // ⬅️ ESTE SÍ SE USA
         });
 
         // Timesheets
@@ -108,6 +109,8 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration', 'throttle:api'])
 
         // Inventario y Requerimientos (Protegidos con autenticación Sanctum)
         Route::apiResource('units', UnitController::class);
+        Route::post('items/{item}/photo/queue', [ItemController::class, 'queuePhotoUpload'])->name('items.photo.queue');
+        Route::post('items/photo/queue', [ItemController::class, 'queuePhotoUpload'])->name('items.photo.queue.general');
         Route::apiResource('items', ItemController::class);
         Route::apiResource('categories', CategoryController::class)->only(['index', 'store']);
         Route::apiResource('subcategories', SubcategoryController::class)->only(['index', 'store']);

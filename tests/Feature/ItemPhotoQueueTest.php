@@ -195,4 +195,29 @@ class ItemPhotoQueueTest extends TestCase
         Storage::disk('s3')->assertMissing($firstPhoto);
         Storage::disk('s3')->assertExists($secondPhoto);
     }
+
+    public function test_api_authenticated_user_can_queue_photo_upload(): void
+    {
+        Queue::fake();
+
+        $photo = UploadedFile::fake()->image('api_upload.jpg', 500, 500);
+
+        $token = $this->user->createToken('test_token', ['*'], now()->addDay())->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson("/api/items/{$this->item->id}/photo/queue", [
+                'photo' => $photo,
+            ]);
+
+        $response->assertStatus(202)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'item_id' => $this->item->id,
+                    'status' => 'queued',
+                ],
+            ]);
+
+        Queue::assertPushed(UploadItemPhotoJob::class);
+    }
 }

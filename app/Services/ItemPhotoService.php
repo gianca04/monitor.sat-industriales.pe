@@ -26,8 +26,13 @@ class ItemPhotoService
      *
      * @return string Relative path in S3 (e.g. 'items/abc.webp')
      */
-    public function upload(UploadedFile|string $file, ?string $oldPhotoPath = null, int $quality = 85): string
-    {
+    public function upload(
+        UploadedFile|string $file,
+        ?string $oldPhotoPath = null,
+        int $quality = 85,
+        int $maxWidth = 1200,
+        int $maxHeight = 1200
+    ): string {
         $realPath = $file instanceof UploadedFile ? $file->getRealPath() : $file;
 
         // Leer la imagen usando Intervention Image v3
@@ -50,6 +55,9 @@ class ItemPhotoService
                 }
             }
         }
+
+        // Redimensionar proporcionalmente para optimizar peso y memoria
+        $image->scaleDown(width: $maxWidth, height: $maxHeight);
 
         // Convertir a formato WebP
         $encoded = $image->toWebp($quality);

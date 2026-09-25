@@ -35,6 +35,7 @@ class ItemResource extends JsonResource
                 'symbol' => $this->unit->symbol,
             ]),
             'photo' => $this->photo_url,
+            'photo_url' => $this->photo_url,
             'created_by' => $this->created_by,
             'creator' => $this->whenLoaded('creator', fn () => [
                 'id' => $this->creator->id,

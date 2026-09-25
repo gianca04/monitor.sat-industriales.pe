@@ -95,4 +95,24 @@ class ItemPhotoServiceTest extends TestCase
         $absoluteUrl = 'https://ejemplo.com/foto.jpg';
         $this->assertEquals($absoluteUrl, $this->service->url($absoluteUrl));
     }
+
+    public function test_upload_scales_down_large_image(): void
+    {
+        // Crear imagen de 2000x1500 px
+        $largeFile = UploadedFile::fake()->image('foto_grande.jpg', 2000, 1500);
+
+        // Subir con limitación por defecto (máx 1200x1200)
+        $storedPath = $this->service->upload($largeFile, maxWidth: 1200, maxHeight: 1200);
+
+        // Leer la imagen resultante de S3
+        $content = Storage::disk('s3')->get($storedPath);
+        $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver);
+        $processedImage = $manager->read($content);
+
+        // Verificar que las dimensiones se redujeron proporcionalmente
+        $this->assertLessThanOrEqual(1200, $processedImage->width());
+        $this->assertLessThanOrEqual(1200, $processedImage->height());
+        $this->assertEquals(1200, $processedImage->width());
+        $this->assertEquals(900, $processedImage->height());
+    }
 }
