@@ -593,4 +593,45 @@ class InventoryAndRequirementApiTest extends TestCase
                 'quantity' => ['La cantidad mínima por material debe ser al menos 0.01.'],
             ]);
     }
+
+    public function test_cannot_create_requirement_without_activity_name(): void
+    {
+        $item = Item::create([
+            'name' => 'Item Prueba '.uniqid(),
+            'subcategory_id' => $this->subcategory->id,
+            'unit_id' => $this->unit->id,
+        ]);
+
+        $response = $this->postJson('/api/requirements', [
+            'sub_client_id' => $this->subClient->id,
+            'activity_name' => '',
+            'items' => [
+                ['item_id' => $item->id, 'quantity' => 1],
+            ],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['activity_name'])
+            ->assertJsonFragment([
+                'activity_name' => ['El nombre de la actividad es obligatorio.'],
+            ]);
+    }
+
+    public function test_cannot_update_requirement_with_empty_activity_name(): void
+    {
+        $requirement = Requirement::create([
+            'sub_client_id' => $this->subClient->id,
+            'activity_name' => 'Actividad Inicial',
+        ]);
+
+        $response = $this->putJson("/api/requirements/{$requirement->id}", [
+            'activity_name' => '   ',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['activity_name'])
+            ->assertJsonFragment([
+                'activity_name' => ['El nombre de la actividad es obligatorio.'],
+            ]);
+    }
 }

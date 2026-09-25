@@ -8,6 +8,7 @@
         saving: false,
         errorMessage: '',
         successMessage: '',
+        activityError: false,
     
         init() {
             window.addEventListener('requirement-items-updated', (event) => {
@@ -24,34 +25,41 @@
         async saveRequirement() {
             this.errorMessage = '';
             this.successMessage = '';
-    
+
             if (!this.subClientId) {
                 this.errorMessage = 'Debe seleccionar una tienda o sede (subcliente).';
                 return;
             }
-    
+
+            const trimmedActivity = (this.activityName || '').trim();
+            if (!trimmedActivity) {
+                this.activityError = true;
+                this.errorMessage = 'El nombre de la actividad es obligatorio.';
+                return;
+            }
+
             this.$dispatch('request-requirement-items');
             await new Promise(r => setTimeout(r, 60));
-    
+
             if (!this.items || this.items.length === 0) {
                 this.errorMessage = 'Debe agregar al menos un material a la lista del requerimiento.';
                 return;
             }
-    
+
             this.saving = true;
-    
+
             try {
                 const csrfToken = '{{ csrf_token() }}' || document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
-    
+
                 const payload = {
                     sub_client_id: parseInt(this.subClientId),
-                    activity_name: this.activityName || null,
+                    activity_name: trimmedActivity,
                     items: this.items.map(i => ({
                         item_id: i.id,
                         quantity: parseFloat(i.quantity) || 1
                     }))
                 };
-    
+
                 if (this.isEditMode) {
                     const res = await fetch('/requirements/' + this.requirementId, {
                         method: 'PUT',
@@ -62,10 +70,13 @@
                         },
                         body: JSON.stringify(payload)
                     });
-    
+
                     const data = await res.json();
                     if (!res.ok) {
                         if (data.errors) {
+                            if (data.errors.activity_name) {
+                                this.activityError = true;
+                            }
                             const first = Object.values(data.errors)[0];
                             this.errorMessage = Array.isArray(first) ? first[0] : first;
                         } else {
@@ -73,7 +84,7 @@
                         }
                         return;
                     }
-    
+
                     this.successMessage = 'Requerimiento #' + this.requirementId + ' actualizado correctamente con ' + this.items.length + ' materiales.';
                     setTimeout(() => { this.successMessage = ''; }, 3500);
                 } else {
@@ -86,10 +97,13 @@
                         },
                         body: JSON.stringify(payload)
                     });
-    
+
                     const data = await res.json();
                     if (!res.ok) {
                         if (data.errors) {
+                            if (data.errors.activity_name) {
+                                this.activityError = true;
+                            }
                             const first = Object.values(data.errors)[0];
                             this.errorMessage = Array.isArray(first) ? first[0] : first;
                         } else {
@@ -316,11 +330,21 @@
 
             <!-- Nombre de la Actividad (8 columnas de 12) -->
             <div class="md:col-span-8">
-                <label for="activity_name" class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                    Nombre de la Actividad
-                </label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label for="activity_name" class="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                        Nombre de la Actividad <span class="text-rose-500 font-semibold">*</span>
+                    </label>
+                    <span x-show="activityError" x-cloak class="text-[11px] text-rose-500 font-medium">
+                        Campo obligatorio
+                    </span>
+                </div>
                 <input type="text" id="activity_name" name="activity_name" x-model="activityName"
-                    value="{{ $record->activity_name ?? '' }}" class="shadcn-input !h-9 !text-xs sm:!text-sm" />
+                    @input="activityError = false; if(errorMessage && errorMessage.includes('actividad')) errorMessage = ''"
+                    placeholder="ej: Mantenimiento preventivo, Instalación de tableros"
+                    value="{{ $record->activity_name ?? '' }}"
+                    class="shadcn-input !h-9 !text-xs sm:!text-sm transition-colors"
+                    :class="{'!border-rose-500 !ring-1 !ring-rose-500 bg-rose-50/20 dark:bg-rose-950/20': activityError}"
+                    required />
             </div>
         </div>
     </div>

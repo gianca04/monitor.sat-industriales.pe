@@ -39,6 +39,7 @@ class RequirementResource extends Resource
                         Forms\Components\TextInput::make('activity_name')
                             ->label('Nombre de la Actividad')
                             ->placeholder('ej: Mantenimiento preventivo, Instalación de tableros')
+                            ->required()
                             ->maxLength(255),
                     ])
                     ->columns(2),

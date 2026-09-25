@@ -35,7 +35,8 @@ class UpdateRequirementRequest extends FormRequest
         return [
             'sub_client_id' => ['sometimes', 'required', 'integer', 'exists:sub_clients,id'],
             'activity_name' => [
-                'nullable',
+                'sometimes',
+                'required',
                 'string',
                 'max:255',
                 'regex:/[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/u',
@@ -53,6 +54,7 @@ class UpdateRequirementRequest extends FormRequest
             'sub_client_id.required' => 'Debe seleccionar una tienda o sede (subcliente).',
             'sub_client_id.integer' => 'El identificador de la tienda o sede debe ser un número entero.',
             'sub_client_id.exists' => 'La tienda o sede seleccionada no es válida.',
+            'activity_name.required' => 'El nombre de la actividad es obligatorio.',
             'activity_name.string' => 'El nombre de la actividad debe ser texto válido.',
             'activity_name.max' => 'El nombre de la actividad no debe superar los 255 caracteres.',
             'activity_name.regex' => 'El nombre de la actividad debe contener texto explicativo en español y no puede componerse solo de números o símbolos extraños.',
