@@ -10,12 +10,14 @@ use App\Models\RequirementList;
 use App\Models\Subcategory;
 use App\Models\SubClient;
 use App\Models\Unit;
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\Feature\CreatesAuthenticatedUser;
 use Tests\TestCase;
 
 class InventoryAndRequirementApiTest extends TestCase
 {
-    use DatabaseTransactions;
+    use CreatesAuthenticatedUser, DatabaseTransactions;
 
     protected Unit $unit;
 
@@ -23,9 +25,18 @@ class InventoryAndRequirementApiTest extends TestCase
 
     protected SubClient $subClient;
 
+    protected User $user;
+
+    protected string $token;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $authData = $this->createAuthenticatedUser();
+        $this->user = $authData['user'];
+        $this->token = $authData['token'];
+        $this->withToken($this->token);
 
         $this->unit = Unit::firstOrCreate(
             ['name' => 'Metro'],
@@ -454,5 +465,132 @@ class InventoryAndRequirementApiTest extends TestCase
             ->assertJson(['success' => true]);
 
         $this->assertDatabaseMissing('requirement_lists', ['id' => $reqList->id]);
+    }
+
+    // --- NUEVAS VALIDACIONES Y MENSAJES DE FEEDBACK ---
+
+    public function test_cannot_create_unit_with_only_numbers_or_invalid_symbols(): void
+    {
+        // 1. Solo números
+        $resNumbers = $this->postJson('/api/units', [
+            'name' => '123456',
+            'symbol' => 'kg',
+        ]);
+        $resNumbers->assertStatus(422)
+            ->assertJsonValidationErrors(['name'])
+            ->assertJsonFragment([
+                'name' => ['El nombre de la unidad debe contener texto en español y no puede componerse únicamente de números ni contener caracteres no permitidos.'],
+            ]);
+
+        // 2. Símbolos extraños
+        $resSymbols = $this->postJson('/api/units', [
+            'name' => 'Unidad <script>',
+            'symbol' => 'und',
+        ]);
+        $resSymbols->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+    }
+
+    public function test_cannot_create_category_with_only_numbers_or_invalid_symbols(): void
+    {
+        $response = $this->postJson('/api/categories', [
+            'name' => '99999',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name'])
+            ->assertJsonFragment([
+                'name' => ['El nombre de la categoría debe contener texto en español y no se permiten símbolos extraños ni únicamente números.'],
+            ]);
+    }
+
+    public function test_cannot_create_subcategory_with_only_numbers(): void
+    {
+        $response = $this->postJson('/api/subcategories', [
+            'category_id' => $this->subcategory->category_id,
+            'name' => '12345',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name'])
+            ->assertJsonFragment([
+                'name' => ['El nombre de la subcategoría debe contener texto en español y no se permiten símbolos extraños ni únicamente números.'],
+            ]);
+    }
+
+    public function test_cannot_create_requirement_without_at_least_one_item(): void
+    {
+        // 1. Array vacío de ítems
+        $responseEmpty = $this->postJson('/api/requirements', [
+            'sub_client_id' => $this->subClient->id,
+            'activity_name' => 'Mantenimiento General',
+            'items' => [],
+        ]);
+
+        $responseEmpty->assertStatus(422)
+            ->assertJsonValidationErrors(['items'])
+            ->assertJsonFragment([
+                'items' => ['Debe agregar al menos un material a la lista del requerimiento.'],
+            ]);
+
+        // 2. Sin el campo ítems
+        $responseMissing = $this->postJson('/api/requirements', [
+            'sub_client_id' => $this->subClient->id,
+            'activity_name' => 'Mantenimiento General',
+        ]);
+
+        $responseMissing->assertStatus(422)
+            ->assertJsonValidationErrors(['items'])
+            ->assertJsonFragment([
+                'items' => ['Debe agregar al menos un material a la lista del requerimiento.'],
+            ]);
+    }
+
+    public function test_cannot_create_requirement_with_numeric_only_activity_name(): void
+    {
+        $item = Item::create([
+            'name' => 'Item Prueba '.uniqid(),
+            'subcategory_id' => $this->subcategory->id,
+            'unit_id' => $this->unit->id,
+        ]);
+
+        $response = $this->postJson('/api/requirements', [
+            'sub_client_id' => $this->subClient->id,
+            'activity_name' => '12345678',
+            'items' => [
+                ['item_id' => $item->id, 'quantity' => 1],
+            ],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['activity_name'])
+            ->assertJsonFragment([
+                'activity_name' => ['El nombre de la actividad debe contener texto explicativo en español y no puede componerse solo de números o símbolos extraños.'],
+            ]);
+    }
+
+    public function test_cannot_add_requirement_item_with_zero_or_negative_quantity(): void
+    {
+        $requirement = Requirement::create([
+            'sub_client_id' => $this->subClient->id,
+            'activity_name' => 'Req Test Validacion',
+        ]);
+
+        $item = Item::create([
+            'name' => 'Item Val '.uniqid(),
+            'subcategory_id' => $this->subcategory->id,
+            'unit_id' => $this->unit->id,
+        ]);
+
+        $response = $this->postJson("/api/requirements/{$requirement->id}/items", [
+            'item_id' => $item->id,
+            'quantity' => 0,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['quantity'])
+            ->assertJsonFragment([
+                'quantity' => ['La cantidad mínima por material debe ser al menos 0.01.'],
+            ]);
     }
 }

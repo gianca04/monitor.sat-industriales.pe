@@ -1,4 +1,4 @@
-<div class="relative z-30 rounded-xl border border-zinc-200/80 bg-white shadow-xs dark:border-zinc-800/80 dark:bg-zinc-950"
+<div class="relative rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
     x-data="{
         isEditMode: @js(isset($record) && $record && $record->id),
         requirementId: @js($record->id ?? null),
@@ -115,18 +115,21 @@
     }">
     <!-- Header compacto integrado: Título + Badge + Botón Guardar -->
     <div
-        class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/30 rounded-t-xl">
-        <div class="flex items-center gap-2.5">
-            <div class="flex items-center gap-2">
+        class="flex items-center justify-between p-4 border-b border-zinc-100 dark:border-zinc-900 rounded-t-xl">
+        <div class="flex items-center gap-2">
+            <div>
                 <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-none">
                     Datos del Requerimiento
                 </h3>
+                <p class="text-[11px] text-zinc-400 mt-1">
+                    Información general y destino de la solicitud
+                </p>
             </div>
 
             <!-- Contador dinámico de materiales en creación -->
-            <template x-if="!isEditMode && itemsCount > 0">
+            <template x-if="itemsCount > 0">
                 <span
-                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60"
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60 ml-2"
                     x-text="itemsCount + (itemsCount === 1 ? ' material' : ' materiales')">
                 </span>
             </template>

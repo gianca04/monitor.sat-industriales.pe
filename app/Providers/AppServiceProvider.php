@@ -28,10 +28,10 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Epp::observe(\App\Observers\EppObserver::class);
         \App\Models\Delivery::observe(\App\Observers\DeliveryObserver::class);
 
-        FilamentView::registerRenderHook(
-            'panels::auth.login.form.after',
-            fn (): string => Blade::render('@vite(\'resources/css/custom-login.css\')'),
-        );
+        //FilamentView::registerRenderHook(
+        //    'panels::auth.login.form.after',
+        //    fn (): string => Blade::render('@vite(\'resources/css/custom-login.css\')'),
+        //);
 
         // Configuración de Rate Limiters para la API
         RateLimiter::for('api', function (Request $request) {

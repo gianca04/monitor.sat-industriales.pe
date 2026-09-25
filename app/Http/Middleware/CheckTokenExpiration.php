@@ -21,6 +21,10 @@ class CheckTokenExpiration
             return response()->json(['message' => 'Token no válido o inexistente'], 401);
         }
 
+        if ($token instanceof \Laravel\Sanctum\TransientToken) {
+            return $next($request);
+        }
+
         if (! $token->expires_at) {
             return response()->json(['message' => 'El token no tiene fecha de expiración'], 401);
         }

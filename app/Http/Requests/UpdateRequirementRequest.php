@@ -34,8 +34,14 @@ class UpdateRequirementRequest extends FormRequest
     {
         return [
             'sub_client_id' => ['sometimes', 'required', 'integer', 'exists:sub_clients,id'],
-            'activity_name' => ['nullable', 'string', 'max:255'],
-            'items' => ['nullable', 'array'],
+            'activity_name' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/u',
+                'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\.\,\-\/\(\)\:\;\#]+$/u',
+            ],
+            'items' => ['sometimes', 'array', 'min:1'],
             'items.*.item_id' => ['required_with:items', 'integer', 'exists:items,id'],
             'items.*.quantity' => ['required_with:items', 'numeric', 'min:0.01'],
         ];
@@ -45,9 +51,18 @@ class UpdateRequirementRequest extends FormRequest
     {
         return [
             'sub_client_id.required' => 'Debe seleccionar una tienda o sede (subcliente).',
+            'sub_client_id.integer' => 'El identificador de la tienda o sede debe ser un número entero.',
             'sub_client_id.exists' => 'La tienda o sede seleccionada no es válida.',
+            'activity_name.string' => 'El nombre de la actividad debe ser texto válido.',
+            'activity_name.max' => 'El nombre de la actividad no debe superar los 255 caracteres.',
+            'activity_name.regex' => 'El nombre de la actividad debe contener texto explicativo en español y no puede componerse solo de números o símbolos extraños.',
+            'items.array' => 'La lista de materiales debe ser un conjunto válido de elementos.',
+            'items.min' => 'Debe incluir al menos un material en la lista del requerimiento.',
             'items.*.item_id.required_with' => 'Cada material debe contener un identificador de ítem válido.',
+            'items.*.item_id.integer' => 'El identificador del material debe ser un número entero.',
             'items.*.item_id.exists' => 'Uno o más materiales seleccionados no existen en el catálogo.',
+            'items.*.quantity.required_with' => 'Debe especificar la cantidad para cada material.',
+            'items.*.quantity.numeric' => 'La cantidad de cada material debe ser un número válido.',
             'items.*.quantity.min' => 'La cantidad mínima por ítem debe ser al menos 0.01.',
         ];
     }

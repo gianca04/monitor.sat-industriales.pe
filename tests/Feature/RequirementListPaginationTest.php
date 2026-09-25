@@ -36,6 +36,8 @@ class RequirementListPaginationTest extends TestCase
     {
         parent::setUp();
 
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+
         $this->user = User::factory()->create();
 
         $client = Client::factory()->create(['person_type' => 'juridica']);

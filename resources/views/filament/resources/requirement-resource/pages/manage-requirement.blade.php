@@ -2,12 +2,12 @@
     @vite(['resources/css/requirement.css'])
     <div class="space-y-4">
         <!-- Div 1: Ancho completo superior (Requirement Form) -->
-        <div class="w-full relative z-20">
+        <div class="w-full relative z-10">
             @include('filament.resources.requirement-resource.pages.partials.requirement-form')
         </div>
 
         <!-- Fila inferior responsive: Div 2 (1/4) y Div 3 (3/4) en Desktop -->
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-4 relative z-10">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-4 relative z-0">
             <!-- Div 2: 1/4 en desktop (1 columna de 4) - Catálogo / Buscador de Ítems -->
             <div class="lg:col-span-1">
                 @include('filament.resources.requirement-resource.pages.partials.item-search')

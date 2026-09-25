@@ -96,20 +96,22 @@ Route::prefix('request/{request}')->middleware('auth')->group(function () {
         ->name('request.consolidated-report.statistics');
 });
 
+// Ruta para descargar exportaciones seguras generadas en background
+Route::get('/downloads/exports/{path}', function (string $path) {
+    $decodedPath = base64_decode($path);
+    if (! \Illuminate\Support\Facades\Storage::disk('local')->exists($decodedPath)) {
+        abort(404, 'El archivo ya no está disponible o expiró.');
+    }
+
+    return \Illuminate\Support\Facades\Storage::disk('local')->download($decodedPath);
+})->name('download.export')->middleware('auth');
+
 // Las rutas de Livewire y Filament se configuran automáticamente
 // a través del DashboardPanelProvider
 
 // Route::get('/work-report/{workReport}/word', [WorkReportWordController::class, 'generateReport'])
 //    ->name('work-report.word')
 //    ->middleware('auth');
-
-Livewire::setScriptRoute(function ($handle) {
-    return Route::get('/monitor.sat-industriales.pe/public/livewire/livewire.js', $handle);
-});
-
-Livewire::setUpdateRoute(function ($handle) {
-    return Route::post('/monitor.sat-industriales.pe/public/livewire/update', $handle);
-});
 
 Route::get('/storage-link', function () {
     Artisan::call('storage:link');

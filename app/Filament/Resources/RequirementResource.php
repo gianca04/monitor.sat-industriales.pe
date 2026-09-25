@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 
 class RequirementResource extends Resource
@@ -47,29 +48,32 @@ class RequirementResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
+                Tables\Columns\TextColumn::make('activity_name')
+                    ->label('Actividad')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('subClient.name')
                     ->label('Sub-Cliente / Sede')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('activity_name')
-                    ->label('Actividad')
-                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('requirement_lists_count')
                     ->counts('requirementLists')
                     ->label('Total Ítems')
                     ->badge()
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Creado por')
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha de Creación')
                     ->dateTime('d/m/Y H:i')
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->sortable(),
             ])
             ->filters([
@@ -78,8 +82,22 @@ class RequirementResource extends Resource
                     ->relationship('subClient', 'name'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ActionGroup::make(
+                    [
+                        Tables\Actions\Action::make('export_async')
+                            ->label('Exportar Excel')
+                            ->icon('heroicon-o-document-arrow-down')
+                            ->color('success')
+                            ->action(function (\App\Models\Requirement $record) {
+                                $exportService = app(\App\Services\RequirementExportService::class);
+                                $tempPath = $exportService->exportAll($record);
+
+                                return response()->download($tempPath, 'Requerimiento_'.$record->id.'.xlsx')->deleteFileAfterSend(true);
+                            }),
+                        Tables\Actions\EditAction::make(),
+                        Tables\Actions\DeleteAction::make(),
+                    ]
+                ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
